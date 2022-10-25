@@ -1,0 +1,87 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity" >
+
+    <TextView
+        android:id="@+id/btnBarcode"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#5C8A8A"
+        android:gravity="left"
+        android:padding="6dp"
+        android:text="@string/txtMainTitle"
+        android:textColor="#000000"
+        android:textSize="13sp">
+
+    </TextView>
+
+
+
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:layout_alignParentLeft="true"
+          android:layout_alignParentTop="true"
+          android:layout_marginTop="40dp"
+          android:orientation="vertical" >
+
+          <TextView
+              android:id="@+id/txtInfo"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:background="#5C8A8A"
+              android:gravity="left"
+              android:padding="6dp"
+              android:text="@string/textInfo"
+              android:textColor="#000000"
+              android:textSize="13sp">
+
+          </TextView>
+
+          <Button
+              android:id="@+id/btnInputForms"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="22dp"
+              android:text="@string/btnInputForms" />
+
+          <Button
+              android:id="@+id/buttonUploadReadings"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="22dp"
+              android:text="@string/btnUploadReadings" />
+<!--
+          <Button
+              android:id="@+id/buttonClientBarcode"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="22dp"
+              android:text="@string/btnClientBarcode" />
+
+          <Button
+              android:id="@+id/buttonScannerSelectBarcode"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="22dp"
+              android:text="@string/btnScannerSelectBarcode" />
+
+          <Button
+              android:id="@+id/btnDownloadData"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="22dp"
+              android:text="@string/btnDownloadData"/>
+
+          <Button
+              android:id="@+id/btnUploadXMLtoDB"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="22dp"
+              android:text="@string/btnUploadXMLtoDB"/>
+-->
+      </LinearLayout>
+
+</RelativeLayout>

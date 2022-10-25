@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".StDetInputActivity"
+    android:id="@+id/txt_Header"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TableLayout
+        android:id="@+id/tbl_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TableRow
+            android:id="@+id/row2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/lbl_COL_ID"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:backgroundTint="@color/cardview_shadow_start_color"
+                android:text="@string/data_collector_id"
+                android:textSize="16sp" />
+
+            <Spinner
+                android:id="@+id/spin_COL_ID"
+                android:layout_width="147dp"
+                android:layout_height="40dp"
+                android:spinnerMode="dropdown"
+                tools:ignore="DuplicateSpeakableTextCheck" />
+
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/row3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/lbl_Loc_Id"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/loc_id"
+                android:textSize="16sp" />
+
+            <Spinner
+                android:id="@+id/spin_Loc_id"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/custom_spinner_background"
+                android:spinnerMode="dialog" />
+
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/row4"
+            android:layout_width="match_parent"
+            android:layout_height="40dp">
+
+            <TextView
+                android:id="@+id/txt_Loc_desc"
+                android:layout_height="40dp"
+                android:layout_weight="4"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textSize="14sp" />
+        </TableRow>
+
+
+        <TableRow
+            android:id="@+id/row5"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <TextView
+                android:id="@+id/lbl_FacOper"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/oper_status" />
+
+            <Spinner
+                android:id="@+id/spin_Fac_oper"
+                android:layout_width="50dp"
+                android:layout_height="40dp"
+                android:background="@drawable/custom_spinner_background"
+                android:spinnerMode="dropdown" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/row6"
+            android:layout_width="match_parent"
+            android:layout_height="40dp">
+
+            <TextView
+                android:id="@+id/lbl_EqStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/equip_status" />
+
+            <Spinner
+                android:id="@+id/spin_Eq_oper"
+                android:layout_width="125dp"
+                android:layout_height="40dp"
+                android:background="@drawable/custom_spinner_background"
+                android:spinnerMode="dropdown" />
+
+
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/row7"
+            android:layout_width="match_parent"
+            android:layout_height="36dp">
+
+            <TextView
+                android:id="@+id/lbl_elev_code"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/elev_code" />
+
+            <TextView
+                android:id="@+id/lbl_elev_code_value"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="@string/na" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/row8"
+            android:layout_width="match_parent"
+            android:layout_height="48dp">
+
+
+            <TextView
+                android:id="@+id/lbl_elev_code_value2"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/na1" />
+
+            <TextView
+                android:id="@+id/lbl_depth"
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/row9"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <TextView
+                android:id="@+id/lbl_Reading"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/reading" />
+
+            <EditText
+                android:id="@+id/txt_Reading"
+                android:layout_width="50dp"
+                android:layout_weight="1"
+                android:autofillHints=""
+                android:ems="10"
+                android:inputType="text"
+                android:minHeight="36dp"
+                android:selectAllOnFocus="true"
+                android:text="@string/_0_0" />
+
+            <Spinner
+                android:id="@+id/spin_Unit"
+                android:layout_width="114dp"
+                android:layout_height="match_parent" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/row10"
+            android:layout_width="match_parent"
+            android:layout_height="21dp">
+
+            <TextView
+                android:id="@+id/lbl_Comment"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/comment1" />
+
+            <EditText
+                android:id="@+id/txt_Comment"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:autofillHints=""
+                android:ems="10"
+                android:inputType="text"
+                android:text="@string/comment" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/row11"
+            android:layout_width="match_parent"
+            android:layout_height="21dp">
+
+            <Button
+                android:id="@+id/btn_Manual"
+                style="@style/Widget.AppCompat.Button"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="@string/manual" />
+
+            <Button
+                android:id="@+id/btn_save"
+                style="@style/Widget.AppCompat.Button"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="@string/save" />
+
+            <Button
+                android:id="@+id/btn_clear"
+                style="@style/Widget.AppCompat.Button"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="@string/clear" />
+
+            <Button
+                android:id="@+id/btn_done"
+                style="@style/Widget.AppCompat.Button"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="@string/done" />
+        </TableRow>
+
+        <ListView
+            android:id="@+id/listViewBarcodeData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="25sp"></ListView>
+    </TableLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

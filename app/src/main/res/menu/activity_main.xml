@@ -1,0 +1,25 @@
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_DownloadData"
+        android:orderInCategory="100"
+        android:title="@string/menu_DownloadData"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_UploadLookupData"
+        android:orderInCategory="100"
+        android:title="@string/menu_UploadLookupData"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_CheckScanner"
+        android:orderInCategory="100"
+        android:title="@string/menu_CheckScanner"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_SelectScanner"
+        android:orderInCategory="100"
+        android:title="@string/menu_SelectScanner"
+        app:showAsAction="never" />
+
+</menu>
