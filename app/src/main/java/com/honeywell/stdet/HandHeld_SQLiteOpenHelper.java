@@ -34,6 +34,8 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     public static final String ELEVATIONS = "ut_elevations";
     public static final String ELEVATIONCODES = "ut_elevation_codes";
 
+    public static final String LOGININFO = "LoginInfo";
+
     private StdetDataTables tables;
     public static SQLiteDatabase db;
 
@@ -159,7 +161,8 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         try {
 
             delete = "Delete from " + table.getName();
-            if (!tablename.equalsIgnoreCase(HandHeld_SQLiteOpenHelper.INST_READINGS)) {
+            if (!tablename.equalsIgnoreCase(HandHeld_SQLiteOpenHelper.INST_READINGS)
+                && !tablename.equalsIgnoreCase(HandHeld_SQLiteOpenHelper.LOGININFO)){
                 System.out.println("getInsertFromTable " + delete);
                 db.execSQL(delete);
             }
@@ -221,6 +224,33 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         return db.rawQuery(qry, null);
     }
 
+    public String[] GetLogin(SQLiteDatabase db) {
+        Stdet_LoginInfo t = new Stdet_LoginInfo();
+        db.execSQL(t.CreateTable());// in case it doesn't exixts yet
+
+        String qry = "select  rowid as _id, " + Stdet_LoginInfo.UserName + ", " +
+                Stdet_LoginInfo.Password + " from " +
+                HandHeld_SQLiteOpenHelper.LOGININFO ;
+        Cursor c= db.rawQuery(qry, null);
+        String[] credentials =  new String[]{"",""};
+        if (c.getCount() > 0) {
+            c.moveToFirst();
+            credentials[0] = c.getString(1);
+            credentials[1] = c.getString(2);
+        }
+        return credentials;
+    }
+
+    public void updateLoginInformationInDB(SQLiteDatabase db, String name, String enPwd)
+    {
+        Stdet_LoginInfo login =  new Stdet_LoginInfo();
+        login.AddToTable(name, enPwd);
+        String create = login.CreateTable();
+        db.execSQL(create);
+        getInsertTable(db,login);
+
+    }
+
     public Integer GetMaxIRId(SQLiteDatabase db) {
         Integer rv = 0;
         String qry = "select  max (lngId) from tbl_Inst_Readings";
@@ -266,6 +296,8 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             arrayList.add(c.getString(columnIndex));
         }//from   ww w .j a v a2  s. c o  m
     }
+
+
 
 
     public String CreateFileToUpload(SQLiteDatabase db, File directoryApp) {

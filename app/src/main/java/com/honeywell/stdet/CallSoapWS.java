@@ -83,19 +83,22 @@ Content-Length: length
   </soap12:Body>
 </soap12:Envelope>
  */
-public class CallSoapWS
-{
+public class CallSoapWS {
     private static final int TIMEOUT_SOCKET = 180000;
 
     public final String NAMESPACE = "http://api.limstor.com/stdet/wsstdet.asmx";
-    public final String METHOD_NAME1 = "GetServerDate";
+    public final String METHOD_NAME_SERVERDATE = "GetServerDate";
     public final String RESPONSE_METHOD_NAME1 = "GetServerDateResult";
-    public final String SOAP_ACTION1 = "http://api.limstor.com/stdet/wsstdet.asmx/GetServerDate";
-    public final String METHOD_NAME2 = "GetDataset";
+    public final String SOAP_ACTION_SERVERDATE = "http://api.limstor.com/stdet/wsstdet.asmx/GetServerDate";
+    public final String METHOD_NAME_DATATABLES = "GetDataset";
     public final String METHOD_NAME_UPLOAD = "UploadFile";
+    public final String METHOD_NAME_UPLOAD2 = "UploadFile2";
+    public final String METHOD_NAME_LOGIN = "Login";
     public final String RESPONSE_METHOD_NAME2 = "GetDatasetResult";
     public final String SOAP_ACTION2 = "http://api.limstor.com/stdet/wsstdet.asmx/GetDataset";
     public final String SOAP_ACTION_UPLOAD = "http://api.limstor.com/stdet/wsstdet.asmx/UploadFile";
+    public final String SOAP_ACTION_UPLOAD2 = "http://api.limstor.com/stdet/wsstdet.asmx/UploadFile2";
+    public final String SOAP_ACTION_LOGIN = "http://api.limstor.com/stdet/wsstdet.asmx/Login";
 
     public final static String INST_READINGS = "tbl_Inst_Readings";
     public final static String DATA_COL_IDENT = "tbl_Data_Col_Ident";
@@ -106,17 +109,18 @@ public class CallSoapWS
     public final static String UNIT_DEF = "tbl_Unit_Def";
     public final static String FACILITY = "dt_facility";
     public final static String TABLEVERS = "tbl_TableVers";
-     public final static String ELEVATIONS = "ut_elevations";
+    public final static String ELEVATIONS = "ut_elevations";
     public final static String ELEVATIONCODES = "ut_elevation_codes";
 
-    public  final String SOAP_ADDRESS = "http://api.limstor.com/stdet/wsstdet.asmx";
+    public final String SOAP_ADDRESS = "http://api.limstor.com/stdet/wsstdet.asmx";
 
     private File directoryApp;
     private Object response;
 
-    public File GetDirectory(){
+    public File GetDirectory() {
         return directoryApp;
     }
+
     View view;
 
     public CallSoapWS(File dir) {
@@ -124,9 +128,61 @@ public class CallSoapWS
         directoryApp = dir;
     }
 
-    public Boolean WS_UploadFile(byte[] file, String filename, String user, String pwd ) {
+    public Boolean WS_UploadFile2(byte[] file, String filename, String user, String pwd) {
         String sUploadResponse = "";
-        String addr = getSoapAction(METHOD_NAME_UPLOAD) ;
+        String addr = getSoapAction(METHOD_NAME_UPLOAD2);
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_UPLOAD2);
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+
+        StrictMode.setThreadPolicy(policy);
+
+        PropertyInfo pi1 = new PropertyInfo();
+        pi1.setName("file");//"file");
+        pi1.setValue(file);//"file");
+        request.addProperty(pi1);
+
+        PropertyInfo pi2 = new PropertyInfo();
+        pi2.setName("fileName");//"file");
+        pi2.setValue(filename);//"file");
+        request.addProperty(pi2);
+
+        PropertyInfo pi3 = new PropertyInfo();
+        pi3.setName("user");//"file");
+        pi3.setValue(user);//"file");
+        request.addProperty(pi3);
+
+        PropertyInfo pi4 = new PropertyInfo();
+        pi4.setName("password");//"file");
+        pi4.setValue(pwd);//"file");
+        request.addProperty(pi4);
+
+        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(
+                SoapEnvelope.VER11);
+        envelope.dotNet = true;
+        new MarshalBase64().register(envelope); // serialization
+
+        envelope.setOutputSoapObject(request);
+
+        HttpTransportSE httpTransport = new HttpTransportSE(addr);
+        Object response = null;
+        try {
+            httpTransport.call(SOAP_ACTION_UPLOAD2, envelope);
+            response = envelope.getResponse();
+        } catch (Exception exception) {
+            System.out.println("WS_UploadFile2  " + exception.toString());
+            exception.printStackTrace();
+            response = exception.toString();
+        }
+
+        sUploadResponse = response.toString();
+        System.out.println(sUploadResponse);
+        return false;
+    }
+
+    public Boolean WS_UploadFile(byte[] file, String filename, String user, String pwd) {
+        String sUploadResponse = "";
+        String addr = getSoapAction(METHOD_NAME_UPLOAD);
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_UPLOAD);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -161,30 +217,26 @@ public class CallSoapWS
         envelope.setOutputSoapObject(request);
 
         HttpTransportSE httpTransport = new HttpTransportSE(addr);
-        Object response=null;
-        try
-        {
+        Object response = null;
+        try {
             httpTransport.call(SOAP_ACTION_UPLOAD, envelope);
             response = envelope.getResponse();
-        }
-        catch (Exception exception)
-        {
-            System.out.println("WS_UploadFile  "+ exception.toString());
+        } catch (Exception exception) {
+            System.out.println("WS_UploadFile  " + exception.toString());
             exception.printStackTrace();
-            response=exception.toString();
+            response = exception.toString();
         }
 
         sUploadResponse = response.toString();
         System.out.println(sUploadResponse);
         return false;
-   }
-
+    }
 
 
     public String WS_GetServerDate() {
         String ServerDate = "";
-        String addr = getSoapAction(METHOD_NAME1) ;
-        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME1);
+        String addr = getSoapAction(METHOD_NAME_SERVERDATE);
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SERVERDATE);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 
@@ -197,26 +249,23 @@ public class CallSoapWS
         envelope.setOutputSoapObject(request);
 
         HttpTransportSE httpTransport = new HttpTransportSE(addr);
-        Object response=null;
-        try
-        {
-            httpTransport.call(SOAP_ACTION1, envelope);
+        Object response = null;
+        try {
+            httpTransport.call(SOAP_ACTION_SERVERDATE, envelope);
             response = envelope.getResponse();
-        }
-        catch (Exception exception)
-        {
-            System.out.println("WS_GetServerDate e "+ exception.toString());
+        } catch (Exception exception) {
+            System.out.println("WS_GetServerDate " + exception.toString());
             exception.printStackTrace();
-            response=exception.toString();
+            response = exception.toString();
         }
 
         ServerDate = response.toString();
-        StdetFiles f =  new StdetFiles(directoryApp);
-        boolean brv = f.WriteServerDateAsXML(ServerDate,"ServerDate"+".xml","dateTime","dateTime");
+        StdetFiles f = new StdetFiles(directoryApp);
+        boolean brv = f.WriteServerDateAsXML(ServerDate, "ServerDate" + ".xml", "dateTime", "dateTime");
         return ServerDate;
     }
 
-    public StdetDataTables WS_GetALLDatasets( ) throws IOException {
+    public StdetDataTables WS_GetALLDatasets() throws IOException {
         String dataset1;
         StdetFiles f = new StdetFiles(directoryApp);
         StdetDataTables tables = new StdetDataTables();
@@ -261,7 +310,7 @@ public class CallSoapWS
         return tables;
     }
 
-    public void WS_DownloadXMLDatasets( ) throws IOException {
+    public void WS_DownloadXMLDatasets() throws IOException {
         String dataset1;
         StdetFiles f = new StdetFiles(directoryApp);
         StdetDataTables tables = new StdetDataTables();
@@ -305,13 +354,65 @@ public class CallSoapWS
 
     }
 
+    public Boolean WS_GetLogin(String username, String Pasword) {
+        String sUploadResponse = "";
+        Boolean bResponse = false;
+        String addr = getSoapAction(METHOD_NAME_LOGIN);
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_LOGIN);
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+
+        StrictMode.setThreadPolicy(policy);
+
+
+        PropertyInfo pi1 = new PropertyInfo();
+        pi1.setName("user");//"file");
+        pi1.setValue(username);//"file");
+        request.addProperty(pi1);
+
+        PropertyInfo pi2 = new PropertyInfo();
+        pi2.setName("password");//"file");
+        pi2.setValue(Pasword);//"file");
+        request.addProperty(pi2);
+
+        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(
+                SoapEnvelope.VER11);
+        envelope.dotNet = true;
+        new MarshalBase64().register(envelope); // serialization
+
+        envelope.setOutputSoapObject(request);
+
+        HttpTransportSE httpTransport = new HttpTransportSE(addr);
+        Object response = null;
+        try {
+            httpTransport.call(SOAP_ACTION_LOGIN, envelope);
+            response = envelope.getResponse();
+        } catch (Exception exception) {
+            System.out.println("WS_GetLogin  " + exception.toString());
+            exception.printStackTrace();
+            response = exception.toString();
+            bResponse = false;
+        }
+        if (response != null) {
+            sUploadResponse = response.toString();
+            System.out.println(sUploadResponse);
+            if (sUploadResponse.equalsIgnoreCase("true"))
+                bResponse = true;
+        } else
+            bResponse = false;
+        return bResponse;
+    }
+
+
+
+
     public String WS_GetDataset(String DatasetName) {
         String responseString = "";
-        String addr = getSoapAction(METHOD_NAME2);
+        String addr = getSoapAction(METHOD_NAME_DATATABLES);
         String xmlData = "";
         String xmlData1 = "";
 
-        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME2);
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_DATATABLES);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -368,36 +469,7 @@ public class CallSoapWS
                 Objecttable[i] = (SoapObject) tables.getProperty(i);
             }
 
-/*
-            SoapObject resultBodyIn =(SoapObject)envelope.bodyIn;
-            SoapObject result=(SoapObject)envelope.getResponse();
-            int n = result.getPropertyCount();
-            for (int i = 0; i < n; i++){
-                SoapObject result2 = (SoapObject) result.getProperty(i);
-                xmlData4 = result.getPropertyAsString(i);
-                //System.out.println(i);
-                //System.out.println(xmlData4);
-                int k = result2.getPropertyCount();
-                for (int j = 0; j < k; j++){
-                    //System.out.println(j);
-                    xmlData5 = result2.getPropertyAsString(j);
-                    //ystem.out.println(xmlData5);
-                }
-            }
-
-            response = envelope.getResponse();
-            xmlData1 = ((SoapObject) envelope.getResponse()).getProperty(0).toString();
-            if (((SoapObject) envelope.getResponse()).getPropertyCount() > 0) {
-                xmlData2 = ((SoapObject) envelope.getResponse()).getProperty(1).toString();
-            }
-
-            if(resultBodyIn!= null){
-                xmlData3=resultBodyIn.getPropertyAsString(RESPONSE_METHOD_NAME2);
-
-            }
-*/
-
-            //xmlData = httpTransport.responseDump.toString();
+           //xmlData = httpTransport.responseDump.toString();
         } catch (XmlPullParserException e) {
             e.printStackTrace();
             System.out.println("XmlPullParserException "+ e.toString());

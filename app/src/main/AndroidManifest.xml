@@ -61,6 +61,16 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.honeywell.stdet.StDet_LoginInfoActivity"
+            android:label="@string/Login"
+            android:screenOrientation="portrait"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.LOGINACTIVITY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <!--
         <activity
             android:name="com.honeywell.stdet.ClientBarcodeActivity2"

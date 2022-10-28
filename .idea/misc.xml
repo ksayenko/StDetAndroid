@@ -7,10 +7,14 @@
         <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/BarcodeExampleActivities-master/app/src/main/res/layout/activity_main.xml" value="0.1" />
         <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/BarcodeExampleActivities-master/app/src/main/res/layout/lookup_data.xml" value="0.1" />
         <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/BarcodeExampleActivities-master/app/src/main/res/menu/activity_main.xml" value="0.1" />
+        <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/StDetAndroid/app/src/main/res/drawable/border.xml" value="0.1" />
         <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/StDetAndroid/app/src/main/res/drawable/custom_spinner_background.xml" value="0.1" />
+        <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/StDetAndroid/app/src/main/res/drawable/hide_password.xml" value="0.1" />
+        <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/StDetAndroid/app/src/main/res/layout-v31/activity_login.xml" value="0.18854166666666666" />
         <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/StDetAndroid/app/src/main/res/layout/activity_barcode.xml" value="0.1175925925925926" />
         <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/StDetAndroid/app/src/main/res/layout/activity_input.xml" value="0.1" />
         <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/StDetAndroid/app/src/main/res/layout/activity_input_forms.xml" value="0.2" />
+        <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/StDetAndroid/app/src/main/res/layout/activity_login.xml" value="0.264" />
         <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/StDetAndroid/app/src/main/res/layout/activity_main.xml" value="0.1" />
         <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/StDetAndroid/app/src/main/res/layout/activity_selection_barcode.xml" value="0.1" />
         <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/StDetAndroid/app/src/main/res/layout/activity_with_fragment.xml" value="0.11574074074074074" />
@@ -19,6 +23,7 @@
         <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/StDetAndroid/app/src/main/res/layout/scanner_select_dialog.xml" value="0.1" />
         <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/StDetAndroid/app/src/main/res/menu/activity_main.xml" value="0.1" />
         <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/StDetAndroid/app/src/main/res/menu/menu_activity_with.xml" value="0.1" />
+        <entry key="..\:/Users/kateryna.sayenko/AndroidStudioProjects/StDetAndroid/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.1" />
       </map>
     </option>
   </component>

@@ -9,7 +9,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class StDEtEncrypt{
     private static final String ALGORITHM = "AES";
-        private static final String KEY = "Stdet2022Tetratech";
+        private static final String KEY = "Stdet22Tetratech";
 
         public static String encrypt(String value) throws Exception
         {

@@ -118,14 +118,21 @@ public class MainActivity extends Activity {
             startActivity(barcodeIntent);
             return true;
         }
+        if (id == R.id.menu_LoginInfo) {
+            Intent barcodeIntent = new Intent("android.intent.action.LOGINACTIVITY");
+            startActivity(barcodeIntent);
+            return true;
+        }
 
         // a potentially time consuming task
         if (id == R.id.menu_UploadLookupData) {
             new ParseXMLAndUploadToDBAsyncTask(this).execute("run");
+        return true;
         }
         // a potentially time consuming task
         if (id == R.id.menu_DownloadData) {
             new DownloadDataAsyncTask(context).execute("run");
+            return true;
         }
 
 
