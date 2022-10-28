@@ -57,4 +57,5 @@
     <string name="Login">Login Info</string>
     <string name="menu_LoginInfo">Upload File Login Information</string>
     <string name="user_name">User Name</string>
+    <string name="username">UserName</string>
 </resources>

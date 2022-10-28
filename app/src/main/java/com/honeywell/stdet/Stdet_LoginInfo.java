@@ -16,13 +16,12 @@ public class Stdet_LoginInfo extends StdetDataTable {
         this.AddColumnToStructure(UserName,"String",true);
         this.AddColumnToStructure(Password,"dateTime",false);
 
-
     }
 
 
 
     public void AddToTable( String userName, String password) {
-        ArrayList<String> record = new ArrayList<String>();
+        ArrayList<String> record = new ArrayList<>();
         int n = this.getColumnsNumber();
         for (int j = 0; j < n; j++)
             record.add("");

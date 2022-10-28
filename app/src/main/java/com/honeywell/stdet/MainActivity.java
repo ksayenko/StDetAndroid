@@ -168,7 +168,7 @@ public class MainActivity extends Activity {
             }
         });
 */
-        this.btnInputForms = (Button) findViewById(R.id.btnInputForms);
+        this.btnInputForms = findViewById(R.id.btnInputForms);
         btnInputForms.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -179,7 +179,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        this.btnUploadDataToServer =   (Button) findViewById(R.id.buttonUploadReadings);
+        this.btnUploadDataToServer = findViewById(R.id.buttonUploadReadings);
         btnUploadDataToServer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

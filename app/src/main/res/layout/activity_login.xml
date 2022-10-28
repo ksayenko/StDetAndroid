@@ -39,7 +39,7 @@
         android:ems="10"
         android:inputType="textPersonName"
         android:minHeight="48dp"
-        android:text="UserName"
+        android:text="@string/username"
         app:layout_constraintBaseline_toBaselineOf="@+id/txtUserName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/txtUserName" />
@@ -104,6 +104,12 @@
         android:background="@android:color/darker_gray"
         android:text="Check Login"
         tools:layout_editor_absoluteY="181dp" />
+
+    <TextView
+        android:id="@+id/hidden"
+        android:layout_width="20dp"
+        android:visibility="visible"
+        android:layout_height="20dp" />
 
 
 </LinearLayout>

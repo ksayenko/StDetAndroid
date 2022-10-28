@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class StDet_LoginInfoActivity extends Activity {
     private EditText txt_UserName;
@@ -23,7 +24,7 @@ public class StDet_LoginInfoActivity extends Activity {
     Button btnDone;
     Button btnCheck;
     CallSoapWS soap;
-    static int result =0;
+
 
 
     Stdet_LoginInfo loginInfo = new Stdet_LoginInfo();
@@ -34,9 +35,9 @@ public class StDet_LoginInfoActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        Log.i("------------onCreate StDet_LoginInfoActivity", "10");
+        Log.i("------------onCreate StDet_LoginInfoActivity", "");
         super.onCreate(savedInstanceState);
-        Log.i("------------onCreate StDet_LoginInfoActivity", "1");
+
         setContentView(R.layout.activity_login);
         //---------------
         StdetDataTables tables= new StdetDataTables();
@@ -47,6 +48,8 @@ public class StDet_LoginInfoActivity extends Activity {
         btnDone= (Button) findViewById(R.id.btnSaveLogin);
         txt_Password= (EditText) findViewById(R.id.editTextPassword);
         txt_UserName= (EditText) findViewById(R.id.editName);
+
+
         String[] credentials = dbHelper.GetLogin(db);
         if (credentials[0] !="")        {
             name = credentials[0];
@@ -75,25 +78,7 @@ public class StDet_LoginInfoActivity extends Activity {
                 boolean bSave = false;
                 name = txt_UserName.getText().toString();
                 pwd = txt_Password.getText().toString();
-                if (name != "" && pwd != "")
-                    bSave = bSaveLoginInfo();
-                System.out.println("bsave"+ String.valueOf(bSave));
-                if (bSave) {
-                    System.out.println("encrypting and saving to db");
-                    try {
-                        encryptedPassword = StDEtEncrypt.encrypt(pwd);
-                        System.out.println("encripted " + encryptedPassword);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        System.out.println("error in encryption");
-                        encryptedPassword = "";
-                    }
-
-                    if (name != "" && encryptedPassword != ""){
-                        dbHelper.updateLoginInformationInDB(db,name,encryptedPassword);
-                        db.close();
-                    }
-                }
+                bSaveLoginInfo();
 
             }
         });
@@ -110,73 +95,68 @@ public class StDet_LoginInfoActivity extends Activity {
 
     }
 
-    private boolean bSaveLoginInfo() {
+    private Boolean updateDBWithNewInformation() {
+        Boolean rv = false;
+        try {
+            encryptedPassword = StDEtEncrypt.encrypt(pwd);
+            System.out.println("encripted " + encryptedPassword);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("error in encryption");
+            encryptedPassword = "";
+        }
 
-         Boolean bReturnValue = false;
+        if (name != "" && encryptedPassword != ""){
+            dbHelper.updateLoginInformationInDB(db,name,encryptedPassword);
+            db.close();
+            rv = true;
+        }
+        return rv;
+    }
 
-        System.out.print("BEFORE ok result :: "+ String.valueOf(result));
-
-        final EditText answer = new EditText(this);
-        AlertDialog ad = new AlertDialog.Builder(this,R.style.AlertDialogTheme)
+    private void bSaveLoginInfo() {
+        AlertDialog ad = new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                 .setTitle("Do You Want To Save Login Info?")
-                //.setMessage("Do You Want To Save Login Info?!")
-                //.setView(answer)
-                .setPositiveButton("Yes"  , new DialogInterface.OnClickListener() {
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int whichButton) {
 
-                        StDet_LoginInfoActivity.result =1;
-                        System.out.print("AlertDialog ok result :: "+ String.valueOf(result));
+                        Boolean b = updateDBWithNewInformation();
+                        if (b) {
+                            Toast.makeText(ct, "Updated ", Toast.LENGTH_SHORT).show();
+                        }
 
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        result =0;
                         dialog.cancel();
                     }
                 })
                 .show();
-        System.out.print("after AlertDialog ok : "+ String.valueOf(result));
-        if (StDet_LoginInfoActivity.result>0){
-            bReturnValue = true;
-            StDet_LoginInfoActivity.result = 0;
-        }
-
-        return bReturnValue;
-
     }
 
-    private boolean bCheckLogin()
-    {
+    private boolean bCheckLogin() {
         Boolean bReturnValue = false;
         name = txt_UserName.getText().toString();
         pwd = txt_Password.getText().toString();
-        bReturnValue = soap.WS_GetLogin(name,pwd);
+        bReturnValue = soap.WS_GetLogin(name, pwd);
         if (bReturnValue) {
             AlertDialog ad = new AlertDialog.Builder(this)
                     .setTitle("Success!")
                     .setMessage("Connection tested")
-                    //.setView(answer)
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
-                            //String url = answer.getText().toString();
-
                         }
                     })
                     .show();
-        }
-        else
-        {
+        } else {
             AlertDialog ad = new AlertDialog.Builder(this)
                     .setTitle("ERROR")
                     .setMessage("Please try one more time.")
-                    //.setView(answer)
                     .setPositiveButton("Cancel", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
-
-
                         }
                     })
                     .show();
