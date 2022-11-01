@@ -1,6 +1,8 @@
 package com.honeywell.stdet;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.app.Activity;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
 
 import com.honeywell.aidc.AidcManager;
 import com.honeywell.aidc.AidcManager.CreatedCallback;
@@ -52,20 +55,21 @@ public class MainActivity extends Activity {
 
 
     private File directoryApp;
-    public File GetDirectory(){
+
+    public File GetDirectory() {
         return directoryApp;
     }
 
-   // public MainActivity() {
-        //if(BuildConfig.DEBUG)
-         //   StrictMode.enableDefaults();
-   // }
+    // public MainActivity() {
+    //if(BuildConfig.DEBUG)
+    //   StrictMode.enableDefaults();
+    // }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        directoryApp =getFilesDir();
+        directoryApp = getFilesDir();
         context = this;
         // set lock the orientation
         // otherwise, the onDestory will trigger
@@ -82,15 +86,12 @@ public class MainActivity extends Activity {
                 manager = aidcManager;
                 try {
                     barcodeReader = manager.createBarcodeReader();
+                } catch (
+                        InvalidScannerNameException e) {
+                    Toast.makeText(MainActivity.this, "Invalid Scanner Name Exception: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Exception: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
-
-                catch (
-            InvalidScannerNameException e){
-                Toast.makeText(MainActivity.this, "Invalid Scanner Name Exception: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-                catch (Exception e){
-                Toast.makeText(MainActivity.this, "Exception: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
             }
         });
 
@@ -127,7 +128,7 @@ public class MainActivity extends Activity {
         // a potentially time consuming task
         if (id == R.id.menu_UploadLookupData) {
             new ParseXMLAndUploadToDBAsyncTask(this).execute("run");
-        return true;
+            return true;
         }
         // a potentially time consuming task
         if (id == R.id.menu_DownloadData) {
@@ -172,7 +173,7 @@ public class MainActivity extends Activity {
         btnInputForms.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i("------------onClick StDetInputActivity","12");
+                Log.i("------------onClick StDetInputActivity", "12");
                 // get the intent action string from AndroidManifest.xml
                 Intent barcodeIntent = new Intent("android.intent.action.STDETINPUTBARCODEACTIVITY");
                 startActivity(barcodeIntent);
@@ -184,19 +185,52 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
 
-                HandHeld_SQLiteOpenHelper  dbHelper =
-                        new HandHeld_SQLiteOpenHelper(context,new StdetDataTables());
-               SQLiteDatabase db = dbHelper.getReadableDatabase();
-               String s = dbHelper.CreateFileToUpload(db,directoryApp);
-                Path path = Paths.get(s);
-
+                HandHeld_SQLiteOpenHelper dbHelper =
+                        new HandHeld_SQLiteOpenHelper(context, new StdetDataTables());
+                SQLiteDatabase db = dbHelper.getReadableDatabase();
+                Integer[] nrecords = new Integer[]{0};
+                String s = null;
                 try {
-                    CallSoapWS ws =  new CallSoapWS(directoryApp);
-                    byte[] dataUpload = Files.readAllBytes(path);
-                   ws.WS_UploadFile(dataUpload,s,"stdet_app", "stdet_pa$$");
-
-                } catch (IOException e) {
+                    s = dbHelper.CreateFileToUpload(db, directoryApp, nrecords);
+                } catch (ParseException e) {
                     e.printStackTrace();
+                    nrecords[0] = 0;
+                }
+
+
+                if (nrecords[0] > 0) {
+
+                    try {
+                        Path path = Paths.get(s);
+                        CallSoapWS ws = new CallSoapWS(directoryApp);
+                        byte[] dataUpload = Files.readAllBytes(path);
+                        String[] credentials = dbHelper.getLoginInfo(db);
+                        String name = credentials[0];
+                        String encryptedPassword = credentials[1];
+                        String pwd = StDEtEncrypt.decrypt(encryptedPassword);
+                        Boolean bCanUpload = ws.WS_GetLogin(name, pwd);
+                        Boolean bUploaded;
+                        if (bCanUpload) {
+                            bUploaded = ws.WS_UploadFile2(dataUpload, s, name, pwd);
+                            if (bUploaded) {
+                                db.execSQL(Stdet_Inst_Readings.UpdateUploadedData());
+                                AlertDialogShow(String.valueOf(nrecords[0]) + " Records Has Been Uploaded to the Server",
+                                        "Info", "OK");
+                            } else {
+                                AlertDialogShow("Data hasn't been uploaded. Try one more time.", "ERROR!", "OK");
+                            }
+
+                        } else {
+                            AlertDialogShow("Your Credentials aren't working. Go to Main Page | Menu | Check Login Credentials.", "ERROR!", "OK");
+                        }
+
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
+
                 }
             }
         });
@@ -252,6 +286,18 @@ public class MainActivity extends Activity {
             }
         });
         */
+
+    }
+
+    private void AlertDialogShow(String message, String title, String button) {
+        AlertDialog ad = new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(button, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                    }
+                })
+                .show();
 
     }
 

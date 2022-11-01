@@ -222,9 +222,14 @@
                 android:layout_weight="1"
                 android:background="@drawable/border"
                 android:inputType="text"
-                               android:minHeight="36dp"
+                android:minHeight="36dp"
                 android:textStyle="bold"
-                tools:ignore="TouchTargetSizeCheck"             />
+                android:digits="0123456789.,"
+                android:layout_marginLeft="2dp"
+                android:text="@string/_0_0"
+                android:windowSoftInputMode="stateHidden|adjustPan"
+                tools:ignore="TouchTargetSizeCheck"
+                android:autofillHints="" />
 
             <Spinner
                 android:id="@+id/spin_Unit"
@@ -242,6 +247,7 @@
 
             <TextView
                 android:id="@+id/lbl_Comment"
+                android:layout_marginLeft="2dp"
                 android:layout_width="118dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -259,6 +265,7 @@
                 android:ems="10"
                 android:gravity="center_vertical"
                 android:inputType="text"
+                android:windowSoftInputMode="stateHidden|adjustPan"
                 android:text="@string/comment" />
         </TableRow>
 

@@ -129,7 +129,9 @@ public class CallSoapWS {
     }
 
     public Boolean WS_UploadFile2(byte[] file, String filename, String user, String pwd) {
+        boolean bResponse = false;
         String sUploadResponse = "";
+        System.out.println("in WS_UploadFile2  ");
         String addr = getSoapAction(METHOD_NAME_UPLOAD2);
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_UPLOAD2);
 
@@ -170,17 +172,21 @@ public class CallSoapWS {
             httpTransport.call(SOAP_ACTION_UPLOAD2, envelope);
             response = envelope.getResponse();
         } catch (Exception exception) {
-            System.out.println("WS_UploadFile2  " + exception.toString());
+            System.out.println("ERROR WS_UploadFile2  " + exception);
             exception.printStackTrace();
             response = exception.toString();
+            bResponse = false;
         }
 
         sUploadResponse = response.toString();
-        System.out.println(sUploadResponse);
-        return false;
+        System.out.println("WS_UploadFile2 response "+sUploadResponse);
+        if (sUploadResponse.equalsIgnoreCase("true"))
+            bResponse = true;
+        return bResponse;
     }
 
     public Boolean WS_UploadFile(byte[] file, String filename, String user, String pwd) {
+        Boolean bResponse = false;
         String sUploadResponse = "";
         String addr = getSoapAction(METHOD_NAME_UPLOAD);
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_UPLOAD);
@@ -229,11 +235,13 @@ public class CallSoapWS {
 
         sUploadResponse = response.toString();
         System.out.println(sUploadResponse);
-        return false;
+        if (sUploadResponse.equalsIgnoreCase("true"))
+            bResponse = true;
+        return bResponse;
     }
 
 
-    public String WS_GetServerDate() {
+    public String WS_GetServerDate(boolean bWrite) {
         String ServerDate = "";
         String addr = getSoapAction(METHOD_NAME_SERVERDATE);
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SERVERDATE);
@@ -261,8 +269,10 @@ public class CallSoapWS {
 
         ServerDate = response.toString();
         StdetFiles f = new StdetFiles(directoryApp);
-        boolean brv = f.WriteServerDateAsXML(ServerDate, "ServerDate" + ".xml", "dateTime", "dateTime");
-        return ServerDate;
+        if (bWrite) {
+            boolean brv = f.WriteServerDateAsXML(ServerDate, "ServerDate" + ".xml", "dateTime", "dateTime");
+        }
+            return ServerDate;
     }
 
     public StdetDataTables WS_GetALLDatasets() throws IOException {

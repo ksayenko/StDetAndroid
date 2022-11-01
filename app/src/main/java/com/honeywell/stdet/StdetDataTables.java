@@ -22,7 +22,7 @@ public class StdetDataTables {
     }
 
     public void SetStdetTablesStructure() {
-        dataTables = new ArrayList<StdetDataTable>();
+        dataTables = new ArrayList<>();
         dataTables.add(new Stdet_Inst_Readings());
         dataTables.add(new Stdet_Data_Col_Ident());
         dataTables.add(new Stdet_Elevation_Codes());

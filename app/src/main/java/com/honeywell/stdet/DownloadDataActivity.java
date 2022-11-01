@@ -41,7 +41,7 @@ final  AlertDialog ad=new AlertDialog.Builder(this).create();
 
         try
         {
-                String resp=cs.WS_GetServerDate();
+                String resp=cs.WS_GetServerDate(true);
                 StdetDataTables tables= cs.WS_GetALLDatasets();
                 dbHelper =  new HandHeld_SQLiteOpenHelper(ct,tables);
                 SQLiteDatabase db = dbHelper.getWritableDatabase();

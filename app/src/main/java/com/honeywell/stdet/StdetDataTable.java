@@ -12,7 +12,7 @@ public class StdetDataTable {
         this.table_type = table_type;
     }
 
-    public static enum TABLE_TYPE {LOOKUP,READING,SYSTEM};
+    public static enum TABLE_TYPE {LOOKUP,READING,SYSTEM}
     //
     //
 
@@ -140,7 +140,7 @@ public class StdetDataTable {
     public String createTableSQL() {
         int nColumns = ColumnNames.toArray().length;
         String sPK = " , PRIMARY KEY (";
-        Integer iPk = 0;
+        int iPk = 0;
         String sCREATE_TABLE = "CREATE TABLE IF NOT EXISTS " + name +
                 "(";
 
@@ -232,7 +232,7 @@ public class StdetDataTable {
 
 
     public ArrayList<String> getEmptyDataRow() {
-        ArrayList<String> dataRow = new ArrayList<String>();
+        ArrayList<String> dataRow = new ArrayList<>();
         int n = ColumnNames.size();
         for (int i = 0; i < n; i++)
             dataRow.add("");

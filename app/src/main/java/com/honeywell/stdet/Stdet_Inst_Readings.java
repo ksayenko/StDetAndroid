@@ -86,7 +86,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
                             String datetime1, String col1, String eq_status1,
                             String fo_status1, String unit1, String el_code1,
                             String comment1, String strDataModComment1) {
-        ArrayList<String> reading = new ArrayList<String>();
+        ArrayList<String> reading = new ArrayList<>();
         int n = this.getColumnsNumber();
         for (int j = 0; j < n; j++)
             reading.add("");
@@ -132,7 +132,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
     public static String UpdateUploadedData() {
         Date currentTime = Calendar.getInstance().getTime();
         String update = "UPDATE " + HandHeld_SQLiteOpenHelper.INST_READINGS
-                + " SET uploaded = 1 , uploadedDatetime = '" + currentTime.toString() + "'" +
+                + " SET uploaded = 1 , uploadedDatetime = '" + currentTime + "'" +
                 " where uploaded is null";
         return update;
     }

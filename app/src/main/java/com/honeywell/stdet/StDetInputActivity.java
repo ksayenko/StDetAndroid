@@ -543,8 +543,8 @@ Wedge as keys to empty
        id = getIndexFromArraylist(alLocs, "NA", 1);
        Log.i("------------clearForms =", Integer.toString(id));
        spin_Loc_id.setSelection(id);
-       id = getIndexFromArraylist(alCols, "NA", 1);
-       spin_COL_ID.setSelection(id);
+       //id = getIndexFromArraylist(alCols, "NA", 1);
+       //spin_COL_ID.setSelection(id);
        id = getIndexFromArraylist(alFac_Oper_Status, "NA", 1);
        spin_FAC_OP.setSelection(id);
        id = getIndexFromArraylist(alEq_Oper_Status, "NA", 1);
@@ -559,7 +559,7 @@ Wedge as keys to empty
 }
     public void saveForms(){
         Date currentTime = Calendar.getInstance().getTime();
-        String timeStamp = new SimpleDateFormat("MM/dd/yyyy hh:mm").format(Calendar.getInstance().getTime());
+        String timeStamp = new SimpleDateFormat("MM/dd/yyyy hh:mm a").format(Calendar.getInstance().getTime());
         TextView temp;
         temp = (TextView) spin_Loc_id.getSelectedView();
         current_loc = temp.getText().toString();
@@ -573,6 +573,8 @@ Wedge as keys to empty
         current_unit = temp.getText().toString();
         current_reading = txt_Reading.getText().toString();
         current_comment = txt_comment.getText().toString();
+        temp= (TextView) spin_elev_code.getSelectedView();
+        curent_elevationcode = temp.getText().toString();
         String[] error_mesage = new String[]{""};
         if(isRecordValid(error_mesage)>0) {
             System.out.println(error_mesage[0]);
@@ -607,10 +609,10 @@ Wedge as keys to empty
 
     public Integer isRecordValid(String[] error_message)    {
         String message="";
-        Integer isValid = -1;
-        Double reading = 0.0;
+        Integer isValid = 1;
+        double reading;
         try{
-            reading = Double.valueOf(current_reading);
+            reading = Double.parseDouble(current_reading);
         }
         catch(Exception ex) {
             reading = 0.0;
@@ -636,7 +638,7 @@ Wedge as keys to empty
             spin_FAC_OP.requestFocus();
             isValid = -1;
         }
-        else if (current_loc.startsWith("WL") &&  curent_elevationcode ==""){
+        else if (current_loc.startsWith("WL") &&  isNA(curent_elevationcode )){
             message +="Water level values require and elevation code. Please select a Elevation Code designator manually. ";
             spin_elev_code.requestFocus();
             isValid = -1;
@@ -659,6 +661,13 @@ Wedge as keys to empty
             isValid = isReadingWithinRange(reading, innermessage);
             message += innermessage[0];
         }
+        else {
+            String[] innermessage =  new String[]{""};
+            isValid = isReadingWithinRange(reading, innermessage);
+            message += innermessage[0];
+        }
+
+
 
         error_message[0] = message;
         return isValid;

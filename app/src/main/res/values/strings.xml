@@ -14,9 +14,9 @@
     <string name="btnUploadReadings">Upload Data</string>
     <string name="btnScannerSelectBarcode">Scanner Selection Example</string>
     <string name="btnSwitchScanners">Switch Scanners</string>
-    <string name="btnDownloadData"> Download Data and Populate Inner DB</string>
-    <string name="btnUploadXMLtoDB">Populate Inner DB</string>
-    <string name="btnCheckConnectivity">Check Login</string>
+    <string name="btnDownloadData">Download and Populate Lookup DB</string>
+    <string name="btnUploadXMLtoDB">Populate Lookup DB</string>
+    <string name="btnCheckConnectivity">Check Login Credentials</string>
     <string name="txtBarcodeTitle">Press the device\'s scan button to scan a barcode.</string>
     <string name="txtMainTitle">Click on below buttons for options.</string>
     <string name="textInfo">Info</string>
@@ -35,7 +35,7 @@
     <string name="oper_status">Oper Status</string>
     <string name="equip_status">Equip Status</string>
     <string name="elev_code">Elev Code</string>
-    <string name="comment1">Comment :</string>
+    <string name="comment1"></string>
     <string name="clear">Clear</string>
     <string name="na1">NA</string>
 

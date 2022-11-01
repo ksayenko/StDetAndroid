@@ -14,6 +14,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.Objects;
+
 public class StDet_LoginInfoActivity extends Activity {
     private EditText txt_UserName;
     private EditText txt_Password;
@@ -48,11 +50,11 @@ public class StDet_LoginInfoActivity extends Activity {
 
 
         String[] credentials = dbHelper.getLoginInfo(db);
-        if (credentials[0] !="")        {
+        if (!credentials[0].equals(""))        {
             name = credentials[0];
             encryptedPassword = credentials[1];
             try {
-                pwd = StDEtEncrypt.decrypt(encryptedPassword);
+
 
                 System.out.println(pwd);
             } catch (Exception e) {
@@ -103,7 +105,7 @@ public class StDet_LoginInfoActivity extends Activity {
             encryptedPassword = "";
         }
 
-        if (name != "" && encryptedPassword != ""){
+        if (!Objects.equals(name, "") && !Objects.equals(encryptedPassword, "")){
             dbHelper.updateLoginInformationInDB(db,name,encryptedPassword);
             db.close();
             rv = true;
@@ -135,7 +137,7 @@ public class StDet_LoginInfoActivity extends Activity {
     }
 
     private boolean bCheckLogin() {
-        Boolean bReturnValue = false;
+        Boolean bReturnValue;
         name = txt_UserName.getText().toString();
         pwd = txt_Password.getText().toString();
         bReturnValue = soap.WS_GetLogin(name, pwd);

@@ -1,5 +1,6 @@
 package com.honeywell.stdet;
 
+import android.app.AlarmManager;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -9,8 +10,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Locale;
 
 
 public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
@@ -74,7 +78,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
-                System.out.println("onCreate DB " + ex.toString());
+                System.out.println("onCreate DB " + ex);
 
             }
         }
@@ -92,7 +96,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                     db.execSQL(drop_table);
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    System.out.println("onUpgrade DB " + ex.toString());
+                    System.out.println("onUpgrade DB " + ex);
 
                 }
             }
@@ -139,13 +143,13 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                     db.execSQL(insert);
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    System.out.println("insert " + insert + ex.toString());
+                    System.out.println("insert " + insert + ex);
                 }
 
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.out.println("getInsertFromTable " + ex.toString());
+            System.out.println("getInsertFromTable " + ex);
 
         }
     }
@@ -172,13 +176,13 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                     db.execSQL(insert);
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    System.out.println("insert " + insert + ex.toString());
+                    System.out.println("insert " + insert + ex);
                 }
 
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.out.println("getInsertFromTable " + ex.toString());
+            System.out.println("getInsertFromTable " + ex);
 
         }
     }
@@ -406,10 +410,22 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
 
 
-    public String CreateFileToUpload(SQLiteDatabase db, File directoryApp) {
+    public String CreateFileToUpload(SQLiteDatabase db, File directoryApp, Integer[] nRecords) throws ParseException {
         File newCSV = null;
 
+
+
         Calendar c = Calendar.getInstance();
+        try {
+            CallSoapWS ws = new CallSoapWS(directoryApp);
+            String datetimeserver = ws.WS_GetServerDate(false);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+            c.setTime(sdf.parse(datetimeserver));
+        }catch(Exception ex){
+            c = Calendar.getInstance();
+        }
+
+
         int y = c.get(Calendar.YEAR);
         String sy = Integer.toString(y).substring(2);
         int m = c.get(Calendar.MONTH);
@@ -437,31 +453,32 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 HandHeld_SQLiteOpenHelper.FILEPREFIX + "_" + dattime_addon + ".csv";
         newCSV = new File(directoryApp + "/" + filename);
         FileOutputStream fos;
-        String fullfilename = newCSV.getAbsolutePath().toString();
+        String fullfilename = newCSV.getAbsolutePath();
         try {
             fos = new FileOutputStream(fullfilename);
             OutputStreamWriter myOutWriter = new OutputStreamWriter(fos);
 
             Cursor records = this.getIRRecords(db);
+            nRecords[0] = records.getCount();
             Integer nCol = records.getColumnCount();
 
-            String s_facility_id = "";
-            String s_datIR_Date = "";
-            String s_datIR_Time = "";
-            String s_strD_Col_ID = "";
-            String s_strD_Loc_ID = "";
-            String s_strFO_StatusID = "";
-            String s_strEqID = "";
-            String s_dblIR_Value = "";
-            String s_strIR_Units = "";
-            String s_strComment = "";
-            String s_strEqO_StatusID = "";
+            String s_facility_id;
+            String s_datIR_Date ;
+            String s_datIR_Time ;
+            String s_strD_Col_ID ;
+            String s_strD_Loc_ID ;
+            String s_strFO_StatusID ;
+            String s_strEqID;
+            String s_dblIR_Value ;
+            String s_strIR_Units;
+            String s_strComment ;
+            String s_strEqO_StatusID ;
             String s_fSuspect = "";
-            String s_strDataModComment = "";
-            String s_uf_strWL_D_Loc_ID = "";
-            String s_wl_meas_point = "";
+            String s_strDataModComment ;
+            //String s_uf_strWL_D_Loc_ID ;
+            //String s_wl_meas_point = "";
             String s_elev_code = "";
-            String s_elev_code_desc = "";
+            //String s_elev_code_desc = "";
 
             Integer i_facility_id = records.getColumnIndex(Stdet_Inst_Readings.facility_id);
             if (i_facility_id < 0)
@@ -550,10 +567,10 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 s_strEqO_StatusID = getStringQuotedValue(records,i_strEqO_StatusID);
                 s_strComment = getStringQuotedValue(records,i_strComment) ;
                 s_strDataModComment = getStringQuotedValue(records,i_strDataModComment);
-                s_uf_strWL_D_Loc_ID = getStringQuotedValue(records,i_uf_strWL_D_Loc_ID);
-                s_wl_meas_point = getStringQuotedValue(records,i_wl_meas_point) ;
+                //s_uf_strWL_D_Loc_ID = getStringQuotedValue(records,i_uf_strWL_D_Loc_ID);
+                //s_wl_meas_point = getStringQuotedValue(records,i_wl_meas_point) ;
                 s_elev_code = getStringQuotedValue(records,i_elev_code) ;
-                s_elev_code_desc =getStringQuotedValue(records,i_elev_code_desc) ;
+                //s_elev_code_desc =getStringQuotedValue(records,i_elev_code_desc) ;
                 s_strFO_StatusID =getStringQuotedValue(records,i_strFO_StatusID);
                 s_strD_Col_ID = getStringQuotedValue(records,i_strD_Col_ID) ;
                 s_strEqID =getStringQuotedValue(records,i_strEqID);
@@ -587,12 +604,12 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
         } catch (IOException exception) {
             exception.printStackTrace();
-            System.out.println(exception.toString());
+            System.out.println(exception);
 
             return null;
         } catch (Exception exception) {
             exception.printStackTrace();
-            System.out.println(exception.toString());
+            System.out.println(exception);
             return "";
         }
 
@@ -611,7 +628,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     }
     private String getStringQuotedValueFromBooleanYesNo(Cursor records, Integer i) {
         String e = "\"";
-        String s = "";
+        String s ;
         Integer i1 =records.getInt(i);
         if (records.getInt(i) == 1)
             s = "Yes";
