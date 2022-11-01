@@ -131,7 +131,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             System.out.println("getInsertTable " + create);
             db.execSQL(create);
             delete = "Delete from " + tablename;
-            System.out.println("getInsertTable " + delete);
+
             if (!tablename.equalsIgnoreCase(HandHeld_SQLiteOpenHelper.INST_READINGS)) {
                 System.out.println("getInsertTable " + delete);
                 db.execSQL(delete);
@@ -194,13 +194,23 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         return db.rawQuery(qry, null);
     }
 
-    public Cursor getElevations(SQLiteDatabase db, String loc) {
-        String qry = "Select rowid _id, sys_loc_code, elev_code, elev_value from ut_elevations where wl_mwas_point = 1 ";
-        qry += "and sys_loc_code='" + loc + "'";
-        qry+= " UNION ALL SELECT -1,'NA','NA',-1";
-        return db.rawQuery(qry, null);
-    }
+    public String[] getElevationCodeValue(SQLiteDatabase db, String loc, String elev_code) {
+        String sElevCodeValue[] = new String[]{"NA","Max Depth","NA"};
+        String qry = "Select elev_code, elev_value, elev_code_desc from ut_elevations e inner join tbl_DCP_Loc_Def l on l.sys_loc_code = e.sys_loc_code where e.elev_code='" + elev_code + "'";
+        qry += " and strD_Loc_ID='" + loc + "'";
 
+        Cursor c =  db.rawQuery(qry, null);
+        if (c.getCount() > 0) {
+            c.moveToFirst();
+            if (!c.isNull(0))
+                sElevCodeValue[0] = c.getString(0);
+            if (!c.isNull(1))
+                sElevCodeValue[1] = c.getString(1);
+            if (!c.isNull(2))
+                sElevCodeValue[2] = c.getString(2);
+        }
+        return sElevCodeValue;
+    }
     public String[] getElevationCodeValue(SQLiteDatabase db, String loc) {
         String sElevCodeValue[] = new String[]{"NA","Max Depth","NA"};
         String qry = "Select elev_code, elev_value, elev_code_desc from ut_elevations e inner join tbl_DCP_Loc_Def l on l.sys_loc_code = e.sys_loc_code where e.wl_meas_point = 1  ";

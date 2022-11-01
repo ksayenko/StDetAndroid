@@ -200,6 +200,10 @@ private double UNDEFINED = -99999.999;
                 Object item = parent.getItemAtPosition(pos);
                 String desc = ((String[]) alElev.get(pos))[2];
                 txt_elev_code2.setText(desc);
+                TextView temp= (TextView) spin_elev_code.getSelectedView();
+                curent_elevationcode = temp.getText().toString();
+                String[] elev_code_value = dbHelper.getElevationCodeValue(db,current_loc,curent_elevationcode);
+                edit_depth.setText(elev_code_value[1]);
         }
             public void onNothingSelected(AdapterView<?> parent) {
             }
@@ -733,4 +737,11 @@ Wedge as keys to empty
                 .show();
 
     }
+    @Override
+    public void onBackPressed()
+    {
+        btnDone.performClick();
+        super.onBackPressed();
+    }
+
 }

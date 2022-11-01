@@ -188,7 +188,7 @@
             <EditText
                 android:id="@+id/text_depth"
                 android:layout_width="50dp"
-                android:layout_marginLeft="2dp"
+                android:layout_marginLeft="3dp"
                 android:layout_weight="1"
                 android:autofillHints=""
                 android:background="@drawable/border"
@@ -219,17 +219,17 @@
                 android:id="@+id/txt_Reading"
                 android:layout_width="50dp"
                 android:layout_height="40dp"
+                android:layout_marginLeft="3dp"
                 android:layout_weight="1"
+                android:autofillHints=""
                 android:background="@drawable/border"
+                android:digits="0123456789.,"
                 android:inputType="text"
                 android:minHeight="36dp"
-                android:textStyle="bold"
-                android:digits="0123456789.,"
-                android:layout_marginLeft="2dp"
                 android:text="@string/_0_0"
+                android:textStyle="bold"
                 android:windowSoftInputMode="stateHidden|adjustPan"
-                tools:ignore="TouchTargetSizeCheck"
-                android:autofillHints="" />
+                tools:ignore="TouchTargetSizeCheck" />
 
             <Spinner
                 android:id="@+id/spin_Unit"
@@ -252,7 +252,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
-                android:text="@string/comment1"
+                android:text="@string/comment"
                 android:textStyle="bold" />
 
             <EditText
@@ -266,7 +266,7 @@
                 android:gravity="center_vertical"
                 android:inputType="text"
                 android:windowSoftInputMode="stateHidden|adjustPan"
-                android:text="@string/comment" />
+                android:text="@string/comment1" />
         </TableRow>
 
         <TableRow
