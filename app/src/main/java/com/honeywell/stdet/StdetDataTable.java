@@ -4,10 +4,33 @@ import java.util.ArrayList;
 
 public class StdetDataTable {
 
+    public TABLE_TYPE getTableType() {
+        return table_type;
+    }
+
+    public void setTableType(TABLE_TYPE table_type) {
+        this.table_type = table_type;
+    }
+
+    public static enum TABLE_TYPE {LOOKUP,READING,SYSTEM};
     //
     //
 
     private String name;
+
+    @Override
+    public String toString() {
+        return "StdetDataTable{" +
+                "name='" + name + '\'' +
+                ", table_type=" + getTableType() +
+                ", ColumnNames=" + ColumnNames +
+                ", ColumnTypes=" + ColumnTypes +
+                ", isColumnPK=" + isColumnPK +
+                ", dataTable=" + dataTable +
+                '}';
+    }
+
+    private TABLE_TYPE table_type;
 
     private ArrayList<String> ColumnNames;
     private ArrayList<String> ColumnTypes;
@@ -20,12 +43,17 @@ public class StdetDataTable {
         this("NA");
     }
 
-    public StdetDataTable(String sname) {
+    public StdetDataTable(String sname)  {
+        this(sname, TABLE_TYPE.LOOKUP);
+    }
+
+    public StdetDataTable(String sname, TABLE_TYPE t) {
 
         name = sname;
         ColumnNames = new ArrayList<String>();
         ColumnTypes = new ArrayList<String>();
         isColumnPK = new ArrayList<Boolean>();
+        table_type = t;
 
         dataTable = new ArrayList<ArrayList<String>>(0);
     }
@@ -104,7 +132,12 @@ public class StdetDataTable {
         this.isColumnPK = isColumnPK;
     }
 
-    public String CreateTable() {
+    public String getRowCount(){
+        String sql = "SELECT COUNT(*) AS ROW_COUNT FROM "+name;
+        return sql;
+    }
+
+    public String createTableSQL() {
         int nColumns = ColumnNames.toArray().length;
         String sPK = " , PRIMARY KEY (";
         Integer iPk = 0;

@@ -28,22 +28,24 @@
         <TableRow
             android:id="@+id/row2"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="40dp">
 
             <TextView
                 android:id="@+id/lbl_COL_ID"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:text="@string/data_collector_id"
-                android:textStyle="bold"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <Spinner
                 android:id="@+id/spin_COL_ID"
-                android:layout_width="107dp"
-                android:layout_height="40dp"
+                android:layout_width="match_parent"
+                android:layout_height="47dp"
+                android:layout_weight="1"
                 android:background="@drawable/custom_spinner_background"
                 android:gravity="center_vertical"
+                android:scrollbarStyle="insideInset"
                 android:spinnerMode="dropdown"
                 tools:ignore="DuplicateSpeakableTextCheck,TouchTargetSizeCheck" />
 
@@ -52,21 +54,22 @@
         <TableRow
             android:id="@+id/row3"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="45dp">
 
             <TextView
                 android:id="@+id/lbl_Loc_Id"
-                android:textStyle="bold"
-                android:layout_width="wrap_content"
-                android:gravity="center_vertical"
+                android:layout_width="139dp"
                 android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
                 android:text="@string/loc_id"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <Spinner
                 android:id="@+id/spin_Loc_id"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="47dp"
                 android:layout_weight="1"
                 android:background="@drawable/custom_spinner_background"
                 android:spinnerMode="dialog"
@@ -93,7 +96,7 @@
         <TableRow
             android:id="@+id/row5"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="40dp">
 
 
             <TextView
@@ -110,6 +113,7 @@
                 android:id="@+id/spin_Fac_oper"
                 android:layout_width="50dp"
                 android:layout_height="40dp"
+                android:layout_marginLeft="2dp"
                 android:background="@drawable/custom_spinner_background"
                 android:spinnerMode="dropdown"
                 tools:ignore="TouchTargetSizeCheck" />
@@ -155,12 +159,13 @@
                 android:layout_weight="1"
                 android:text="@string/elev_code" />
 
-            <TextView
-                android:id="@+id/lbl_elev_code_value"
-                android:layout_width="wrap_content"
-                android:gravity="center_vertical"
+            <Spinner
+                android:id="@+id/spin_elev_code"
+                android:layout_width="114dp"
                 android:layout_height="40dp"
-                android:text="@string/na" />
+                android:background="@drawable/custom_spinner_background"
+                android:gravity="center_vertical"
+                tools:ignore="TouchTargetSizeCheck" />
         </TableRow>
 
         <TableRow
@@ -171,18 +176,28 @@
 
 
             <TextView
-                android:id="@+id/lbl_elev_code_value2"
-                android:gravity="center_vertical"
-                android:layout_width="wrap_content"
+                android:id="@+id/lbl_elev_code_desc"
+                android:layout_width="230dp"
                 android:layout_height="match_parent"
-                android:text="@string/na1" />
+                android:layout_marginLeft="2dp"
+                android:background="@drawable/border"
+                android:gravity="center_vertical"
+                android:text="@string/na1"
+                android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/lbl_depth"
-                android:gravity="center_vertical"
+            <EditText
+                android:id="@+id/text_depth"
                 android:layout_width="50dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
+                android:layout_marginLeft="2dp"
+                android:layout_weight="1"
+                android:autofillHints=""
+                android:background="@drawable/border"
+                android:inputType="text"
+                android:minHeight="40dp"
+                android:selectAllOnFocus="true"
+                android:text="@string/Max_Depth"
+                android:textStyle="bold"
+                tools:ignore="TouchTargetSizeCheck" />
         </TableRow>
 
         <TableRow
@@ -193,24 +208,23 @@
 
             <TextView
                 android:id="@+id/lbl_Reading"
-                android:textStyle="bold"
-                android:gravity="center_vertical"
-                android:layout_width="wrap_content"
+                android:layout_width="139dp"
                 android:layout_height="match_parent"
-                android:text="@string/reading" />
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:text="@string/reading"
+                android:textStyle="bold" />
 
             <EditText
                 android:id="@+id/txt_Reading"
                 android:layout_width="50dp"
+                android:layout_height="40dp"
                 android:layout_weight="1"
-                android:autofillHints=""
-                android:textStyle="bold"
                 android:background="@drawable/border"
-                android:inputType="number"
-                android:minHeight="36dp"
-                android:selectAllOnFocus="true"
-                android:text="@string/_0_0"
-                tools:ignore="TouchTargetSizeCheck" />
+                android:inputType="text"
+                               android:minHeight="36dp"
+                android:textStyle="bold"
+                tools:ignore="TouchTargetSizeCheck"             />
 
             <Spinner
                 android:id="@+id/spin_Unit"
@@ -228,16 +242,18 @@
 
             <TextView
                 android:id="@+id/lbl_Comment"
-                android:textStyle="bold"
-                android:gravity="center_vertical"
-                android:layout_width="wrap_content"
+                android:layout_width="118dp"
                 android:layout_height="match_parent"
-                android:text="@string/comment1" />
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:text="@string/comment1"
+                android:textStyle="bold" />
 
             <EditText
                 android:id="@+id/txt_Comment"
-                android:layout_width="274dp"
+                android:layout_width="230dp"
                 android:layout_height="48dp"
+                android:layout_marginLeft="2dp"
                 android:autofillHints=""
                 android:background="@drawable/border"
                 android:ems="10"

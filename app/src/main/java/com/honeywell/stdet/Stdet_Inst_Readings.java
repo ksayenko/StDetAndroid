@@ -55,6 +55,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
 
     public Stdet_Inst_Readings(){
         super(HandHeld_SQLiteOpenHelper.INST_READINGS);
+        this.setTableType(TABLE_TYPE.READING);
 
         this.AddColumnToStructure(lngID,"Integer",true);
         this.AddColumnToStructure(facility_id,"Integer",false);

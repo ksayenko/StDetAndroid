@@ -29,6 +29,7 @@ public class StdetDataTables {
         dataTables.add(new Stdet_Elevations());
         dataTables.add(new Stdet_DCP_Loc_Char());
         dataTables.add(new Stdet_DCP_Loc_Def());
+        dataTables.add(new Stdet_Equip_Oper_Def());
         dataTables.add(new Stdet_Fac_Oper_Def());
         dataTables.add(new Stdet_Facility());
         dataTables.add(new Stdet_TableVers());

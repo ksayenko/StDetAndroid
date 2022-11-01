@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class StDet_LoginInfoActivity extends Activity {
@@ -24,8 +23,6 @@ public class StDet_LoginInfoActivity extends Activity {
     Button btnDone;
     Button btnCheck;
     CallSoapWS soap;
-
-
 
     Stdet_LoginInfo loginInfo = new Stdet_LoginInfo();
     public  HandHeld_SQLiteOpenHelper dbHelper;
@@ -50,7 +47,7 @@ public class StDet_LoginInfoActivity extends Activity {
         txt_UserName= (EditText) findViewById(R.id.editName);
 
 
-        String[] credentials = dbHelper.GetLogin(db);
+        String[] credentials = dbHelper.getLoginInfo(db);
         if (credentials[0] !="")        {
             name = credentials[0];
             encryptedPassword = credentials[1];

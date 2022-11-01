@@ -12,7 +12,7 @@ public class Stdet_LoginInfo extends StdetDataTable {
     public Stdet_LoginInfo(){
         super(HandHeld_SQLiteOpenHelper.LOGININFO);
 
-
+        this.setTableType(TABLE_TYPE.SYSTEM);
         this.AddColumnToStructure(UserName,"String",true);
         this.AddColumnToStructure(Password,"dateTime",false);
 
