@@ -95,7 +95,7 @@ public class StDet_LoginInfoActivity extends Activity {
     }
 
     private Boolean updateDBWithNewInformation() {
-        Boolean rv = false;
+        boolean rv = false;
         try {
             encryptedPassword = StDEtEncrypt.encrypt(pwd);
             System.out.println("encripted " + encryptedPassword);
@@ -119,7 +119,6 @@ public class StDet_LoginInfoActivity extends Activity {
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int whichButton) {
-
                         Boolean b = updateDBWithNewInformation();
                         if (b) {
                             Toast.makeText(ct, "Updated ", Toast.LENGTH_SHORT).show();
@@ -140,46 +139,29 @@ public class StDet_LoginInfoActivity extends Activity {
         Boolean bReturnValue;
         name = txt_UserName.getText().toString();
         pwd = txt_Password.getText().toString();
-        bReturnValue = soap.WS_GetLogin(name, pwd);
+        String[] errormessage =  new String[]{""};
+        bReturnValue = soap.WS_GetLogin(name, pwd,errormessage);
         if (bReturnValue) {
-            AlertDialog ad = new AlertDialog.Builder(this)
-                    .setTitle("Success!")
-                    .setMessage("Connection tested")
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                        }
-                    })
-                    .show();
-        } else {
-            AlertDialog ad = new AlertDialog.Builder(this)
-                    .setTitle("ERROR")
-                    .setMessage("Please try one more time.")
-                    .setPositiveButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                        }
-                    })
-                    .show();
+            AlertDialogShow("Connection tested","Success!","OK");
+                   } else {
+            String mess = "Please try one more time. : "+ errormessage[0];
+            AlertDialogShow(mess,"ERROR!","OK");
+
         }
 
         return bReturnValue;
     }
 
-    public void ShowHidePass(View view) {
-        //if(view.getId()==R.id.show_pass_btn){
+    private void AlertDialogShow(String message, String title, String button) {
+        AlertDialog ad = new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(button, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                    }
+                })
+                .show();
 
-            if(txt_Password.getTransformationMethod().equals(PasswordTransformationMethod.getInstance())){
-                //((ImageView(view)).setImageResource(R.drawable.icons_showhide_password);
-
-                //Show Password
-                txt_Password.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-            }
-            else{
-               // ((ImageView)(view)).setImageResource(R.drawable.icons_showhide_password);
-
-                //Hide Password
-                txt_Password.setTransformationMethod(PasswordTransformationMethod.getInstance());
-
-            }
-        //}
     }
+
 }

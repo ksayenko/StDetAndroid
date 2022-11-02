@@ -1,8 +1,9 @@
 package com.honeywell.stdet;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class StdetDataTable {
+public class StdetDataTable  implements Serializable {
 
     public TABLE_TYPE getTableType() {
         return table_type;
@@ -12,9 +13,7 @@ public class StdetDataTable {
         this.table_type = table_type;
     }
 
-    public static enum TABLE_TYPE {LOOKUP,READING,SYSTEM}
-    //
-    //
+    public enum TABLE_TYPE {LOOKUP,READING,SYSTEM}
 
     private String name;
 
@@ -50,12 +49,12 @@ public class StdetDataTable {
     public StdetDataTable(String sname, TABLE_TYPE t) {
 
         name = sname;
-        ColumnNames = new ArrayList<String>();
-        ColumnTypes = new ArrayList<String>();
-        isColumnPK = new ArrayList<Boolean>();
+        ColumnNames = new ArrayList<>();
+        ColumnTypes = new ArrayList<>();
+        isColumnPK = new ArrayList<>();
         table_type = t;
 
-        dataTable = new ArrayList<ArrayList<String>>(0);
+        dataTable = new ArrayList<>(0);
     }
     public void AddColumnToStructure(String columnName, String ColumnType, Boolean isPK) {
 
@@ -132,9 +131,8 @@ public class StdetDataTable {
         this.isColumnPK = isColumnPK;
     }
 
-    public String getRowCount(){
-        String sql = "SELECT COUNT(*) AS ROW_COUNT FROM "+name;
-        return sql;
+    public String getRowCountSQL(){
+        return "SELECT COUNT(*) AS ROW_COUNT FROM "+name;
     }
 
     public String createTableSQL() {
@@ -171,10 +169,30 @@ public class StdetDataTable {
         int rv = -1;
         try {
             rv = dataTable.size();
-        } catch (Exception ex) {
+        } catch (Exception ignored) {
         }
         return rv;
     }
+
+    public String getValueFromData(int row, String columnName){
+        String sValue="";
+        int nColumns = ColumnNames.toArray().length;
+        int iElement = GetElementIndex(columnName);
+        try {
+            sValue = dataTable.get(row).get(iElement);
+        }catch(Exception ignored){}
+
+
+        return sValue;
+    }
+
+    public void setValueInData(int row, String columnName, String sValue){
+           int nColumns = ColumnNames.toArray().length;
+           int iElement = GetElementIndex(columnName);
+           dataTable.get(row).set(iElement, sValue);
+
+    }
+
 
     public String getInsertIntoDB(int element) {
         String sInsert1 = "INSERT INTO  " + name + "(";

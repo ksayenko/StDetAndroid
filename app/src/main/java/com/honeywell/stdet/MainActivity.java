@@ -1,5 +1,6 @@
 package com.honeywell.stdet;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -36,6 +37,7 @@ public class MainActivity extends Activity {
     private static BarcodeReader barcodeReader;
     private AidcManager manager;
 
+    @SuppressLint("StaticFieldLeak")
     private static MainActivity instance;
 
     public static MainActivity getInstance() {
@@ -52,6 +54,8 @@ public class MainActivity extends Activity {
     private Button btnUploadDataToServer;
 
     Context context;
+
+    private Stdet_Inst_Readings default_reading;
 
 
     private File directoryApp;
@@ -71,6 +75,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         directoryApp = getFilesDir();
         context = this;
+        default_reading = Stdet_Inst_Readings.GetDefault();
         // set lock the orientation
         // otherwise, the onDestory will trigger
         // when orientation changes
@@ -148,27 +153,7 @@ public class MainActivity extends Activity {
      * Create buttons to launch demo activities.
      */
     public void ActivitySetting() {
-        /*
-        btnAutomaticBarcode = (Button) findViewById(R.id.buttonAutomaticBarcode);
-        btnAutomaticBarcode.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // get the intent action string from AndroidManifest.xml
-                Intent barcodeIntent = new Intent("android.intent.action.AUTOMATICBARCODEACTIVITY");
-                startActivity(barcodeIntent);
-            }
-        });
 
-        btnClientBarcode = (Button) findViewById(R.id.buttonClientBarcode);
-        btnClientBarcode.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // get the intent action string from AndroidManifest.xml
-                Intent barcodeIntent = new Intent("android.intent.action.CLIENTBARCODEACTIVITY");
-                startActivity(barcodeIntent);
-            }
-        });
-*/
         this.btnInputForms = findViewById(R.id.btnInputForms);
         btnInputForms.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -176,9 +161,12 @@ public class MainActivity extends Activity {
                 Log.i("------------onClick StDetInputActivity", "12");
                 // get the intent action string from AndroidManifest.xml
                 Intent barcodeIntent = new Intent("android.intent.action.STDETINPUTBARCODEACTIVITY");
+                barcodeIntent.putExtra("IR", default_reading);
                 startActivity(barcodeIntent);
+                System.out.println("In MAIN btnInputForms.setOnClickListener " + default_reading.getValueFromData(0, Stdet_Inst_Readings.strD_Col_ID));
             }
         });
+
 
         this.btnUploadDataToServer = findViewById(R.id.buttonUploadReadings);
         btnUploadDataToServer.setOnClickListener(new View.OnClickListener() {
@@ -189,6 +177,10 @@ public class MainActivity extends Activity {
                         new HandHeld_SQLiteOpenHelper(context, new StdetDataTables());
                 SQLiteDatabase db = dbHelper.getReadableDatabase();
                 Integer[] nrecords = new Integer[]{0};
+                String message = "The data (" + nrecords[0] + " records) is ready to be uplaoded to the server.";
+                //AlertDialogShow("The data (" + String.valueOf(records) + " records) is saved and ready to be uplaoded","Info","OK");
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                AlertDialogShow(message, "Info", "OK");
                 String s = null;
                 try {
                     s = dbHelper.CreateFileToUpload(db, directoryApp, nrecords);
@@ -208,25 +200,23 @@ public class MainActivity extends Activity {
                         String name = credentials[0];
                         String encryptedPassword = credentials[1];
                         String pwd = StDEtEncrypt.decrypt(encryptedPassword);
-                        Boolean bCanUpload = ws.WS_GetLogin(name, pwd);
+                        String[] errormessage = new String[]{""};
+
+                        Boolean bCanUpload = ws.WS_GetLogin(name, pwd, errormessage);
                         Boolean bUploaded;
                         if (bCanUpload) {
                             bUploaded = ws.WS_UploadFile2(dataUpload, s, name, pwd);
                             if (bUploaded) {
                                 db.execSQL(Stdet_Inst_Readings.UpdateUploadedData());
-                                AlertDialogShow(String.valueOf(nrecords[0]) + " Records Has Been Uploaded to the Server",
+                                AlertDialogShow(nrecords[0] + " Records Has Been Uploaded to the Server",
                                         "Info", "OK");
                             } else {
                                 AlertDialogShow("Data hasn't been uploaded. Try one more time.", "ERROR!", "OK");
                             }
 
                         } else {
-                            AlertDialogShow("Your Credentials aren't working. Go to Main Page | Menu | Check Login Credentials.", "ERROR!", "OK");
+                            AlertDialogShow("Your Credentials aren't working. Go to Main Page | Menu | Check Login Credentials. : " + errormessage[0], "ERROR!", "OK");
                         }
-
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     } catch (Exception exception) {
                         exception.printStackTrace();
                     }
@@ -234,58 +224,6 @@ public class MainActivity extends Activity {
                 }
             }
         });
-/*
-        btnClientBarcode2 = (Button) findViewById(R.id.btnClientControl2);
-        btnClientBarcode2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // get the intent action string from AndroidManifest.xml
-                Intent barcodeIntent = new Intent("android.intent.action.CLIENTBARCODEACTIVITY2");
-                startActivity(barcodeIntent);
-            }
-        });
-
-        btnFragmentView = (Button) findViewById(R.id.btnFragmentActivity);
-        btnFragmentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // get the intent action string from AndroidManifest.xml
-                Intent barcodeIntent = new Intent("android.intent.action.FRAGMENTACTIVITY");
-                startActivity(barcodeIntent);
-            }
-        });
-
-        btnScannerSelectBarcode = (Button) findViewById(R.id.buttonScannerSelectBarcode);
-        btnScannerSelectBarcode.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // get the intent action string from AndroidManifest.xml
-                Intent barcodeIntent = new Intent(
-                        "android.intent.action.SCANNERSELECTBARCODEACTIVITY");
-                startActivity(barcodeIntent);
-            }
-        });
-        btnDownloadData = (Button) findViewById(R.id.btnDownloadData);
-        btnDownloadData.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // get the intent action string from AndroidManifest.xml
-                Intent barcodeIntent = new Intent(
-                        "android.intent.action.DOWNLOADACTIVITY");
-                startActivity(barcodeIntent);
-            }
-        });
-        btnParseXMLAndToDB = (Button) findViewById(R.id.btnUploadXMLtoDB);
-        btnParseXMLAndToDB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // get the intent action string from AndroidManifest.xml
-                Intent barcodeIntent = new Intent(
-                        "android.intent.action.PARSEXMLACTIVITY");
-                startActivity(barcodeIntent);
-            }
-        });
-        */
 
     }
 

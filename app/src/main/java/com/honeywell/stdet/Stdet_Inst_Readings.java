@@ -82,6 +82,46 @@ public class Stdet_Inst_Readings extends StdetDataTable {
 
     }
 
+    public Integer AddToTable( ) {
+
+        Integer maxID = -1;
+        String facility_id1 = "1";
+        String loc1 = "NA";
+        String reading_value1 = "0.0";
+        String datetime1 = "01/01/2000";
+        String col1 = "NA";
+        String eq_status1 = "NA";
+        String fo_status1 = "NA";
+        String unit1 = "NA";
+        String el_code1 = "NA";
+        String comment1 = "";
+        String strDataModComment1 = "";
+
+        ArrayList<String> reading = new ArrayList<>();
+        int n = this.getColumnsNumber();
+        for (int j = 0; j < n; j++)
+            reading.add("");
+
+
+        reading.set(GetElementIndex(lngID), String.valueOf(maxID));
+        reading.set(GetElementIndex(facility_id), facility_id1);
+        reading.set(GetElementIndex(strD_Loc_ID), loc1);
+        reading.set(GetElementIndex(dblIR_Value), reading_value1);
+        reading.set(GetElementIndex(datIR_Date), datetime1);
+        reading.set(GetElementIndex(datIR_Time), datetime1);
+        reading.set(GetElementIndex(strD_Col_ID), col1);
+        reading.set(GetElementIndex(strEqO_StatusID), eq_status1);
+        reading.set(GetElementIndex(strFO_StatusID), fo_status1);
+        reading.set(GetElementIndex(strIR_Units), unit1);
+        reading.set(GetElementIndex(elev_code), el_code1);
+        reading.set(GetElementIndex(strComment), comment1);
+        reading.set(GetElementIndex(strDataModComment), strDataModComment1);
+
+        this.AddRowToData(reading);
+
+        return maxID++;
+    }
+
     public Integer AddToTable( Integer maxID, String facility_id1, String loc1, String reading_value1,
                             String datetime1, String col1, String eq_status1,
                             String fo_status1, String unit1, String el_code1,
@@ -136,4 +176,12 @@ public class Stdet_Inst_Readings extends StdetDataTable {
                 " where uploaded is null";
         return update;
     }
+
+   public static Stdet_Inst_Readings GetDefault()
+   {
+       Stdet_Inst_Readings default_object = new Stdet_Inst_Readings();
+       default_object.AddToTable();
+       return  default_object;
+
+   }
 }

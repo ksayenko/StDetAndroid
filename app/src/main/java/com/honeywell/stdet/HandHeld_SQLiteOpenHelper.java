@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Objects;
 
 
 public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
@@ -123,8 +124,9 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
 
     public void getInsertTable(SQLiteDatabase db, StdetDataTable table) {
+
         int n = table.GetNumberOfRecords();
-        String insert = "", delete = "";
+        String insert = "", delete;
         try {
             String create = table.createTableSQL();
             String tablename = table.getName();
@@ -160,7 +162,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         String tablename = table.getName();
         System.out.println("getInsertFromTable " + create);
         db.execSQL(create);
-        String insert = "", delete = "";
+        String insert = "", delete;
         try {
 
             delete = "Delete from " + table.getName();
@@ -195,7 +197,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     }
 
     public String[] getElevationCodeValue(SQLiteDatabase db, String loc, String elev_code) {
-        String sElevCodeValue[] = new String[]{"NA","Max Depth","NA"};
+        String[] sElevCodeValue = new String[]{"NA","Max Depth","NA"};
         String qry = "Select elev_code, elev_value, elev_code_desc from ut_elevations e inner join tbl_DCP_Loc_Def l on l.sys_loc_code = e.sys_loc_code where e.elev_code='" + elev_code + "'";
         qry += " and strD_Loc_ID='" + loc + "'";
 
@@ -209,10 +211,12 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             if (!c.isNull(2))
                 sElevCodeValue[2] = c.getString(2);
         }
+        c.close();
+
         return sElevCodeValue;
     }
     public String[] getElevationCodeValue(SQLiteDatabase db, String loc) {
-        String sElevCodeValue[] = new String[]{"NA","Max Depth","NA"};
+        String[] sElevCodeValue = new String[]{"NA","Max Depth","NA"};
         String qry = "Select elev_code, elev_value, elev_code_desc from ut_elevations e inner join tbl_DCP_Loc_Def l on l.sys_loc_code = e.sys_loc_code where e.wl_meas_point = 1  ";
         qry += "and strD_Loc_ID='" + loc + "'";
 
@@ -226,6 +230,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             if (!c.isNull(2))
                 sElevCodeValue[2] = c.getString(2);
         }
+        c.close();
         return sElevCodeValue;
     }
 
@@ -243,11 +248,12 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             if (!cminmax.isNull(1))
                 minmax[1] = cminmax.getString(1);
         }
+        cminmax.close();
         return minmax;
     }
 
     public Cursor getElevationCodes(SQLiteDatabase db) {
-        String qry = "";
+        String qry;
 
             qry = "Select rowid as _id, elev_code,elev_code_desc, '1' as ord from ut_elevation_codes "+
                     " UNION ALL SELECT -1,'NA','NA', '0' order by ord,  elev_code";
@@ -256,8 +262,8 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     }
 
     public Cursor getUnits(SQLiteDatabase db, String loc) {
-        String qry = "";
-        if (loc == "") {
+        String qry;
+        if (Objects.equals(loc, "")) {
             qry = "Select rowid as _id, strUnitsID, '1' as ord from tbl_Unit_Def " +
                     " UNION ALL SELECT -1,'NA', '0' order by ord,  strUnitsID";
         } else {
@@ -329,7 +335,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             //--tbl_Equip_Oper_Def
             if(tables.getDataTables().get(i).getTableType()==StdetDataTable.TABLE_TYPE.LOOKUP) {
                 String create = tables.getDataTables().get(i).createTableSQL();
-                String countrowssql = tables.getDataTables().get(i).getRowCount();
+                String countrowssql = tables.getDataTables().get(i).getRowCountSQL();
 
                 db.execSQL(create);
                 Cursor c = db.rawQuery(countrowssql, null);
@@ -395,7 +401,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<String[]> CursorToArrayList(Cursor cursor) {
-        ArrayList<String[]> arrayList = new ArrayList<String[]>();
+        ArrayList<String[]> arrayList = new ArrayList<>();
         int nCol = cursor.getColumnCount();
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             // The Cursor is now set to the right position
@@ -422,8 +428,6 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
     public String CreateFileToUpload(SQLiteDatabase db, File directoryApp, Integer[] nRecords) throws ParseException {
         File newCSV = null;
-
-
 
         Calendar c = Calendar.getInstance();
         try {
@@ -529,21 +533,23 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             Integer i_strDataModComment = records.getColumnIndex(Stdet_Inst_Readings.strDataModComment);
             if (i_strDataModComment < 0)
                 i_strDataModComment = 0;
-            Integer i_uf_strWL_D_Loc_ID = records.getColumnIndex(Stdet_Inst_Readings.uf_strWL_D_Loc_ID);
+            int i_uf_strWL_D_Loc_ID = records.getColumnIndex(Stdet_Inst_Readings.uf_strWL_D_Loc_ID);
             if (i_uf_strWL_D_Loc_ID < 0)
                 i_uf_strWL_D_Loc_ID = 0;
-            Integer i_wl_meas_point = records.getColumnIndex(Stdet_Inst_Readings.wl_meas_point);
+            int i_wl_meas_point = records.getColumnIndex(Stdet_Inst_Readings.wl_meas_point);
             if (i_wl_meas_point < 0)
                 i_wl_meas_point = 0;
             Integer i_elev_code = records.getColumnIndex(Stdet_Inst_Readings.elev_code);
             if (i_elev_code < 0)
                 i_elev_code = 0;
-            Integer i_elev_code_desc = records.getColumnIndex(Stdet_Inst_Readings.elev_code_desc);
+            int i_elev_code_desc = records.getColumnIndex(Stdet_Inst_Readings.elev_code_desc);
             if (i_elev_code_desc < 0)
                 i_elev_code_desc = 0;
 
 
-            String header = Stdet_Inst_Readings.facility_id + ", " +
+            String header = Stdet_Inst_Readings.CSVHeader();
+            /*
+                    Stdet_Inst_Readings.facility_id + ", " +
                     Stdet_Inst_Readings.strEqID + ", " +
                     Stdet_Inst_Readings.strD_Col_ID + ", " +
                     Stdet_Inst_Readings.datIR_Date + ", " +
@@ -560,6 +566,8 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                     //Stdet_Inst_Readings.wl_meas_point + ", " +
                     Stdet_Inst_Readings.elev_code ;//+ ", " +
                     //Stdet_Inst_Readings.elev_code_desc;
+                    */
+
 
             myOutWriter.write(header);
             myOutWriter.write(10);//decimal value 10 represents newline in ASCII
@@ -588,19 +596,19 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 s_fSuspect =getStringQuotedValueFromBooleanYesNo(records,i_fSuspect);
 
 
-                row = s_facility_id + ", " +
-                        s_strEqID + ", " +
-                        s_strD_Col_ID + ", " +
-                        s_datIR_Date + ", " +
-                        s_datIR_Time + ", " +
+                row = s_facility_id + "," +
+                        s_strEqID + "," +
+                        s_strD_Col_ID + "," +
+                        s_datIR_Date + "," +
+                        s_datIR_Time + "," +
                         s_strD_Loc_ID + "," +
                         s_dblIR_Value + "," +
-                        s_strIR_Units + ", " +
-                        s_strFO_StatusID + ", " +
-                        s_strEqO_StatusID + ", " +
-                        s_fSuspect + ", " +
-                        s_strComment + ", " +
-                        s_strDataModComment + ", " +
+                        s_strIR_Units + "," +
+                        s_strFO_StatusID + "," +
+                        s_strEqO_StatusID + "," +
+                        s_fSuspect + "," +
+                        s_strComment + "," +
+                        s_strDataModComment + "," +
                         s_elev_code;
 
                 System.out.println(row);

@@ -175,7 +175,7 @@ public class CallSoapWS {
             System.out.println("ERROR WS_UploadFile2  " + exception);
             exception.printStackTrace();
             response = exception.toString();
-            bResponse = false;
+            //bResponse = false;
         }
 
         sUploadResponse = response.toString();
@@ -186,7 +186,7 @@ public class CallSoapWS {
     }
 
     public Boolean WS_UploadFile(byte[] file, String filename, String user, String pwd) {
-        Boolean bResponse = false;
+        boolean bResponse = false;
         String sUploadResponse = "";
         String addr = getSoapAction(METHOD_NAME_UPLOAD);
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_UPLOAD);
@@ -228,7 +228,7 @@ public class CallSoapWS {
             httpTransport.call(SOAP_ACTION_UPLOAD, envelope);
             response = envelope.getResponse();
         } catch (Exception exception) {
-            System.out.println("WS_UploadFile  " + exception.toString());
+            System.out.println("WS_UploadFile  " + exception);
             exception.printStackTrace();
             response = exception.toString();
         }
@@ -364,9 +364,15 @@ public class CallSoapWS {
 
     }
 
-    public Boolean WS_GetLogin(String username, String Pasword) {
+    public Boolean WS_GetLogin(String username, String Pasword)
+    {
+        String[] errormessage =  new String[]{""};
+        return WS_GetLogin(username, Pasword,errormessage);
+    }
+
+    public Boolean WS_GetLogin(String username, String Pasword, String[] errormessage) {
         String sUploadResponse = "";
-        Boolean bResponse = false;
+        boolean bResponse = false;
         String addr = getSoapAction(METHOD_NAME_LOGIN);
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_LOGIN);
 
@@ -398,10 +404,11 @@ public class CallSoapWS {
             httpTransport.call(SOAP_ACTION_LOGIN, envelope);
             response = envelope.getResponse();
         } catch (Exception exception) {
-            System.out.println("WS_GetLogin  " + exception.toString());
+            System.out.println("WS_GetLogin  " + exception);
             exception.printStackTrace();
             response = exception.toString();
-            bResponse = false;
+            errormessage[0] = exception.toString();
+            //bResponse = false;
         }
         if (response != null) {
             sUploadResponse = response.toString();
@@ -414,9 +421,13 @@ public class CallSoapWS {
     }
 
 
+    public String WS_GetDataset(String DatasetName)
+    {
+        String errormessage[] =  new String[]{""};
+        return WS_GetDataset(DatasetName,errormessage);
+    }
 
-
-    public String WS_GetDataset(String DatasetName) {
+    public String WS_GetDataset(String DatasetName, String errormessage[]) {
         String responseString = "";
         String addr = getSoapAction(METHOD_NAME_DATATABLES);
         String xmlData = "";
@@ -482,26 +493,31 @@ public class CallSoapWS {
            //xmlData = httpTransport.responseDump.toString();
         } catch (XmlPullParserException e) {
             e.printStackTrace();
-            System.out.println("XmlPullParserException "+ e.toString());
+            System.out.println("XmlPullParserException "+ e);
             xmlData = e.toString();
+            errormessage[0] = e.toString();
 
         } catch (SoapFault soapFault) {
-            System.out.println("SoapFault soapFault "+ soapFault.toString());
+            System.out.println("SoapFault soapFault "+ soapFault);
             soapFault.printStackTrace();
             xmlData = soapFault.toString();
+            errormessage[0] = soapFault.toString();
         } catch (HttpResponseException e) {
-            System.out.println("HttpResponseException e "+ e.toString());
+            System.out.println("HttpResponseException e "+ e);
             e.printStackTrace();
             xmlData = e.toString();
+            errormessage[0] = e.toString();
         } catch (IOException e) {
-            System.out.println("IOException e "+ e.toString());
+            System.out.println("IOException e "+ e);
             e.printStackTrace();
             xmlData = e.toString();
+            errormessage[0] = e.toString();
         } catch (Exception exception) {
-            System.out.println("Exception exception "+ exception.toString());
+            System.out.println("Exception exception "+ exception);
             exception.printStackTrace();
             Log.i(DatasetName, exception.getMessage());
             xmlData = exception.toString();
+            errormessage[0] = exception.toString();
         }
         //xmlData = xmlData2;
         //Log.i("xmlData : ",xmlData);
