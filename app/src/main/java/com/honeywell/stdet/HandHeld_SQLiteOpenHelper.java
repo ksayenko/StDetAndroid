@@ -418,6 +418,8 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
     }
 
+
+
     public Integer getMaxIRID(SQLiteDatabase db) {
         int rv = 0;
         String qry = "select  max (lngId) from tbl_Inst_Readings";

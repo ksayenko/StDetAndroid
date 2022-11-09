@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="50dp"
+    android:layout_marginTop="30dp"
     android:orientation="vertical"
     tools:context=".StDet_LoginInfoActivity">
 
@@ -100,9 +100,20 @@
         android:layout_marginTop="20dp"
         android:layout_marginLeft = "10dp"
         android:layout_marginRight = "10dp"
-        android:layout_height="60dp"
+        android:layout_height="50dp"
         android:background="@android:color/darker_gray"
         android:text="Check Login"
+        tools:layout_editor_absoluteY="181dp" />
+
+    <Button
+        android:id="@+id/btnLogOut"
+        android:layout_width="match_parent"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft = "10dp"
+        android:layout_marginRight = "10dp"
+        android:layout_height="50dp"
+        android:background="@android:color/darker_gray"
+        android:text="Log Out"
         tools:layout_editor_absoluteY="181dp" />
 
     <TextView
