@@ -54,8 +54,7 @@ public class StDet_LoginInfoActivity extends Activity {
             name = credentials[0];
             encryptedPassword = credentials[1];
             try {
-
-
+                pwd = StDEtEncrypt.decrypt(encryptedPassword);
                 System.out.println(pwd);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -114,25 +113,46 @@ public class StDet_LoginInfoActivity extends Activity {
     }
 
     private void bSaveLoginInfo() {
-        AlertDialog ad = new AlertDialog.Builder(this, R.style.AlertDialogTheme)
-                .setTitle("Do You Want To Save Login Info?")
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        Boolean b = updateDBWithNewInformation();
-                        if (b) {
-                            Toast.makeText(ct, "Updated ", Toast.LENGTH_SHORT).show();
-                        }
+        boolean bCheck =bCheckLogin();
+        if (bCheck) {
+            AlertDialog ad = new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+                    .setTitle("Do You Want To Save Login Info?")
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            Boolean b = updateDBWithNewInformation();
+                            if (b) {
+                                Toast.makeText(ct, "Updated ", Toast.LENGTH_SHORT).show();
+                            }
 
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        dialog.cancel();
-                    }
-                })
-                .show();
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            dialog.cancel();
+                        }
+                    })
+                    .show();
+        }else{
+            AlertDialog ad = new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+                    .setTitle("error")
+                    .setMessage("The Login Info is incorrect. Can't save. Try again.")
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            Boolean b = updateDBWithNewInformation();
+                            if (b) {
+                                Toast.makeText(ct, "Wrong Credentials ", Toast.LENGTH_SHORT).show();
+                            }
+
+                        }
+                    })
+
+                    .show();
+        }
+
+
     }
 
     private boolean bCheckLogin() {

@@ -43,6 +43,7 @@ public class HandHeldDomParser {
                 File inputFile = new File(fullfilename);
                 DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                System.out.println("Before dBuilder.parse(inputFile)"+ fullfilename);
                 Document doc = dBuilder.parse(inputFile);
                 doc.getDocumentElement().normalize();
 
@@ -72,17 +73,16 @@ public class HandHeldDomParser {
 
                                 sName = nList.item(k).getNodeName();
                                 NodeList nlisttemp = element.getChildNodes();
-                                sValue="";
-                                if (nlisttemp!=null  && nlisttemp.item(0)!=null) {
+                                sValue = "";
+                                if (nlisttemp != null && nlisttemp.item(0) != null) {
                                     sValue = nlisttemp.item(0).getTextContent();
-
+                                    sValue = sValue.trim();
 
                                     int iIndex = data.GetElementIndex(sName);
                                     if (iIndex > -1) {
                                         dRow.set(iIndex, sValue);
                                     }
-                                }
-                                else
+                                } else
                                     continue;
 
                             }
@@ -92,7 +92,7 @@ public class HandHeldDomParser {
                         dRow = data.getEmptyDataRow();
                     } catch (Exception e) {
                         e.printStackTrace();
-                        System.out.println("Errr    System.out.println(e.toString());or inside the Row : "+  filename+" "+ sName+sValue);
+                        System.out.println("Error: System.out.println(e.toString());or inside the Row : " + filename + " " + sName + sValue);
 
                     }
                 }

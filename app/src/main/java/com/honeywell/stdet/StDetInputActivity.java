@@ -144,7 +144,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
 
         int rowsInDB = dbHelper.getRowsInLookupTables(db);
         if (rowsInDB < 1) {
-            AlertDialogShow("Thw LookupTables aren't populated, go to download tables","ERROR!");
+            AlertDialogShow("The Lookup Tables aren't populated, go to Menu | Download and Populate Lookup DB","ERROR!");
         }
 
 
@@ -178,6 +178,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
         spin_elev_code = (Spinner) findViewById(R.id.spin_elev_code);
 
         txt_Reading = (EditText) findViewById(R.id.txt_Reading);
+        txt_Reading.requestFocus();
         txt_Reading.addTextChangedListener(new TextWatcher() {
 
             @Override
@@ -195,8 +196,8 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
         txt_comment = (EditText) findViewById(R.id.txt_Comment);
         edit_depth = (EditText) findViewById(R.id.text_depth);
         edit_depth.setEnabled(false);
-
         btnClear = (Button) findViewById(R.id.btn_clear);
+
         btnClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -234,15 +235,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
             }
         });
 
-        btnManual = (Button) findViewById(R.id.btn_Manual);
-        btnManual.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                clearForms();
-            }
-        });
-
-        spin_elev_code.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+         spin_elev_code.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
                 Object item = parent.getItemAtPosition(pos);
                 String desc = ((String[]) alElev.get(pos))[2];
@@ -281,6 +274,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                     spin_UNITS.setSelection(id1);
                 }
                 int id2e, id2f;
+                spin_elev_code.setEnabled(false);
                 if (current_loc.startsWith("WL")) {
                     curent_eo = "PumpOff";
                     id2e = getIndexFromArraylist(alEq_Oper_Status, curent_eo, 1);
@@ -288,6 +282,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                     curent_fo = "Oper";
                     id2f = getIndexFromArraylist(alFac_Oper_Status, curent_fo, 1);
                     spin_FAC_OP.setSelection(id2f);
+                    spin_elev_code.setEnabled(true);
 
                 } else if (current_loc.startsWith("FT")) {
                     curent_eo = "PumpOff";
@@ -304,6 +299,8 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
 
 
                 String[] elev_code_value = dbHelper.getElevationCodeValue(db, current_loc);
+                System.out.println("current_loc  " + current_loc);
+                System.out.println("current_loc  " + elev_code_value[0]);
                 edit_depth.setText(elev_code_value[1]);
                 int id3 = getIndexFromArraylist(alElev, elev_code_value[0], 1);
                 spin_elev_code.setSelection(id3);
@@ -595,8 +592,9 @@ Wedge as keys to empty
     }
 
     public void clearForms() {
-        txt_Reading.setText("0.0");
+        txt_Reading.setText("");
         txt_comment.setText("");
+
         int id = 0;
         id = getIndexFromArraylist(alLocs, "NA", 1);
         Log.i("------------clearForms =", Integer.toString(id));
@@ -612,7 +610,7 @@ Wedge as keys to empty
 
         bBarcodeLocation = false;
 
-
+        txt_Reading.requestFocus();
     }
 
     public VALIDDATION saveForms(boolean bAcceptWarning) {
@@ -647,10 +645,11 @@ Wedge as keys to empty
         }
         else if (bresult == VALIDDATION.VALID|| (bresult ==VALIDDATION.WARNING && bAcceptWarning) ) {
             System.out.println(error_mesage[0]);
-            maxId = ir_table.AddToTable(maxId, "1", current_loc, current_reading, timeStamp,
+            maxId = ir_table.AddToTable("1", current_loc, current_reading, timeStamp,
                     current_collector, curent_eo, curent_fo, current_unit, curent_elevationcode, current_comment, strDataModComment);
+            maxId++;
             clearForms();
-            System.out.println("max id " + maxId.toString());
+            System.out.println("NEW max id " + maxId.toString());
         }
 
         return bresult;
@@ -688,13 +687,13 @@ Wedge as keys to empty
             spin_Loc_id.requestFocus();
             isValid =VALIDDATION.ERROR;
         } else if (isNA(curent_fo)) {
-            message += "Please select a Facility Oper Status. ";
-            spin_FAC_OP.requestFocus();
-            isValid =VALIDDATION.ERROR;
+            //message += "Please select a Facility Oper Status. ";
+            //spin_FAC_OP.requestFocus();
+            //isValid =VALIDDATION.ERROR;
         } else if (isNA(curent_eo)) {
-            message += "Please select an Equipment Oper Status. ";
-            spin_FAC_OP.requestFocus();
-            isValid = VALIDDATION.ERROR;
+            //message += "Please select an Equipment Oper Status. ";
+            //spin_FAC_OP.requestFocus();
+            //isValid = VALIDDATION.ERROR;
         } else if (current_loc.startsWith("WL") && isNA(curent_elevationcode)) {
             message += "Water level values require an elevation code. Please select a Elevation Code designator manually. ";
             spin_elev_code.requestFocus();
@@ -717,7 +716,6 @@ Wedge as keys to empty
             isValid = isReadingWithinRange(reading, innermessage);
             message += innermessage[0];
         }
-
 
         error_message[0] = message;
         return isValid;

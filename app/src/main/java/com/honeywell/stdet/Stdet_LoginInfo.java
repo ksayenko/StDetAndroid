@@ -14,7 +14,7 @@ public class Stdet_LoginInfo extends StdetDataTable {
 
         this.setTableType(TABLE_TYPE.SYSTEM);
         this.AddColumnToStructure(UserName,"String",true);
-        this.AddColumnToStructure(Password,"dateTime",false);
+        this.AddColumnToStructure(Password,"String",false);
 
     }
 

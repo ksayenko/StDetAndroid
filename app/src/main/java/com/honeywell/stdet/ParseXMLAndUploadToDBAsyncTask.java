@@ -2,20 +2,19 @@
 
     import android.app.Activity;
     import android.app.AlertDialog;
-    import android.app.ProgressDialog;
     import android.content.Context;
     import android.database.sqlite.SQLiteDatabase;
     import android.os.AsyncTask;
     import android.os.Handler;
-    import android.os.Looper;
-    import android.os.Message;
     import android.util.Log;
-    import android.widget.Button;
     import android.widget.TextView;
 
     import java.io.File;
 
-    public class ParseXMLAndUploadToDBAsyncTask extends AsyncTask<String, Integer, Integer>{
+    //---------------
+    //NOT USING ANY MORE AFTER MOVE TO ANDROID 11 AND SDK 30 !!
+    //---------------
+    public class ParseXMLAndUploadToDBAsyncTask extends AsyncTask<String, Integer, Integer> {
         Context context;
         public Handler mHandler;
         TextView txtInfo;
@@ -28,6 +27,7 @@
             directoryApp = context.getFilesDir();
             txtInfo =    (TextView) activity. findViewById(R.id.txtInfo);
             txtInfo.setText("In the ParseXMLAndUploadToDBAsyncTask");
+            onPostExecute(1);
         }
 
         private File directoryApp;
@@ -95,6 +95,7 @@
                     publishProgress(10);
                     tables.AddStdetDataTable(f.ReadXMLToSTDETable(HandHeld_SQLiteOpenHelper.EQUIP_OPER_DEF + ".xml"));
                     publishProgress(11);
+
                 } catch (Exception exception) {
                     exception.printStackTrace();
                     System.out.println(exception.toString());
@@ -117,6 +118,7 @@
             return 0;
         }
 
+        @Override
         protected void onProgressUpdate(Integer... progress) {
             super.onProgressUpdate(progress);
 
@@ -125,7 +127,10 @@
 
         }
 
-
+        protected void onPostExecute() {
+            super.onPostExecute(1);
+            txtInfo.setText(" Done");
+        }
 
         protected void onPostExecute(Integer... result) {
             super.onPostExecute(result[0]);
@@ -143,6 +148,8 @@
 
 
         }
+
+
     }
 
 

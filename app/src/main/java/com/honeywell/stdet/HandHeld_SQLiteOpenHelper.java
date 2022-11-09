@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,6 +22,7 @@ import java.util.Objects;
 public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "HandHeld.sqlite3";
     private static final int DATABASE_VERSION = 1;
+    public static String DB_PATH;
 
     //default facility names:
     public static final String FACILITY_ID = "1";
@@ -55,6 +57,13 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     public HandHeld_SQLiteOpenHelper(Context context, StdetDataTables tbls) {
 
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        if (android.os.Build.VERSION.SDK_INT >= 4.2) {
+            DB_PATH = context.getApplicationInfo().dataDir + "/databases/";
+
+        } else {
+            DB_PATH = "/data/data/" + context.getPackageName() + "/databases/";
+        }
+
         tables = tbls;
         getReadableDatabase(); // <-- add this, which triggers onCreate/onUpdate
     }
@@ -112,14 +121,20 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
     public void getInsertFromTables(SQLiteDatabase db) {
         int n = tables.getDataTables().size();
+        System.out.println("In getInsertFromTables ");
+
         for (int i = 0; i < n; i++) {
+
+
             if (tables != null && tables.getDataTables().get(i).getName() != null) {
                 String tbName = tables.getDataTables().get(i).getName();
+                System.out.println("In getInsertFromTables " + String.valueOf(i) + " "+tbName);
                 if (!tbName.equalsIgnoreCase("NA")) {
                     getInsertFromTable(db, tables.getDataTables().get(i));
                 }
             }
         }
+
     }
 
 
@@ -138,17 +153,23 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 System.out.println("getInsertTable " + delete);
                 db.execSQL(delete);
             }
+            //db.beginTransaction();
 
             for (int i = 0; i < n; i++) {
                 try {
                     insert = table.getInsertIntoDB(i);
+                    System.out.println("insert " + insert );
                     db.execSQL(insert);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     System.out.println("insert " + insert + ex);
+
                 }
 
             }
+            //db.endTransaction();
+            //db.setTransactionSuccessful();
+
         } catch (Exception ex) {
             ex.printStackTrace();
             System.out.println("getInsertFromTable " + ex);
@@ -158,6 +179,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
     public void getInsertFromTable(SQLiteDatabase db, StdetDataTable table) {
         int n = table.GetNumberOfRecords();
+
         String create = table.createTableSQL();
         String tablename = table.getName();
         System.out.println("getInsertFromTable " + create);
@@ -172,16 +194,23 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 db.execSQL(delete);
             }
 
+            //db.beginTransaction();
+
             for (int i = 0; i < n; i++) {
                 try {
                     insert = table.getInsertIntoDB(i);
-                    db.execSQL(insert);
+                    SQLiteStatement statement = db.compileStatement(insert);
+                    statement.execute();
+                    statement.close();
+                    //db.execSQL(insert);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     System.out.println("insert " + insert + ex);
                 }
 
             }
+            //db.endTransaction();
+            //db.setTransactionSuccessful();
         } catch (Exception ex) {
             ex.printStackTrace();
             System.out.println("getInsertFromTable " + ex);
@@ -191,34 +220,45 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     ///////// Get The Data
 
     public Cursor getLocations(SQLiteDatabase db) {
-        String qry = "Select  rowid _id, strD_loc_id, strD_LocDesc, '1' as ord from tbl_DCP_Loc_def UNION ALL SELECT -1,'NA','NA','0' "
-                + " order by ord, strD_loc_id";
-        return db.rawQuery(qry, null);
+        String qry = "Select  rowid _id, strD_loc_id, strD_LocDesc, '1' as ord, " + Stdet_DCP_Loc_Def.strD_TypeID +
+                " from tbl_DCP_Loc_def "
+                + " where " + Stdet_DCP_Loc_Def.ynCurrent + " <> 0 "
+                + " and "
+                + Stdet_DCP_Loc_Def.strD_TypeID + " in ('BIN', 'EWL', 'FPCT', 'FR', 'FT', 'IMHF',"
+                + " 'IMTM', 'MWL', 'NAOH', 'PD', 'PH', 'PR', 'TL',  'WFR', 'WFT', 'WL', 'WPR') "
+                +" UNION ALL SELECT -1,'NA','NA','0','W' "
+                + " order by ord, strD_Loc_ID ";
+        Cursor c = db.rawQuery(qry, null);
+        return c;
     }
 
-    public String[] getElevationCodeValue(SQLiteDatabase db, String loc, String elev_code) {
-        String[] sElevCodeValue = new String[]{"NA","Max Depth","NA"};
-        String qry = "Select elev_code, elev_value, elev_code_desc from ut_elevations e inner join tbl_DCP_Loc_Def l on l.sys_loc_code = e.sys_loc_code where e.elev_code='" + elev_code + "'";
-        qry += " and strD_Loc_ID='" + loc + "'";
+        public String[] getElevationCodeValue(SQLiteDatabase db, String loc, String elev_code){
+            String[] sElevCodeValue = new String[]{"NA", "Max Depth", "NA"};
+            String qry = "Select elev_code, elev_value, elev_code_desc from ut_elevations e inner join tbl_DCP_Loc_Def l on l.sys_loc_code = e.sys_loc_code where e.elev_code='" + elev_code + "'";
+            qry += " and strD_Loc_ID='" + loc + "'";
 
-        Cursor c =  db.rawQuery(qry, null);
-        if (c.getCount() > 0) {
-            c.moveToFirst();
-            if (!c.isNull(0))
-                sElevCodeValue[0] = c.getString(0);
-            if (!c.isNull(1))
-                sElevCodeValue[1] = c.getString(1);
-            if (!c.isNull(2))
-                sElevCodeValue[2] = c.getString(2);
+            Cursor c = db.rawQuery(qry, null);
+            if (c.getCount() > 0) {
+                c.moveToFirst();
+                if (!c.isNull(0))
+                    sElevCodeValue[0] = c.getString(0);
+                if (!c.isNull(1))
+                    sElevCodeValue[1] = c.getString(1);
+                if (!c.isNull(2))
+                    sElevCodeValue[2] = c.getString(2);
+            }
+            c.close();
+
+            return sElevCodeValue;
         }
-        c.close();
-
-        return sElevCodeValue;
-    }
     public String[] getElevationCodeValue(SQLiteDatabase db, String loc) {
         String[] sElevCodeValue = new String[]{"NA","Max Depth","NA"};
-        String qry = "Select elev_code, elev_value, elev_code_desc from ut_elevations e inner join tbl_DCP_Loc_Def l on l.sys_loc_code = e.sys_loc_code where e.wl_meas_point = 1  ";
+        String qry = "Select elev_code, elev_value, elev_code_desc " +
+                "from ut_elevations e inner join tbl_DCP_Loc_Def l " +
+                " on l.sys_loc_code = e.sys_loc_code where e.wl_meas_point = 1  ";
         qry += "and strD_Loc_ID='" + loc + "'";
+        qry += " and l.strD_Loc_ID like '%Wl%'";
+        System.out.println(qry);
 
         Cursor c =  db.rawQuery(qry, null);
         if (c.getCount() > 0) {
@@ -284,7 +324,8 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         String qry = "";
 
         qry = "Select rowid as _id, strFO_StatusID, '1' as ord from tbl_Fac_Oper_Def " +
-                " UNION ALL SELECT -1,'NA', '0' order by ord, strFO_StatusID";
+              //  " UNION ALL SELECT -1,'NA', '0' " +
+                " order by ord, strFO_StatusID";
 
         return db.rawQuery(qry, null);
     }
@@ -293,7 +334,8 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         String qry = "";
 
         qry = "Select rowid as _id, strEqO_StatusID, '1' as ord from tbl_Equip_Oper_Def " +
-                " UNION ALL SELECT -1,'NA', '0' order by ord, strEqO_StatusID";
+                //" UNION ALL SELECT -1,'NA', '0' " +
+                " order by ord, strEqO_StatusID";
 
         return db.rawQuery(qry, null);
 
@@ -379,12 +421,17 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     public Integer getMaxIRID(SQLiteDatabase db) {
         int rv = 0;
         String qry = "select  max (lngId) from tbl_Inst_Readings";
-        Cursor c = db.rawQuery(qry, null);
-        if (c.getCount() > 0) {
-            c.moveToFirst();
-            rv = c.getInt(0);
+        try {
+            Cursor c = db.rawQuery(qry, null);
+            if (c.getCount() > 0) {
+                c.moveToFirst();
+                rv = c.getInt(0);
+            }
+            c.close();
         }
-        c.close();
+        catch(Exception ex){
+            System.out.println(ex);
+        }
         return rv;
     }
 

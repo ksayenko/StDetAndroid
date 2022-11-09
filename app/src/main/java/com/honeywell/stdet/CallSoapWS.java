@@ -240,6 +240,36 @@ public class CallSoapWS {
         return bResponse;
     }
 
+    public String CheckConnection() {
+        String ServerDate = "";
+        String addr = getSoapAction(METHOD_NAME_SERVERDATE);
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SERVERDATE);
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+
+        StrictMode.setThreadPolicy(policy);
+
+        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(
+                SoapEnvelope.VER11);
+        envelope.dotNet = true;
+
+        envelope.setOutputSoapObject(request);
+
+        HttpTransportSE httpTransport = new HttpTransportSE(addr);
+        Object response = null;
+        try {
+            httpTransport.call(SOAP_ACTION_SERVERDATE, envelope);
+            response = envelope.getResponse();
+        } catch (Exception exception) {
+            System.out.println("WS_GetServerDate " + exception.toString());
+            exception.printStackTrace();
+            response = "ERROR In Webserver Connection " + exception.toString();
+
+        }
+
+        return response.toString();
+    }
+
 
     public String WS_GetServerDate(boolean bWrite) {
         String ServerDate = "";
@@ -264,7 +294,8 @@ public class CallSoapWS {
         } catch (Exception exception) {
             System.out.println("WS_GetServerDate " + exception.toString());
             exception.printStackTrace();
-            response = exception.toString();
+            response = "ERROR In Webserver Connection "+exception.toString();
+
         }
 
         ServerDate = response.toString();

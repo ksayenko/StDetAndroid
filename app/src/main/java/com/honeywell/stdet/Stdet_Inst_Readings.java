@@ -82,7 +82,16 @@ public class Stdet_Inst_Readings extends StdetDataTable {
 
     }
 
-    public Integer AddToTable( ) {
+    @Override
+    public String getInsertIntoDB(int element){
+        String r = super.getInsertIntoDB(element);
+
+        System.out.println(r);
+
+        return r;
+    }
+
+    public void AddToTable( ) {
 
         Integer maxID = -1;
         String facility_id1 = "1";
@@ -118,19 +127,23 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         reading.set(GetElementIndex(strDataModComment), strDataModComment1);
 
         this.AddRowToData(reading);
+     }
 
-        return maxID++;
-    }
-
-    public Integer AddToTable( Integer maxID, String facility_id1, String loc1, String reading_value1,
+    public Integer AddToTable(String facility_id1, String loc1, String reading_value1,
                             String datetime1, String col1, String eq_status1,
                             String fo_status1, String unit1, String el_code1,
                             String comment1, String strDataModComment1) {
         ArrayList<String> reading = new ArrayList<>();
         int n = this.getColumnsNumber();
+        int previous_maxid = -1;
+        int nRecords = this.GetNumberOfRecords();
+        if(nRecords  > 0) {
+            previous_maxid = Integer.parseInt(this.getValueFromData(nRecords - 1, lngID));
+        }
+        Integer maxID =  (int) (new Date().getTime()/1000);
+
         for (int j = 0; j < n; j++)
             reading.add("");
-
 
         reading.set(GetElementIndex(lngID), String.valueOf(maxID));
         reading.set(GetElementIndex(facility_id), facility_id1);
@@ -159,6 +172,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
                 + "," + strComment + "," + strDataModComment + "," + elev_code;
         return header;
     }
+
 
     public static String SelectDataToUpload()        {
         String select =  "Select facility_id,strEqID,strD_Col_ID,datIR_Date,datIR_Time,strD_Loc_ID,"

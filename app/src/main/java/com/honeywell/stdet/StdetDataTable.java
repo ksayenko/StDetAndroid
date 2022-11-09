@@ -215,6 +215,7 @@ public class StdetDataTable  implements Serializable {
 
         sInsert1 += " )";
         sInsert2 += " )";
+
         return sInsert1 + sInsert2;
     }
 
@@ -256,5 +257,7 @@ public class StdetDataTable  implements Serializable {
             dataRow.add("");
         return dataRow;
     }
+
+
 
 }
