@@ -727,14 +727,25 @@ Wedge as keys to empty
         VALIDDATION isValid = VALIDDATION.VALID;
         String message = "";
 
+        // returning the record is valid if the value in the database for loc_min or loc_max is wrong or empty string
+
+        if (locMin =="" || locMax ==""){
+            error_message[0] = "No valid records for loc_min or loc_max in the database";
+            return VALIDDATION.VALID;
+
+        }
         double min = 0.0, max = 0.0, val = 0.0;
         try {
             min = Double.parseDouble(locMin);
         } catch (Exception ignored) {
+            error_message[0] = "No valid records for loc_min or loc_max in the database";
+              return VALIDDATION.VALID;
         }
         try {
             max = Double.parseDouble(locMax);
         } catch (Exception ignored) {
+            error_message[0] = "No valid records for loc_min or loc_max in the database";
+            return VALIDDATION.VALID;
         }
 
         //Cursor.Current = Cursors.WaitCursor;

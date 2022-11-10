@@ -22,14 +22,19 @@ public class StDEtEncrypt{
 
         }
 
-        public static String decrypt(String value) throws Exception
-        {
-            Key key = generateKey();
-            Cipher cipher = Cipher.getInstance(StDEtEncrypt.ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE, key);
-            byte[] decryptedValue64 = Base64.decode(value, Base64.DEFAULT);
-            byte [] decryptedByteValue = cipher.doFinal(decryptedValue64);
-            String decryptedValue = new String(decryptedByteValue,"utf-8");
+        public static String decrypt(String value) throws Exception {
+            String decryptedValue = "";
+            try {
+                Key key = generateKey();
+                System.out.println("pwd encr - " + value);
+                Cipher cipher = Cipher.getInstance(StDEtEncrypt.ALGORITHM);
+                cipher.init(Cipher.DECRYPT_MODE, key);
+                byte[] decryptedValue64 = Base64.decode(value, Base64.DEFAULT);
+                byte[] decryptedByteValue = cipher.doFinal(decryptedValue64);
+                decryptedValue = new String(decryptedByteValue, "utf-8");
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
             return decryptedValue;
 
         }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">DTSC StDet Android</string>
+    <string name="app_name">DTSC STDET Android</string>
     <string name="menu_CheckScanner">Check Scanner</string>
     <string name="menu_SelectScanner">Select Scanner</string>
     <string name="menu_DownloadData">Download Lookup Tables</string>

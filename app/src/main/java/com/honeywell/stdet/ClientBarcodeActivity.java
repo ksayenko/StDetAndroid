@@ -30,7 +30,7 @@ public class ClientBarcodeActivity extends Activity implements BarcodeReader.Bar
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_barcode);
 
-        ((TextView)findViewById(R.id.txtActivityTitle)).setText("ClientBarcodeActivity");
+        ((TextView)findViewById(R.id.txtActivityTitle)).setText("Check Barcode");
         btnClient21=(Button)findViewById(R.id.btnClientActivity21);
         btnClient21.setVisibility(View.GONE);
 

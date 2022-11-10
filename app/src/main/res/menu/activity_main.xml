@@ -18,21 +18,23 @@
         android:orderInCategory="100"
         android:title="@string/menu_CheckScanner"
         app:showAsAction="never" />
-    <item
-        android:id="@+id/menu_SelectScanner"
-        android:orderInCategory="100"
-        android:title="@string/menu_SelectScanner"
-        app:showAsAction="never" />
-    <item
-         android:id="@+id/menu_LoginInfo"
-        android:orderInCategory="100"
-        android:title="@string/btnCheckConnectivity"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/menu_workWithSDCard"
-        android:orderInCategory="100"
-        android:title="@string/copy_data_to_sd_card"
-        app:showAsAction="never" />
+    <!--
+   <item
+       android:id="@+id/menu_SelectScanner"
+       android:orderInCategory="100"
+       android:title="@string/menu_SelectScanner"
+       app:showAsAction="never" />
+       -->
+   <item
+        android:id="@+id/menu_LoginInfo"
+       android:orderInCategory="100"
+       android:title="@string/btnCheckConnectivity"
+       app:showAsAction="never" />
+   <item
+       android:id="@+id/menu_workWithSDCard"
+       android:orderInCategory="100"
+       android:title="@string/copy_data_to_sd_card"
+       app:showAsAction="never" />
 
 
 

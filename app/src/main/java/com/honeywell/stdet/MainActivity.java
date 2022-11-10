@@ -143,11 +143,13 @@ public class MainActivity extends Activity {
             startActivity(barcodeIntent);
             return true;
         }
+        /*
         if (id == R.id.menu_SelectScanner) {
             Intent barcodeIntent = new Intent("android.intent.action.SCANNERSELECTBARCODEACTIVITY");
             startActivity(barcodeIntent);
             return true;
         }
+        */
         if (id == R.id.menu_LoginInfo) {
             Intent barcodeIntent = new Intent("android.intent.action.LOGINACTIVITY");
             startActivity(barcodeIntent);
@@ -282,7 +284,7 @@ public class MainActivity extends Activity {
             rv = 1;
             // delete the original file
             boolean bdeleted  = new File(inputPath + "/" + inputFile).delete();
-            if (bdeleted)
+            if (!bdeleted)
                 rv = 0;
         } catch (FileNotFoundException fnfe1) {
             Log.e("tag", fnfe1.getMessage());
@@ -465,8 +467,12 @@ public class MainActivity extends Activity {
                             CallSoapWS ws = new CallSoapWS(directoryApp);
                             byte[] dataUpload = Files.readAllBytes(path);
                             String[] credentials = dbHelper.getLoginInfo(db);
+
                             String name = credentials[0];
                             String encryptedPassword = credentials[1];
+                            // For decryption not ise null or empty string
+                            if (encryptedPassword ==null || encryptedPassword == "")
+                                encryptedPassword = "NA";
                             String pwd = StDEtEncrypt.decrypt(encryptedPassword);
                             String[] errormessage = new String[]{""};
 
