@@ -40,6 +40,7 @@ public class ParseXMLAndUploadToDBThread{
         btnUploadDataToServer = (Button) activity.findViewById(R.id.buttonUploadReadings);
         txtInfo.setText(" Start");
         bDownloadFromWS = _bDownloadFromWS;
+
         populateDB();
 
     }
@@ -73,6 +74,7 @@ public class ParseXMLAndUploadToDBThread{
                 //Background work here
                 try {
                 System.out.println("Startings run");
+
                     btnInputForms.setEnabled(false);
                     btnUploadDataToServer.setEnabled(false);
                     doInBackground();
@@ -182,6 +184,8 @@ public class ParseXMLAndUploadToDBThread{
                     Toast.makeText(context, response, Toast.LENGTH_SHORT).show();
                     txtInfo.setText(response);
                     bConnection = false;
+                    //btnInputForms.setEnabled(true);
+                    //btnUploadDataToServer.setEnabled(true);
                 }
                 if (bConnection) {
                     CallSoapWS cs = new CallSoapWS(directoryApp);

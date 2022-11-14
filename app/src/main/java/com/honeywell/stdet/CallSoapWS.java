@@ -19,6 +19,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.UnknownHostException;
 
 /*
 SOAP 1.1
@@ -260,10 +261,14 @@ public class CallSoapWS {
         try {
             httpTransport.call(SOAP_ACTION_SERVERDATE, envelope);
             response = envelope.getResponse();
+        } catch (UnknownHostException exception) {
+            System.out.println("WS_GetServerDate " + exception.toString());
+            exception.printStackTrace();
+            response = "ERROR! Check Your Connection";// + exception.toString();
         } catch (Exception exception) {
             System.out.println("WS_GetServerDate " + exception.toString());
             exception.printStackTrace();
-            response = "ERROR In Webserver Connection " + exception.toString();
+            response = "ERROR! Check Your Connection" + exception.toString();
 
         }
 

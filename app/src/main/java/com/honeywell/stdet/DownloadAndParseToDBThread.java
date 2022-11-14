@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
             context = activity;
             directoryApp = context.getFilesDir();
             txtInfo = (TextView) activity.findViewById(R.id.txtInfo);
-            txtInfo.setText("In the DownloadAndParseToDBThread");
+            //txtInfo.setText("In the DownloadAndParseToDBThread");
             populateDB();
 
         }
