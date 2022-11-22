@@ -2,10 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.honeywell.stdet"
     android:requestLegacyExternalStorage="true"
-    android:versionCode="1"
     android:usesCleartextTraffic="true"
-    android:versionName="1.0">
-
+    android:versionCode="1"
+    android:versionName="1.0" >
 
     <uses-permission android:name="com.honeywell.decode.permission.DECODE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -16,93 +15,121 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@drawable/barcode_example_icon"
-        android:networkSecurityConfig="@xml/network_security_config"
         android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:requestLegacyExternalStorage="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme" >
+
+
         <activity
-            android:name="com.honeywell.stdet.MainActivity"
+            android:name=".MainActivity"
+            android:exported="true"
             android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:exported="true">
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name="com.honeywell.stdet.AutomaticBarcodeActivity"
+            android:name=".AutomaticBarcodeActivity"
+            android:exported="true"
             android:label="@string/barcode"
-            android:screenOrientation="portrait"
-            android:exported="true">
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.AUTOMATICBARCODEACTIVITY" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
-            android:name="com.honeywell.stdet.ClientBarcodeActivity"
+            android:name=".ClientBarcodeActivity"
+            android:exported="true"
             android:label="@string/barcode"
-            android:screenOrientation="portrait"
-            android:exported="true">
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.CLIENTBARCODEACTIVITY" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
-            android:name="com.honeywell.stdet.StDetInputActivity"
+            android:name=".StDetInputActivity"
+            android:exported="true"
             android:label="@string/barcode"
-            android:screenOrientation="portrait"
-            android:exported="true">
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.STDETINPUTBARCODEACTIVITY" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
-            android:name="com.honeywell.stdet.StDet_LoginInfoActivity"
-            android:label="@string/Login"
-            android:screenOrientation="portrait"
-            android:exported="true">
+            android:name=".StDetEditDataActivity"
+            android:exported="true"
+            android:label="@string/EditData"
+            android:screenOrientation="portrait" >
             <intent-filter>
-                <action android:name="android.intent.action.LOGINACTIVITY" />
+                <action android:name="android.intent.action.STDETEDITACTIVITY" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".StDetEditListActivity"
+            android:exported="true"
+            android:label="List Recent Readings"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="android.intent.action.STDETEDITLISTACTIVITY" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <!--
-        <activity
-            android:name="com.honeywell.stdet.ClientBarcodeActivity2"
-            android:label="@string/barcode"
-            android:screenOrientation="portrait"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.CLIENTBARCODEACTIVITY2" />
+    <activity
+        android:name=".StDetEditListActivity1"
+        android:exported="true"
+        android:label="@string/Login"
+        android:screenOrientation="portrait" >
+        <intent-filter>
+            <action android:name="android.intent.action.STDETEDITLISTACTIVITY1" />
 
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name="com.honeywell.stdet.ClientBarcodeActivity21"
-            android:label="@string/barcode"
-            android:screenOrientation="portrait"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.CLIENTBARCODEACTIVITY21" />
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent-filter>
+    </activity>
 
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-        -->
+            <activity
+        android:name="com.honeywell.stdet.ClientBarcodeActivity2"
+        android:label="@string/barcode"
+        android:screenOrientation="portrait"
+        android:exported="true">
+        <intent-filter>
+            <action android:name="android.intent.action.CLIENTBARCODEACTIVITY2" />
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent-filter>
+    </activity>
+    <activity
+        android:name="com.honeywell.stdet.ClientBarcodeActivity21"
+        android:label="@string/barcode"
+        android:screenOrientation="portrait"
+        android:exported="true">
+        <intent-filter>
+            <action android:name="android.intent.action.CLIENTBARCODEACTIVITY21" />
+
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent-filter>
+    </activity>
+    -->
         <activity
-            android:name="com.honeywell.stdet.ScannerSelectionBarcodeActivity"
+            android:name=".ScannerSelectionBarcodeActivity"
+            android:exported="true"
             android:label="@string/barcode"
-            android:screenOrientation="portrait"
-            android:exported="true">
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.SCANNERSELECTBARCODEACTIVITY" />
 
@@ -125,27 +152,31 @@
         </activity>
         -->
         <activity
-            android:name="com.honeywell.stdet.DownloadDataActivity"
+            android:name=".DownloadDataActivity"
+            android:exported="true"
             android:label="DownloadDataActivity"
-            android:parentActivityName="com.honeywell.stdet.MainActivity"
-            android:exported="true">
+            android:parentActivityName=".MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.DOWNLOADACTIVITY" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
             <meta-data
-            android:name="android.support.PARENT_ACTIVITY"
-            android:value="com.honeywell.stdet.MainActivity" />
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.honeywell.stdet.MainActivity" />
         </activity>
         <activity
-            android:name="com.honeywell.stdet.ParseXMLAndUploadToDBActivity"
+            android:name=".ParseXMLAndUploadToDBActivity"
+            android:exported="true"
             android:label="ParseXMLAndUploadToDBActivity"
-            android:parentActivityName="com.honeywell.stdet.MainActivity"
-            android:exported="true">
+            android:parentActivityName=".MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.PARSEXMLACTIVITY" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.honeywell.stdet.MainActivity" />

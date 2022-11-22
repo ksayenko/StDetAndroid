@@ -64,6 +64,7 @@ public class MainActivity extends Activity {
     private Button btnAutomaticBarcode;
     private Button btnClientBarcode;
     private Button btnInputForms;
+    private Button btnReviewForms;
     private Button btnScannerSelectBarcode;
     private Button btnFragmentView;
     private Button btnDownloadData;
@@ -424,6 +425,18 @@ public class MainActivity extends Activity {
                 barcodeIntent.putExtra("IR", default_reading);
                 startActivity(barcodeIntent);
                 System.out.println("In MAIN btnInputForms.setOnClickListener " + default_reading.getValueFromData(0, Stdet_Inst_Readings.strD_Col_ID));
+            }
+        });
+
+        this.btnReviewForms = findViewById(R.id.buttonReviewReadings);
+        btnReviewForms.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i("------------onClick StDetEditListActivity", "12");
+                // get the intent action string from AndroidManifest.xml
+                Intent barcodeIntent = new Intent("android.intent.action.STDETEDITLISTACTIVITY");
+                startActivity(barcodeIntent);
+                System.out.println("In MAIN btnReviewForms.setOnClickListener " + default_reading.getValueFromData(0, Stdet_Inst_Readings.strD_Col_ID));
             }
         });
 

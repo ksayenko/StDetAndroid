@@ -347,7 +347,25 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         return db.rawQuery(qry, null);
     }
 
-    public Cursor getIRRecords(SQLiteDatabase db) {
+    public Cursor getIRRecordsShortList(SQLiteDatabase db ) {
+        return getIRRecordsShortList(db, "order by "+ Stdet_Inst_Readings.datIR_Date + " desc");
+    }
+    public Cursor getIRRecordsShortList(SQLiteDatabase db, String orderby) {
+        String qry = "select  rowid as _id, " +
+                Stdet_Inst_Readings.strD_Loc_ID + ", " +
+                Stdet_Inst_Readings.datIR_Date + ", " +
+                Stdet_Inst_Readings.dblIR_Value + ", " +
+                Stdet_Inst_Readings.lngID + " from " +
+                HandHeld_SQLiteOpenHelper.INST_READINGS +
+                " where uploaded is null or uploaded =0" + " " + orderby;
+        return db.rawQuery(qry, null);
+    }
+
+
+    public Cursor getIRRecords(SQLiteDatabase db ) {
+        return getIRRecords(db, "order by "+ Stdet_Inst_Readings.datIR_Date + " desc");
+    }
+    public Cursor getIRRecords(SQLiteDatabase db, String orderby) {
         String qry = "select  rowid as _id, " + Stdet_Inst_Readings.facility_id + ", " +
                 Stdet_Inst_Readings.strD_Col_ID + ", " +
                 Stdet_Inst_Readings.datIR_Date + ", " +
@@ -366,7 +384,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 Stdet_Inst_Readings.elev_code + ", " +
                 Stdet_Inst_Readings.elev_code_desc + " from " +
                 HandHeld_SQLiteOpenHelper.INST_READINGS +
-                " where uploaded is null or uploaded =0";
+                " where uploaded is null or uploaded =0" + " " + orderby;
         return db.rawQuery(qry, null);
     }
 
@@ -471,6 +489,8 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             arrayList.add(c.getString(columnIndex));
         }//from   ww w .j a v a2  s. c o  m
     }
+
+
 
 
 

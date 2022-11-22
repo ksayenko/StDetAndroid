@@ -31,7 +31,7 @@
             android:id="@+id/txtInfo"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#76a3a3"
+            android:background="@color/greenblue1"
             android:gravity="left"
             android:padding="6dp"
             android:text="@string/textInfo"
@@ -46,6 +46,13 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="22dp"
             android:text="@string/btnInputForms" />
+
+        <Button
+            android:id="@+id/buttonReviewReadings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:text="@string/btnReviewReadings" />
 
         <Button
             android:id="@+id/buttonUploadReadings"

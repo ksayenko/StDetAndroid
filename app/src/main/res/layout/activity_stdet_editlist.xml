@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linear1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+        <HorizontalScrollView
+            android:id="@+id/hor_scroll_view_header"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:listSelector="@drawable/selector_list">
+
+                <TableLayout
+                    android:id="@+id/table_layout_header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/design_default_color_error"
+                    android:backgroundTint="@color/design_default_color_secondary"
+                    android:clickable="true"
+                    android:listSelector="@drawable/selector_list" />
+        </HorizontalScrollView>
+
+        <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="400dp"
+            android:clickable="true"
+            android:contextClickable="true"
+            android:scrollbarStyle="outsideOverlay"
+            android:scrollbars="vertical">
+
+                <HorizontalScrollView
+                    android:id="@+id/hor_scroll_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:listSelector="@drawable/selector_list">
+
+                        <TableLayout
+                            android:id="@+id/table_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/design_default_color_error"
+                            android:backgroundTint="@color/design_default_color_secondary"
+                            android:clickable="true"
+                            android:listSelector="@drawable/selector_list" />
+                </HorizontalScrollView>
+        </ScrollView>
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+                <TableRow
+                    android:id="@+id/rowButtons"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:minHeight="50dp">
+
+                        <Button
+                            android:id="@+id/btn_delete"
+                            style="@style/Widget.AppCompat.Button"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="@string/delete"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/btn_edit"
+                            style="@style/Widget.AppCompat.Button"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="@string/edit"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/btn_done2"
+                            style="@style/Widget.AppCompat.Button"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="@string/done"
+                            android:textStyle="bold" />
+                </TableRow>
+
+        </TableLayout>
+</LinearLayout>

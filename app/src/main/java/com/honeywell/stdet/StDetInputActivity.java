@@ -196,7 +196,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
         txt_comment = (EditText) findViewById(R.id.txt_Comment);
         edit_depth = (EditText) findViewById(R.id.text_depth);
         edit_depth.setEnabled(false);
-        btnClear = (Button) findViewById(R.id.btn_clear);
+        btnClear = (Button) findViewById(R.id.btn_edit);
 
         btnClear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -205,7 +205,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
             }
         });
 
-        btnSave = (Button) findViewById(R.id.btn_save);
+        btnSave = (Button) findViewById(R.id.btn_delete);
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -218,7 +218,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
             }
         });
 
-        btnDone = (Button) findViewById(R.id.btn_done);
+        btnDone = (Button) findViewById(R.id.btn_done2);
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

@@ -39,20 +39,28 @@
     <string name="na1">NA</string>
 
 
-
-        <string name="row2">row2</string>
-        <string name="row3" >row3</string>
-        <string name="row4">row4</string>
-        <string name="row5" >row5</string>
-        <string name="row6">row6</string>
-        <string name="row7" >row7</string>
-        <string name="row8" >row8</string>
-        <string name="row9" >row9</string>
-        <string name="row10">row10</string>
-        <string name="row11" >row11</string>
+    <string name="row2">row2</string>
+    <string name="row3">row3</string>
+    <string name="row4">row4</string>
+    <string name="row5">row5</string>
+    <string name="row6">row6</string>
+    <string name="row7">row7</string>
+    <string name="row8">row8</string>
+    <string name="row9">row9</string>
+    <string name="row10">row10</string>
+    <string name="row11">row11</string>
     <string name="Login">Login Info</string>
     <string name="menu_LoginInfo">Upload File Login Information</string>
     <string name="user_name">User Name</string>
     <string name="username">UserName</string>
     <string name="copy_data_to_sd_card">Copy Data to SD Card</string>
+    <string name="EditData">Edit Data</string>
+    <string name="btnReviewReadings">Edit Readings</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+
+    <color name="white">#FFFFFF</color>
+    <color name="greenblue1">#76a3a3</color>
+    <color name="lightblue">#e3eded</color>
+    <color name="brightblue">#85CAE6</color>
 </resources>
