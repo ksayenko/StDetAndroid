@@ -58,6 +58,8 @@
     <string name="btnReviewReadings">Edit Readings</string>
     <string name="delete">Delete</string>
     <string name="edit">Edit</string>
+    <string name="Update">Update</string>
+    <string name="Cancel">Cancel</string>
 
     <color name="white">#FFFFFF</color>
     <color name="greenblue1">#76a3a3</color>

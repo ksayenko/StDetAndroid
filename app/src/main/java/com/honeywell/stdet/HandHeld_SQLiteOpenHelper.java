@@ -1,6 +1,7 @@
 package com.honeywell.stdet;
 
 import android.app.AlarmManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -137,6 +138,61 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
     }
 
+    public Reading getReading(SQLiteDatabase db, String lngId) {
+        Reading r = null;
+        String qry = "Select  " + Stdet_Inst_Readings.facility_id + ", " +
+                Stdet_Inst_Readings.strD_Loc_ID + ", " +
+                Stdet_Inst_Readings.strD_Col_ID + ", " +
+                Stdet_Inst_Readings.datIR_Date + ", " +
+                Stdet_Inst_Readings.strComment + ", " +
+                Stdet_Inst_Readings.strDataModComment + ", " +
+                Stdet_Inst_Readings.dblIR_Value + ", " +
+                Stdet_Inst_Readings.elev_code + ", " +
+                Stdet_Inst_Readings.strEqO_StatusID + ", " +
+                Stdet_Inst_Readings.strFO_StatusID + ", " +
+                Stdet_Inst_Readings.strIR_Units + " FROM "+
+                HandHeld_SQLiteOpenHelper.INST_READINGS + " Where " +
+                Stdet_Inst_Readings.lngID + " = " + lngId;
+
+        Cursor c = db.rawQuery(qry, null);
+        if (c.getCount() > 0) {
+            r = new Reading();
+            c.moveToFirst();
+            r.setLngID(Integer.parseInt(lngId));
+            if (!c.isNull(0))
+                r.setFacility_id(c.getInt(0));
+            if (!c.isNull(1))
+                r.setStrD_Loc_ID(c.getString(1));
+            if (!c.isNull(2))
+                r.setStrD_Col_ID(c.getString(2));
+            if (!c.isNull(3)) {
+                r.setDatIR_Date(c.getString(3));
+                r.setDatIR_Time(c.getString(3));
+            }
+            if (!c.isNull(4))
+                r.setStrComment(c.getString(4));
+            if (!c.isNull(5))
+                r.setStrDataModComment(c.getString(5));
+            if (!c.isNull(6))
+                r.setDblIR_Value(c.getString(6));
+            if (!c.isNull(7))
+                r.setElev_code(c.getString(7));
+            if (!c.isNull(8))
+                r.setStrEqO_StatusID(c.getString(8));
+            if (!c.isNull(9))
+                r.setStrFO_StatusID(c.getString(9));
+            if (!c.isNull(10))
+                r.setStrIR_Units(c.getString(10));
+        }
+        c.close();
+        //add! min max
+        String[] min_max= getMinMax(db,r.getStrD_Loc_ID());
+        if (min_max!=null){
+            r.setLocMin(min_max[0]);
+            r.setLocMax(min_max[1]);
+        }
+        return r;
+    }
 
     public void getInsertTable(SQLiteDatabase db, StdetDataTable table) {
 
@@ -251,6 +307,8 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
             return sElevCodeValue;
         }
+
+
     public String[] getElevationCodeValue(SQLiteDatabase db, String loc) {
         String[] sElevCodeValue = new String[]{"NA","Max Depth","NA"};
         String qry = "Select elev_code, elev_value, elev_code_desc " +
@@ -272,6 +330,22 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         }
         c.close();
         return sElevCodeValue;
+    }
+
+    public int getUpdateReading(SQLiteDatabase db, Reading r ) {
+
+        ContentValues values = new ContentValues();
+        values.put( Stdet_Inst_Readings.dblIR_Value, r.getDblIR_Value());
+        values.put( Stdet_Inst_Readings.elev_code , r.getElev_code());
+        values.put(Stdet_Inst_Readings.strComment, r.getStrComment());
+        values.put(Stdet_Inst_Readings.strEqO_StatusID,  r.getStrFO_StatusID());
+        values.put(Stdet_Inst_Readings.strFO_StatusID, r.getStrEqO_StatusID());
+        values.put(Stdet_Inst_Readings.strIR_Units , r.getStrIR_Units());
+
+        int rowsUpdated = db.update(HandHeld_SQLiteOpenHelper.INST_READINGS, values, Stdet_Inst_Readings.lngID + "=" + r.getLngID(), null);
+
+        return rowsUpdated;
+
     }
 
 
@@ -359,6 +433,12 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 HandHeld_SQLiteOpenHelper.INST_READINGS +
                 " where uploaded is null or uploaded =0" + " " + orderby;
         return db.rawQuery(qry, null);
+    }
+
+    public int deleteRecords(SQLiteDatabase db, String lngid){
+       // String qry = " delete from "+   HandHeld_SQLiteOpenHelper.INST_READINGS +
+        //        " where lngid = " + lngid;
+       return   db.delete(HandHeld_SQLiteOpenHelper.INST_READINGS, Stdet_Inst_Readings.lngID+ "=?",new String[]{lngid});
     }
 
 

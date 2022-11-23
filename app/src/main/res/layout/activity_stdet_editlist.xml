@@ -7,46 +7,52 @@
     android:orientation="vertical">
 
 
-        <HorizontalScrollView
-            android:id="@+id/hor_scroll_view_header"
+    <HorizontalScrollView
+        android:id="@+id/hor_scroll_view_header"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:listSelector="@drawable/selector_list"
+        android:scrollbarSize="10dip"
+        android:scrollbars="horizontal">
+
+        <TableLayout
+            android:id="@+id/table_layout_header"
             android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:listSelector="@drawable/selector_list">
-
-                <TableLayout
-                    android:id="@+id/table_layout_header"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/design_default_color_error"
-                    android:backgroundTint="@color/design_default_color_secondary"
-                    android:clickable="true"
-                    android:listSelector="@drawable/selector_list" />
-        </HorizontalScrollView>
-
-        <ScrollView
-            android:layout_width="fill_parent"
-            android:layout_height="400dp"
+            android:layout_height="wrap_content"
+            android:background="@color/design_default_color_error"
+            android:backgroundTint="@color/design_default_color_secondary"
             android:clickable="true"
-            android:contextClickable="true"
-            android:scrollbarStyle="outsideOverlay"
-            android:scrollbars="vertical">
+            android:listSelector="@drawable/selector_list" />
 
-                <HorizontalScrollView
-                    android:id="@+id/hor_scroll_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:listSelector="@drawable/selector_list">
+    </HorizontalScrollView>
 
-                        <TableLayout
-                            android:id="@+id/table_layout"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@color/design_default_color_error"
-                            android:backgroundTint="@color/design_default_color_secondary"
-                            android:clickable="true"
-                            android:listSelector="@drawable/selector_list" />
-                </HorizontalScrollView>
-        </ScrollView>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:clickable="true"
+        android:contextClickable="true"
+        android:scrollbarSize="10dip"
+        android:scrollbarStyle="outsideInset"
+        android:scrollbars="vertical">
+
+        <HorizontalScrollView
+            android:id="@+id/hor_scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:listSelector="@drawable/selector_list"
+            android:scrollbarSize="10dip">
+
+            <TableLayout
+                android:id="@+id/table_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/design_default_color_error"
+                android:backgroundTint="@color/design_default_color_secondary"
+                android:clickable="true"
+                android:listSelector="@drawable/selector_list" />
+        </HorizontalScrollView>
+    </ScrollView>
+
         <TableLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -57,7 +63,7 @@
                     android:minHeight="50dp">
 
                         <Button
-                            android:id="@+id/btn_delete"
+                            android:id="@+id/btn_update"
                             style="@style/Widget.AppCompat.Button"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
@@ -75,7 +81,7 @@
                             android:textStyle="bold" />
 
                         <Button
-                            android:id="@+id/btn_done2"
+                            android:id="@+id/btn_cancel"
                             style="@style/Widget.AppCompat.Button"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"

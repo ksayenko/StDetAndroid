@@ -2,7 +2,9 @@ package com.honeywell.stdet;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
@@ -15,10 +17,13 @@ import androidx.core.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.HorizontalScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Objects;
 
 public class StDetEditListActivity extends Activity {
 
@@ -36,6 +41,9 @@ public class StDetEditListActivity extends Activity {
     Button btnEdit;
     Button btnDelete;
     Button btnDone;
+    HorizontalScrollView scrView;
+    HorizontalScrollView scrViewHeader;
+    boolean bDataExists = false;
 
     @Override
     public void onBackPressed() {
@@ -47,32 +55,116 @@ public class StDetEditListActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        StdetDataTables tables = new StdetDataTables();
+        tables.SetStdetTablesStructure();
+
+        dbHelper = new HandHeld_SQLiteOpenHelper(ct, tables);
+        db = dbHelper.getReadableDatabase();
+
+        int rowsInDB = dbHelper.getRowsInLookupTables(db);
+        if (rowsInDB < 1) {
+            AlertDialogShow("The Lookup Tables aren't populated, go to Menu | Download and Populate Lookup DB","ERROR!");
+        }
+
+
         currentRowSelected = -1;
         selectedLngID = "";
         System.out.println("in StDetEditListActivity");
         setContentView(R.layout.activity_stdet_editlist);
         tableLayoutHeader = findViewById(R.id.table_layout_header);
         tableLayout = findViewById(R.id.table_layout);
+        scrView = findViewById(R.id.hor_scroll_view);
+        scrViewHeader = findViewById(R.id.hor_scroll_view_header);
+
+        scrView.setOnScrollChangeListener(new View.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                final int newScrollX = scrollX;
+                if(scrollX != oldScrollX) {
+                    scrViewHeader.post(  new Runnable() {
+                        public void run() {
+                            scrViewHeader.scrollTo(newScrollX, 0);
+                        }
+                    });
+                }
+            }});
 
         btnEdit =findViewById(R.id.btn_edit);
         btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.i("------------onClick btnEdit", "12");
+                Reading r = null;
+                if (!Objects.equals(selectedLngID, "")) {
+                    r = dbHelper.getReading(db, selectedLngID);
+                }
+                if (r == null) {
+                    AlertDialog.Builder alert = new AlertDialog.Builder(ct);
+                    alert.setTitle("Select a record to edit entry");
+
+                    alert.setMessage("Please Select a Record to edit ");
+                    alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+
+                    alert.show();
+                }
+                else {
+                    Log.i("------------onClick StDetInputActivity", "12");
+                    // get the intent action string from AndroidManifest.xml
+                    Intent barcodeIntent = new Intent("android.intent.action.STDETEDITACTIVITY");
+                    barcodeIntent.putExtra("IR", r);
+                    startActivity(barcodeIntent);
+                    //Cursor cursor_list = dbHelper.getIRRecordsShortList(db);
+                    //fillData(cursor_list);
+                    //finish();
+                    //startActivity(getIntent());
+                    //finish();
+
+                }
                System.out.println("In StDetEditListActivity btnEdit.setOnClickListener " + selectedLngID);
             }
         });
 
-        btnDelete=findViewById(R.id.btn_delete);
+        btnDelete=findViewById(R.id.btn_update);
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i("------------onClick btnDelete", "12");
+                Log.i("------------onClick btnDelete", "s");
                 System.out.println("In StDetEditListActivity btnDelete.setOnClickListener " + selectedLngID);
+
+                AlertDialog.Builder alert = new AlertDialog.Builder(ct);
+                alert.setTitle("Delete entry");
+
+                alert.setMessage("Are you sure you want to delete a record "
+                        + String.valueOf(currentRowSelected+1) +"? ");
+                alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
+                        dbHelper.deleteRecords(db, selectedLngID);
+                        Cursor cursor_list = dbHelper.getIRRecordsShortList(db);
+                        fillData(cursor_list);
+                        finish();
+                        startActivity(getIntent());
+                    }
+                });
+                alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // close dialog
+                        dialog.cancel();
+                    }
+                });
+                alert.show();
             }
+
         });
-        btnDone =findViewById(R.id.btn_done2);
-        btnDelete.setOnClickListener(new View.OnClickListener() {
+        btnDone =findViewById(R.id.btn_cancel);
+        btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.i("------------onClick btnDone", "12");
@@ -87,17 +179,28 @@ public class StDetEditListActivity extends Activity {
         colorSel = new ColorDrawable(ContextCompat.getColor(this, R.color.brightblue));
 
 
-        StdetDataTables tables = new StdetDataTables();
-        tables.SetStdetTablesStructure();
-
-        dbHelper = new HandHeld_SQLiteOpenHelper(ct, tables);
-        db = dbHelper.getReadableDatabase();
         Cursor cursor_list = dbHelper.getIRRecordsShortList(db);
 
         createColumns();
         fillData(cursor_list);
+        tableLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                makeHeaderTableColumnsEven();
+            }
+        });
 
 
+    }
+
+    private void makeHeaderTableColumnsEven(){
+        if (bDataExists) {
+            TableRow tableRow = (TableRow) tableLayout.getChildAt(0);
+            TableRow headerRow = (TableRow) tableLayoutHeader.getChildAt(0);
+            for (int i = 0; i < headerRow.getChildCount(); i++) {
+                headerRow.getChildAt(i).setLayoutParams(new TableRow.LayoutParams(tableRow.getChildAt(i).getMeasuredWidth(), tableRow.getChildAt(i).getMeasuredHeight()));
+            }
+        }
     }
 
     private void createColumns() {
@@ -155,15 +258,20 @@ public class StDetEditListActivity extends Activity {
 
     private void fillData(Cursor list) {
         int i = 0;
-
+        bDataExists = false;
+        if (list.getCount()>0)
+            bDataExists = true;
         for (list.moveToFirst(); !list.isAfterLast(); list.moveToNext()) {
             {
-                i++;
                 rowData = new TableRow(this);
-                rowData.setLayoutParams(new TableLayout.LayoutParams(
+                TableLayout.LayoutParams lp = new TableLayout.LayoutParams(
                         TableRow.LayoutParams.MATCH_PARENT,
-                        TableRow.LayoutParams.WRAP_CONTENT));
+                        TableRow.LayoutParams.WRAP_CONTENT);
+
+                lp.setMargins(1,1,1,5);
+                rowData.setLayoutParams(lp);
                 rowData.setBackground(color2);
+
                 rowData.setSelected(true);
                 final Integer finalI = i;
                 rowData.setOnClickListener(new View.OnClickListener() {
@@ -174,12 +282,14 @@ public class StDetEditListActivity extends Activity {
                         if (row != null)
                             row.setBackground(colorSel);
                         //unselect
-                        TableRow rowUnselect = getRowById(currentRowSelected);
-                        if (rowUnselect !=null)
+                        TableRow rowUnselect = null;
+                        if (currentRowSelected > -1)
+                            rowUnselect = getRowById(currentRowSelected);
+                        if (rowUnselect != null && !Objects.equals(currentRowSelected, finalI))
                             rowUnselect.setBackground(color2);
                         currentRowSelected = finalI;
                         selectedLngID = lngId;
-                         Toast.makeText(ct, "Selected " + selectedLngID, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ct, "Selected " + selectedLngID, Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -221,7 +331,7 @@ public class StDetEditListActivity extends Activity {
 
                 if (list.getString(0) != null) {
                     //rowid
-                    textViewID.setText(String.valueOf(i));//list.getString(0));
+                    textViewID.setText(String.valueOf(i+1));//list.getString(0));
                 }
 
                 if (list.getString(1) != null) {
@@ -245,6 +355,8 @@ public class StDetEditListActivity extends Activity {
                 tableLayout.addView(rowData, new TableLayout.LayoutParams(
                         TableLayout.LayoutParams.MATCH_PARENT,
                         TableLayout.LayoutParams.WRAP_CONTENT));
+                i++;
+
             }
         }
 
@@ -253,7 +365,7 @@ public class StDetEditListActivity extends Activity {
 
     private TableRow getRowById(int j) {
         TableRow row = null;
-       if (j > 0 && j < tableLayout.getChildCount())
+       if (j >= 0 && j < tableLayout.getChildCount())
             row = (TableRow) tableLayout.getChildAt(j);
         return row;
     }
@@ -262,7 +374,7 @@ public class StDetEditListActivity extends Activity {
         TableRow row = null;
         String lngId = "";
         String one = "";
-       if (j > 0 && j < tableLayout.getChildCount()) {
+       if (j >=0 && j < tableLayout.getChildCount()) {
             row = (TableRow) tableLayout.getChildAt(j);
             one = ((TextView) row.getChildAt(1)).getText().toString();
             System.out.println("Loc_id " + one);
@@ -270,5 +382,42 @@ public class StDetEditListActivity extends Activity {
             lngId = (String) textLngId.getText();
         }
         return lngId;
+    }
+
+    public void onDestroy() {
+        super.onDestroy();
+            db.close();
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onRestart()
+    {
+        super.onRestart();
+        finish();
+        startActivity(getIntent());
+    }
+
+    private void AlertDialogShow(String message, String title){
+        AlertDialogShow(message, title, "OK");
+    }
+    private void AlertDialogShow(String message, String title, String button) {
+        AlertDialog ad = new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(button, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                    }
+                })
+                .show();
+        try {
+            wait(10);
+        } catch (Exception ignored) {
+        }
     }
 }

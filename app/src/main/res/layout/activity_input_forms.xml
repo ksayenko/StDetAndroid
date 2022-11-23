@@ -38,9 +38,10 @@
                 android:textStyle="bold" />
 
             <Spinner
-                android:id="@+id/spin_COL_ID"
-                android:layout_width="match_parent"
-                android:layout_height="47dp"
+                android:id="@+id/txt_COL_ID"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:background="@drawable/custom_spinner_background"
                 android:gravity="center_vertical"
                 android:scrollbarStyle="insideInset"
@@ -66,7 +67,7 @@
                 android:textStyle="bold" />
 
             <Spinner
-                android:id="@+id/spin_Loc_id"
+                android:id="@+id/txt_Loc_id"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -83,7 +84,7 @@
             android:minHeight="40dp">
 
             <TextView
-                android:id="@+id/txt_Loc_desc"
+                android:id="@+id/lbl_Loc_desc"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="3"
@@ -287,7 +288,7 @@
             android:minHeight="50dp">
 
             <Button
-                android:id="@+id/btn_delete"
+                android:id="@+id/btn_save"
                 style="@style/Widget.AppCompat.Button"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -296,7 +297,7 @@
                 android:textStyle="bold" />
 
             <Button
-                android:id="@+id/btn_edit"
+                android:id="@+id/btn_clear"
                 style="@style/Widget.AppCompat.Button"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -305,7 +306,7 @@
                 android:textStyle="bold" />
 
             <Button
-                android:id="@+id/btn_done2"
+                android:id="@+id/btn_done"
                 style="@style/Widget.AppCompat.Button"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"

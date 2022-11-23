@@ -27,6 +27,8 @@ import android.view.MenuItem.OnMenuItemClickListener;
 //import java.util.concurrent;
 
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -51,6 +53,7 @@ import com.honeywell.aidc.InvalidScannerNameException;
 public class MainActivity extends Activity {
 
     private static final int WRITE_REQUEST_CODE =1 ;
+    private static final int REQUEST_CODE_GETMESSAGE =1014 ;
     private static BarcodeReader barcodeReader;
     private AidcManager manager;
 
@@ -61,14 +64,9 @@ public class MainActivity extends Activity {
         return instance;
     }
 
-    private Button btnAutomaticBarcode;
-    private Button btnClientBarcode;
+
     private Button btnInputForms;
     private Button btnReviewForms;
-    private Button btnScannerSelectBarcode;
-    private Button btnFragmentView;
-    private Button btnDownloadData;
-    private Button btnParseXMLAndToDB;
     private Button btnUploadDataToServer;
     private TextView  txtInfo;
     private TextView txtAppInfo;
@@ -76,7 +74,7 @@ public class MainActivity extends Activity {
 
     Context context;
 
-    private Stdet_Inst_Readings default_reading;
+    private Reading default_reading;
     int versionCode = BuildConfig.VERSION_CODE;
     String versionName = BuildConfig.VERSION_NAME;
 
@@ -94,8 +92,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         directoryApp = getFilesDir();
         context = this;
-        default_reading = Stdet_Inst_Readings.GetDefault();
-
+        default_reading = Reading.GetDefaultReading();
 
         StdetDataTables tables= new StdetDataTables();
         tables.SetStdetTablesStructure();
@@ -144,13 +141,7 @@ public class MainActivity extends Activity {
             startActivity(barcodeIntent);
             return true;
         }
-        /*
-        if (id == R.id.menu_SelectScanner) {
-            Intent barcodeIntent = new Intent("android.intent.action.SCANNERSELECTBARCODEACTIVITY");
-            startActivity(barcodeIntent);
-            return true;
-        }
-        */
+
         if (id == R.id.menu_LoginInfo) {
             Intent barcodeIntent = new Intent("android.intent.action.LOGINACTIVITY");
             startActivity(barcodeIntent);
@@ -158,52 +149,13 @@ public class MainActivity extends Activity {
         }
 
         // a potentially time consuming task
-        /*
-        if (id == R.id.menu_UploadLookupData) {
-            progressBar.setVisibility(View.VISIBLE);
-            new ParseXMLAndUploadToDBThread(this, false);
-            progressBar.setVisibility(View.INVISIBLE);
-            return true;
-        }*/
-        // a potentially time consuming task
         if (id == R.id.menu_DownloadData) {
             progressBar.setVisibility(View.VISIBLE);
             new ParseXMLAndUploadToDBThread(this, true);
             return true;
         }
         if (id == R.id.menu_workWithSDCard) {
-/*
-                if(!Environment.isExternalStorageManager()) {
-                    Uri uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID);
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri);
-                    //startActivity(intent);
-                    Intent intent2 = new Intent();
-                    intent2.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-                    //startActivity(intent2);
-                }
-                */
 
-                    /*
-                    Snackbar.make(findViewById(android.R.id.content), "Permission needed!", Snackbar.LENGTH_INDEFINITE)
-                            .setAction("Settings", new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-
-                                    try {
-                                        Uri uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID);
-                                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri);
-                                        startActivity(intent);
-                                    } catch (Exception ex) {
-                                        Intent intent = new Intent();
-                                        intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-                                        startActivity(intent);
-                                    }
-                                }(new File("/storage/")).listFiles()
-                            })
-                            .show();
-                }
-
-                     */
             boolean isSdcard = false;
             int iCopied = 0;
             int iMoved = 0;
@@ -341,21 +293,24 @@ public class MainActivity extends Activity {
         return rv;
 
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+
         switch (requestCode) {
             case WRITE_REQUEST_CODE:
-                if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     //Granted.
 
 
-                }
-                else{
+                } else {
                     //Denied.
                 }
                 break;
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
+
     private boolean isExternalStorageAvailable() {
 
         String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
@@ -387,6 +342,27 @@ public class MainActivity extends Activity {
             return false;
         }
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        try {
+            Bundle extras = getIntent().getExtras();
+            if (requestCode == REQUEST_CODE_GETMESSAGE  && resultCode  == RESULT_OK && extras != null) {
+
+                default_reading = (Reading) getIntent().getSerializableExtra("IR");
+                if (default_reading == null)
+                    default_reading = Reading.GetDefaultReading();
+                Toast.makeText(context, default_reading.getStrD_Col_ID(), Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception ex) {
+            Toast.makeText(context, ex.toString(),
+                    Toast.LENGTH_SHORT).show();
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
+
+    }
+
     private ArrayList<File> getListFiles(File parentDir, String extension) {
         ArrayList<File> inFiles = new ArrayList<File>();
         File[] files = parentDir.listFiles();
@@ -423,8 +399,10 @@ public class MainActivity extends Activity {
                 // get the intent action string from AndroidManifest.xml
                 Intent barcodeIntent = new Intent("android.intent.action.STDETINPUTBARCODEACTIVITY");
                 barcodeIntent.putExtra("IR", default_reading);
-                startActivity(barcodeIntent);
-                System.out.println("In MAIN btnInputForms.setOnClickListener " + default_reading.getValueFromData(0, Stdet_Inst_Readings.strD_Col_ID));
+                startActivityForResult(barcodeIntent,REQUEST_CODE_GETMESSAGE);
+                System.out.println("In MAIN btnInputForms.setOnClickListener " + default_reading.getStrD_Loc_ID());
+
+
             }
         });
 
@@ -436,7 +414,7 @@ public class MainActivity extends Activity {
                 // get the intent action string from AndroidManifest.xml
                 Intent barcodeIntent = new Intent("android.intent.action.STDETEDITLISTACTIVITY");
                 startActivity(barcodeIntent);
-                System.out.println("In MAIN btnReviewForms.setOnClickListener " + default_reading.getValueFromData(0, Stdet_Inst_Readings.strD_Col_ID));
+                System.out.println("In MAIN btnReviewForms.setOnClickListener " + default_reading.getStrD_Col_ID());
             }
         });
 
@@ -514,7 +492,7 @@ public class MainActivity extends Activity {
         });
 
         txtAppInfo = findViewById(R.id.txtAppInfo);
-        txtAppInfo.setText("Version :" + versionCode);
+        txtAppInfo.setText("Version :" + versionName);
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.INVISIBLE);
 

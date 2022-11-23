@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -44,9 +45,11 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
         BarcodeReader.TriggerListener {
 
 
-    public enum VALIDDATION {VALID,ERROR,WARNING}
+    //public enum VALIDATION {VALID,ERROR,WARNING}
     private com.honeywell.aidc.BarcodeReader barcodeReader;
     private ListView barcodeList;
+
+    Reading input_reading;
 
     private Spinner spin_COL_ID;
     private Spinner spin_Loc_id;
@@ -109,25 +112,37 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
     Boolean bAcceptWarning = false;
 
 
-    private Stdet_Inst_Readings default_reading;
+    private Reading default_reading;
     private Stdet_Inst_Readings ir_table =  new Stdet_Inst_Readings();
 
-    private double UNDEFINED = -99999.999;
     Boolean[] bDialogChoice = {false};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         bSavedToDBData = false;
         bAcceptWarning = false;
+        input_reading = new Reading();
+        default_reading = Reading.GetDefaultReading();
+
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             System.out.println("we have default reading");
-            default_reading = (Stdet_Inst_Readings) getIntent().getSerializableExtra("IR");
+            default_reading = (Reading) getIntent().getSerializableExtra("IR");
         }
         else {
             System.out.println("no default reading");
-            default_reading = Stdet_Inst_Readings.GetDefault();
+            default_reading = Reading.GetDefaultReading();
         }
+
+        current_loc = default_reading.getStrD_Loc_ID();
+        current_collector = default_reading.getStrD_Col_ID();
+        strDataModComment = default_reading.getStrDataModComment();
+        curent_eo = default_reading.getStrEqO_StatusID();
+        curent_fo = default_reading.getStrFO_StatusID();
+        curent_elevationcode =default_reading.getElev_code();
+        current_comment = default_reading.getStrComment();
+        current_reading ="";
+        current_unit = default_reading.getStrIR_Units();
 
 
         Log.i("------------onCreate StDetInputActivity", "10");
@@ -149,7 +164,6 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
 
 
         maxId = dbHelper.getMaxIRID(db);
-        maxId++;
 
         Locs = dbHelper.getLocations(db);
         Cols = dbHelper.GetColIdentity(db);
@@ -167,9 +181,9 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
 
 
         Log.i("------------onCreate", Locs.getColumnName(1));
-        spin_COL_ID = (Spinner) findViewById(R.id.spin_COL_ID);
-        spin_Loc_id = (Spinner) findViewById(R.id.spin_Loc_id);
-        txt_LocDesc = (TextView) findViewById(R.id.txt_Loc_desc);
+        spin_COL_ID = (Spinner) findViewById(R.id.txt_COL_ID);
+        spin_Loc_id = (Spinner) findViewById(R.id.txt_Loc_id);
+        txt_LocDesc = (TextView) findViewById(R.id.lbl_Loc_desc);
         spin_FAC_OP = (Spinner) findViewById(R.id.spin_Fac_oper);
         spin_UNITS = (Spinner) findViewById(R.id.spin_Unit);
         spin_EQ_OP = (Spinner) findViewById(R.id.spin_Eq_oper);
@@ -196,7 +210,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
         txt_comment = (EditText) findViewById(R.id.txt_Comment);
         edit_depth = (EditText) findViewById(R.id.text_depth);
         edit_depth.setEnabled(false);
-        btnClear = (Button) findViewById(R.id.btn_edit);
+        btnClear = (Button) findViewById(R.id.btn_clear);
 
         btnClear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -205,20 +219,20 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
             }
         });
 
-        btnSave = (Button) findViewById(R.id.btn_delete);
+        btnSave = (Button) findViewById(R.id.btn_save);
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 System.out.println(bAcceptWarning);
-                VALIDDATION iChecked = saveForms(bAcceptWarning);
-                if (iChecked == VALIDDATION.WARNING)
+                Reading.VALIDATION iChecked = saveForms(bAcceptWarning);
+                if (iChecked == Reading.VALIDATION.WARNING)
                     bAcceptWarning = true;
                 System.out.println(bAcceptWarning);
                 System.out.println(iChecked);
             }
         });
 
-        btnDone = (Button) findViewById(R.id.btn_done2);
+        btnDone = (Button) findViewById(R.id.btn_done);
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -228,7 +242,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 String message = "The data (" + String.valueOf(records) + " records) is saved and ready to be uplaoded.";
                 //AlertDialogShow("The data (" + String.valueOf(records) + " records) is saved and ready to be uplaoded","Info","OK");
                 Toast.makeText(ct, message, Toast.LENGTH_SHORT).show();
-                ir_table = default_reading;
+                ir_table = new Stdet_Inst_Readings();
                 clearForms();
                 bSavedToDBData =true;
                 onBackPressed();
@@ -244,7 +258,8 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 curent_elevationcode = temp.getText().toString();
                 //bAcceptWarning = false;
                 String[] elev_code_value = dbHelper.getElevationCodeValue(db, current_loc, curent_elevationcode);
-                edit_depth.setText(elev_code_value[1]);
+                if (elev_code_value != null && elev_code_value[1] != null)
+                    edit_depth.setText(elev_code_value[1]);
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
@@ -275,33 +290,35 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 }
                 int id2e, id2f;
                 spin_elev_code.setEnabled(false);
+
                 if (current_loc.startsWith("WL")) {
                     curent_eo = "PumpOff";
-                    id2e = getIndexFromArraylist(alEq_Oper_Status, curent_eo, 1);
-                    spin_EQ_OP.setSelection(id2e);
                     curent_fo = "Oper";
-                    id2f = getIndexFromArraylist(alFac_Oper_Status, curent_fo, 1);
-                    spin_FAC_OP.setSelection(id2f);
                     spin_elev_code.setEnabled(true);
 
                 } else if (current_loc.startsWith("FT")) {
                     curent_eo = "PumpOff";
-                    id2e = getIndexFromArraylist(alEq_Oper_Status, curent_eo, 1);
-                    spin_EQ_OP.setSelection(id2e);
                     curent_fo = "Oper";
-                    id2f = getIndexFromArraylist(alFac_Oper_Status, curent_fo, 1);
-                    spin_FAC_OP.setSelection(id2f);
                 }
+
+                id2e = getIndexFromArraylist(alEq_Oper_Status, curent_eo, 1);
+                spin_EQ_OP.setSelection(id2e);
+                id2f = getIndexFromArraylist(alFac_Oper_Status, curent_fo, 1);
+                spin_FAC_OP.setSelection(id2f);
 
                 String[] Loc_minmax = dbHelper.getMinMax(db, current_loc);
                 locMax = Loc_minmax[1];
                 locMin = Loc_minmax[0];
+                input_reading.setLocMin(locMin);
+                input_reading.setLocMax(locMax);
 
 
                 String[] elev_code_value = dbHelper.getElevationCodeValue(db, current_loc);
-                System.out.println("current_loc  " + current_loc);
-                System.out.println("current_loc  " + elev_code_value[0]);
-                edit_depth.setText(elev_code_value[1]);
+                if (elev_code_value != null && elev_code_value[1] != null) {
+                    System.out.println("current_loc  " + current_loc);
+                    System.out.println("current_loc  " + elev_code_value[0]);
+                    edit_depth.setText(elev_code_value[1]);
+                }
                 int id3 = getIndexFromArraylist(alElev, elev_code_value[0], 1);
                 spin_elev_code.setSelection(id3);
 
@@ -325,7 +342,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 new SimpleCursorAdapter(this, android.R.layout.simple_spinner_item, Cols, fromCol, toL, 0);
         adCol.setDropDownViewResource(android.R.layout.simple_spinner_item);
         spin_COL_ID.setAdapter(adCol);
-        current_collector = default_reading.getValueFromData(0, Stdet_Data_Col_Ident.strD_Col_ID);
+        current_collector = default_reading.getStrD_Col_ID();
         System.out.println("from default current_collector "+current_collector);
         int idCol = getIndexFromArraylist(alCols, current_collector, 1);
         spin_COL_ID.setSelection(idCol);
@@ -341,17 +358,17 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
 
         SimpleCursorAdapter adFO =
                 new SimpleCursorAdapter(this, android.R.layout.simple_spinner_item, Fac_Oper_Status, fromFO, toL, 0);
-        adLocs.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        adFO.setDropDownViewResource(android.R.layout.simple_spinner_item);
         spin_FAC_OP.setAdapter(adFO);
 
         SimpleCursorAdapter adEO =
                 new SimpleCursorAdapter(this, android.R.layout.simple_spinner_item, Eq_Oper_Status, fromEO, toL, 0);
-        adLocs.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        adEO.setDropDownViewResource(android.R.layout.simple_spinner_item);
         spin_EQ_OP.setAdapter(adEO);
 
         SimpleCursorAdapter adU =
                 new SimpleCursorAdapter(this, android.R.layout.simple_spinner_item, Units, fromU, toL, 0);
-        adLocs.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        adU.setDropDownViewResource(android.R.layout.simple_spinner_item);
         spin_UNITS.setAdapter(adU);
 
         SimpleCursorAdapter adelev =
@@ -613,40 +630,57 @@ Wedge as keys to empty
         txt_Reading.requestFocus();
     }
 
-    public VALIDDATION saveForms(boolean bAcceptWarning) {
+    public Reading.VALIDATION saveForms(boolean bAcceptWarning) {
+
+        input_reading.setLngID( (int) (new Date().getTime()/1000));
+
         Date currentTime = Calendar.getInstance().getTime();
         String timeStamp = new SimpleDateFormat("MM/dd/yyyy hh:mm a").format(Calendar.getInstance().getTime());
         TextView temp;
         temp = (TextView) spin_Loc_id.getSelectedView();
         current_loc = temp.getText().toString();
+        input_reading.setStrD_Loc_ID(current_loc);
+        input_reading.setDatIR_Date(timeStamp);
+        input_reading.setDatIR_Time(timeStamp);
 
         temp = (TextView) spin_COL_ID.getSelectedView();
         current_collector = temp.getText().toString();
-        default_reading.setValueInData(0, Stdet_Inst_Readings.strD_Col_ID, current_collector);
-        System.out.println("In Input during save current_collector " + default_reading.getValueFromData(0, Stdet_Inst_Readings.strD_Col_ID) );
+        input_reading.setStrD_Col_ID(current_collector);
+        default_reading.setStrD_Col_ID(current_collector);//saving the last collector id
 
         temp = (TextView) spin_EQ_OP.getSelectedView();
         curent_eo = temp.getText().toString();
+        input_reading.setStrEqO_StatusID(curent_eo);
+
         temp = (TextView) spin_FAC_OP.getSelectedView();
         curent_fo = temp.getText().toString();
+        input_reading.setStrFO_StatusID(curent_fo);
+
         temp = (TextView) spin_UNITS.getSelectedView();
         current_unit = temp.getText().toString();
+        input_reading.setStrIR_Units(current_unit);
+
         current_reading = txt_Reading.getText().toString();
+        input_reading.setDblIR_Value(current_reading);
+
         current_comment = txt_comment.getText().toString();
+        input_reading.setStrComment(current_comment);
+
         temp = (TextView) spin_elev_code.getSelectedView();
         curent_elevationcode = temp.getText().toString();
+        input_reading.setElev_code(curent_elevationcode);
+
         String[] error_mesage = new String[]{""};
-        VALIDDATION bresult = isRecordValid(error_mesage);
-        if (bresult == VALIDDATION.ERROR) {
+        Reading.VALIDATION bresult = isRecordValid(error_mesage);
+        if (bresult == Reading.VALIDATION.ERROR) {
             AlertDialogShow(error_mesage[0],"ERROR");
         }
-        else if (bresult ==VALIDDATION.WARNING && !bAcceptWarning ) {
+        else if (bresult == Reading.VALIDATION.WARNING && !bAcceptWarning ) {
             AlertDialogShow("Please check\n" + error_mesage[0] +"\nPress 'Save' one more time to confirm the data as VALID or update the input data.","Warning");
         }
-        else if (bresult == VALIDDATION.VALID|| (bresult ==VALIDDATION.WARNING && bAcceptWarning) ) {
+        else if (bresult == Reading.VALIDATION.VALID|| (bresult == Reading.VALIDATION.WARNING && bAcceptWarning) ) {
             System.out.println(error_mesage[0]);
-            maxId = ir_table.AddToTable("1", current_loc, current_reading, timeStamp,
-                    current_collector, curent_eo, curent_fo, current_unit, curent_elevationcode, current_comment, strDataModComment);
+            maxId = ir_table.AddToTable(input_reading);
             maxId++;
             clearForms();
             System.out.println("NEW max id " + maxId.toString());
@@ -654,6 +688,35 @@ Wedge as keys to empty
 
         return bresult;
     }
+
+    private Reading.VALIDATION isRecordValid(String[] error_message) {
+        String message = "";
+        String[] focus = new String[]{""};
+        Reading.VALIDATION isValid = Reading.VALIDATION.VALID;
+        double reading;
+        try {
+            reading = Double.parseDouble(current_reading);
+        } catch (Exception ex) {
+            reading = 0.0;
+        }
+
+        isValid= input_reading.isRecordValid(error_message,focus);
+
+        if (isValid!= Reading.VALIDATION.VALID && focus[0] != null) {
+            if (focus[0].startsWith("R"))
+                txt_Reading.requestFocus();
+            else if (focus[0].startsWith("L"))
+               spin_Loc_id .requestFocus();
+            else if (focus[0].startsWith("C"))
+                spin_elev_code.requestFocus();
+            else if (focus[0].startsWith("E"))
+                spin_elev_code.requestFocus();
+        }
+
+
+        return isValid;
+    }
+
 
     public Stdet_Inst_Readings getIr_table() {
         return ir_table;
@@ -667,118 +730,7 @@ Wedge as keys to empty
         boolean isna = sValue == null || sValue.equals("") || sValue.equalsIgnoreCase("NA");
         return isna;
     }
-
-    public VALIDDATION isRecordValid(String[] error_message) {
-        String message = "";
-        VALIDDATION isValid = VALIDDATION.VALID;
-        double reading;
-        try {
-            reading = Double.parseDouble(current_reading);
-        } catch (Exception ex) {
-            reading = 0.0;
-        }
-
-        if (isNA(current_collector)) {
-            message += "Please select a Data Collector Id. ";
-            spin_COL_ID.requestFocus();
-            isValid = VALIDDATION.ERROR;
-        } else if (isNA(current_loc)) {
-            message += "Please input a Location Id. ";
-            spin_Loc_id.requestFocus();
-            isValid =VALIDDATION.ERROR;
-        } else if (isNA(curent_fo)) {
-            //message += "Please select a Facility Oper Status. ";
-            //spin_FAC_OP.requestFocus();
-            //isValid =VALIDDATION.ERROR;
-        } else if (isNA(curent_eo)) {
-            //message += "Please select an Equipment Oper Status. ";
-            //spin_FAC_OP.requestFocus();
-            //isValid = VALIDDATION.ERROR;
-        } else if (current_loc.startsWith("WL") && isNA(curent_elevationcode)) {
-            message += "Water level values require an elevation code. Please select a Elevation Code designator manually. ";
-            spin_elev_code.requestFocus();
-            isValid = VALIDDATION.ERROR;
-        } else if (reading == 0.0 && curent_eo.equalsIgnoreCase("NotOper")) {
-            String im1 = "A Reading value of 0, together with a 'NotOper' Equip Oper Status indicates a non-valid reading.";
-            message += im1;
-            isValid = VALIDDATION.WARNING;
-            txt_Reading.requestFocus();
-
-        } else if (reading == 0.0 && !curent_eo.equalsIgnoreCase("NotOper")) {
-            message += "A Reading value of 0 is detected!";
-            txt_Reading.requestFocus();
-            //to do not valid reeading confirm
-            String[] innermessage = new String[]{""};
-            isValid = VALIDDATION.ERROR;
-            message += innermessage[0];
-        } else {
-            String[] innermessage = new String[]{""};
-            isValid = isReadingWithinRange(reading, innermessage);
-            message += innermessage[0];
-        }
-
-        error_message[0] = message;
-        return isValid;
-
-    }
-
-    public VALIDDATION isReadingWithinRange(Double reading, String[] error_message) {
-
-        VALIDDATION isValid = VALIDDATION.VALID;
-        String message = "";
-
-        // returning the record is valid if the value in the database for loc_min or loc_max is wrong or empty string
-
-        if (locMin =="" || locMax ==""){
-            error_message[0] = "No valid records for loc_min or loc_max in the database";
-            return VALIDDATION.VALID;
-
-        }
-        double min = 0.0, max = 0.0, val = 0.0;
-        try {
-            min = Double.parseDouble(locMin);
-        } catch (Exception ignored) {
-            error_message[0] = "No valid records for loc_min or loc_max in the database";
-              return VALIDDATION.VALID;
-        }
-        try {
-            max = Double.parseDouble(locMax);
-        } catch (Exception ignored) {
-            error_message[0] = "No valid records for loc_min or loc_max in the database";
-            return VALIDDATION.VALID;
-        }
-
-        //Cursor.Current = Cursors.WaitCursor;
-        try {
-            //NOTE: We can no longer range check flow totalizers now that we switched to location characteristics
-            if (current_loc.startsWith("FT"))    //if this is a water level location
-            {
-                if (reading < 0) {
-                    message = "The Reading value is not a positive number!";
-                    isValid = VALIDDATION.ERROR;
-                } //else
-                    //isValid = VALIDDATION.VALID;
-            }
-
-            if (min == UNDEFINED || max == UNDEFINED)   // no defined range
-                isValid = VALIDDATION.ERROR;
-            else if (reading >= min && reading <= max)          // within bounds
-                isValid = VALIDDATION.VALID;
-            else {
-                message = "The Reading value falls outside the defined range: " + locMin + ".." + locMax;
-                isValid = VALIDDATION.WARNING;
-                System.out.println(message);
-            }
-            //Cursor.Current = Cursors.Default;
-        } catch (Exception ex) {
-            txt_Reading.requestFocus();
-        }
-        System.out.println("Within range message " + message);
-        error_message[0] = message;
-        return isValid;
-    }
-
-    private void AlertDialogShow(String message, String title){
+   private void AlertDialogShow(String message, String title){
         AlertDialogShow(message, title, "OK");
     }
     private void AlertDialogShow(String message, String title, String button) {
@@ -797,13 +749,19 @@ Wedge as keys to empty
     }
 
 
+
+
     @Override
     public void onBackPressed() {
-
+        Intent barcodeIntent = new Intent(ct,MainActivity.class);
+        barcodeIntent.putExtra("IR", default_reading);
+        setResult(Activity.RESULT_OK,barcodeIntent);
         if (!bSavedToDBData)
             btnDone.performClick();
-        else
+        else {
+            finish();
             super.onBackPressed();
+        }
     }
 
 

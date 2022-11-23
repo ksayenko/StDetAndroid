@@ -1,5 +1,6 @@
 package com.honeywell.stdet;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -52,7 +53,6 @@ public class Stdet_Inst_Readings extends StdetDataTable {
 
 
 
-
     public Stdet_Inst_Readings(){
         super(HandHeld_SQLiteOpenHelper.INST_READINGS);
         this.setTableType(TABLE_TYPE.READING);
@@ -79,6 +79,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
 
         this.AddColumnToStructure(uploaded,"Boolean",false);
         this.AddColumnToStructure(uploadedDatetime,"Datetime",false);
+
 
     }
 
@@ -128,6 +129,33 @@ public class Stdet_Inst_Readings extends StdetDataTable {
 
         this.AddRowToData(reading);
      }
+
+    public Integer AddToTable(Reading theReading) {
+        ArrayList<String> reading = new ArrayList<>();
+        int n = this.getColumnsNumber();
+        int nRecords = this.GetNumberOfRecords();
+
+        for (int j = 0; j < n; j++)
+            reading.add("");
+
+        reading.set(GetElementIndex(lngID), theReading.getLngID().toString());
+        reading.set(GetElementIndex(facility_id), theReading.getFacility_id().toString());
+        reading.set(GetElementIndex(strD_Loc_ID), theReading.getStrD_Loc_ID());
+        reading.set(GetElementIndex(dblIR_Value), theReading.getDblIR_Value());
+        reading.set(GetElementIndex(datIR_Date), theReading.getDatIR_Date());
+        reading.set(GetElementIndex(datIR_Time), theReading.getDatIR_Time());
+        reading.set(GetElementIndex(strD_Col_ID), theReading.getStrD_Col_ID());
+        reading.set(GetElementIndex(strEqO_StatusID), theReading.getStrEqO_StatusID());
+        reading.set(GetElementIndex(strFO_StatusID), theReading.getStrFO_StatusID());
+        reading.set(GetElementIndex(strIR_Units), theReading.getStrIR_Units());
+        reading.set(GetElementIndex(elev_code), theReading.getElev_code());
+        reading.set(GetElementIndex(strComment), theReading.getStrComment());
+        reading.set(GetElementIndex(strDataModComment), theReading.getStrDataModComment());
+
+        this.AddRowToData(reading);
+
+        return theReading.getLngID() +1;
+    }
 
     public Integer AddToTable(String facility_id1, String loc1, String reading_value1,
                             String datetime1, String col1, String eq_status1,
@@ -185,17 +213,14 @@ public class Stdet_Inst_Readings extends StdetDataTable {
 
     public static String UpdateUploadedData() {
         Date currentTime = Calendar.getInstance().getTime();
+        String timeStamp = new SimpleDateFormat("MM/dd/yyyy hh:mm a").format(Calendar.getInstance().getTime());
+
         String update = "UPDATE " + HandHeld_SQLiteOpenHelper.INST_READINGS
-                + " SET uploaded = 1 , uploadedDatetime = '" + currentTime + "'" +
+                + " SET uploaded = 1 , uploadedDatetime = '" + timeStamp + "'" +
                 " where uploaded is null";
         return update;
     }
 
-   public static Stdet_Inst_Readings GetDefault()
-   {
-       Stdet_Inst_Readings default_object = new Stdet_Inst_Readings();
-       default_object.AddToTable();
-       return  default_object;
 
-   }
+
 }
