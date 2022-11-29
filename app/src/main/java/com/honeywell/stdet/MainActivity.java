@@ -255,6 +255,13 @@ public class MainActivity extends Activity {
         InputStream in = null;
         OutputStream out = null;
         int rv = 0;
+        try{
+            boolean bDeleted  = new File(outputPath + "/" + inputFile).delete();
+        }
+        catch(Exception ex){
+            Log.e("Deleted old sqllite file", ex.getMessage());
+        }
+
         try {
 
             //create output directory if it doesn't exist
@@ -267,6 +274,7 @@ public class MainActivity extends Activity {
 
             in = new FileInputStream(inputPath +"/"+inputFile);
             out = new FileOutputStream(outputPath +"/"+ inputFile);
+
 
             byte[] buffer = new byte[1024];
             int read;
@@ -287,7 +295,7 @@ public class MainActivity extends Activity {
             rv = 0;
         }
         catch (Exception e) {
-            Log.e("tag", e.getMessage());
+            Log.e("Exception", e.getMessage());
             rv = 0;
         }
         return rv;
