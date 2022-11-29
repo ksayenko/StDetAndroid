@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -173,8 +174,12 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 r.setStrComment(c.getString(4));
             if (!c.isNull(5))
                 r.setStrDataModComment(c.getString(5));
-            if (!c.isNull(6))
-                r.setDblIR_Value(c.getString(6));
+            if (!c.isNull(6)) {
+                double dreading = c.getDouble(6);
+                //the max digits after the dot 55.9897384643555
+                DecimalFormat df = new DecimalFormat("#.################");
+                r.setDblIR_Value(df.format(dreading));
+            }
             if (!c.isNull(7))
                 r.setElev_code(c.getString(7));
             if (!c.isNull(8))

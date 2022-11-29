@@ -98,7 +98,7 @@ public class StDetEditDataActivity extends Activity {
     Boolean bSavedToDBData = false;
     Boolean bAcceptWarning = false;
 
-    private Stdet_Inst_Readings ir_table =  new Stdet_Inst_Readings();
+    //private Stdet_Inst_Readings ir_table =  new Stdet_Inst_Readings();
 
     Boolean[] bDialogChoice = {false};
 
@@ -375,7 +375,7 @@ public class StDetEditDataActivity extends Activity {
         }
         else if (bresult == Reading.VALIDATION.VALID|| (bresult == Reading.VALIDATION.WARNING && bAcceptWarning) ) {
             System.out.println(error_message[0]);
-             ir_table.AddToTable(input_reading);
+            bresult = Reading.VALIDATION.VALID;
          }
         System.out.println( " RESULT " + bresult);
         return bresult;

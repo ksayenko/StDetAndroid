@@ -27,6 +27,7 @@ public class ParseXMLAndUploadToDBThread{
     public Activity activity;
     boolean bDownloadFromWS;
     private Button btnInputForms;
+    private Button btnReviewForms;
     private Button btnUploadDataToServer;
 
     public ParseXMLAndUploadToDBThread(Activity _activity, boolean _bDownloadFromWS) {
@@ -38,6 +39,7 @@ public class ParseXMLAndUploadToDBThread{
         progressBar = (ProgressBar) activity. findViewById(R.id.progressBar);
         btnInputForms = (Button) activity.findViewById(R.id.btnInputForms);
         btnUploadDataToServer = (Button) activity.findViewById(R.id.buttonUploadReadings);
+        btnReviewForms = (Button) activity.findViewById(R.id.buttonReviewReadings);
         txtInfo.setText(" Start");
         bDownloadFromWS = _bDownloadFromWS;
 
@@ -77,6 +79,7 @@ public class ParseXMLAndUploadToDBThread{
 
                     btnInputForms.setEnabled(false);
                     btnUploadDataToServer.setEnabled(false);
+                    btnReviewForms.setEnabled(false);
                     doInBackground();
                     //System.out.println("After  doInBackground();");
                    // onPostExecute(11);
@@ -92,19 +95,8 @@ public class ParseXMLAndUploadToDBThread{
                             System.out.println("INSIDE THIS ONPOSTEXECUTE");
                             btnInputForms.setEnabled(true);
                             btnUploadDataToServer.setEnabled(true);
-                            //txtInfo.setText(" Done");
-                            //progressBar.setVisibility(View.INVISIBLE);
-                            //Log.i("------------onPostExecute", String.valueOf(result));
-                            /*
-                            final AlertDialog ad = new AlertDialog.Builder(context).create();
-                            if (result < 0) {
-                                ad.setTitle("Error!");
-                                ad.setMessage("The data has been uploaded with errors");
-                            } else {
-                                ad.setTitle("Sucsess!");
-                                ad.setMessage("The data has been uploaded correctly");
-                            }
-                            ad.show();*/
+                            btnReviewForms.setEnabled(true);
+                          
                         }
 
 

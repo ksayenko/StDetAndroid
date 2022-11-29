@@ -305,6 +305,7 @@ public class Reading implements Serializable {
     }
 
     public void setDblIR_Value(String dblIR_Value) {
+
         this.dblIR_Value = dblIR_Value;
     }
 

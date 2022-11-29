@@ -23,6 +23,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DecimalFormat;
 import java.util.Objects;
 
 public class StDetEditListActivity extends Activity {
@@ -119,11 +120,6 @@ public class StDetEditListActivity extends Activity {
                     Intent barcodeIntent = new Intent("android.intent.action.STDETEDITACTIVITY");
                     barcodeIntent.putExtra("IR", r);
                     startActivity(barcodeIntent);
-                    //Cursor cursor_list = dbHelper.getIRRecordsShortList(db);
-                    //fillData(cursor_list);
-                    //finish();
-                    //startActivity(getIntent());
-                    //finish();
 
                 }
                System.out.println("In StDetEditListActivity btnEdit.setOnClickListener " + selectedLngID);
@@ -193,12 +189,22 @@ public class StDetEditListActivity extends Activity {
 
     }
 
-    private void makeHeaderTableColumnsEven(){
+    private void makeHeaderTableColumnsEven() {
         if (bDataExists) {
             TableRow tableRow = (TableRow) tableLayout.getChildAt(0);
             TableRow headerRow = (TableRow) tableLayoutHeader.getChildAt(0);
             for (int i = 0; i < headerRow.getChildCount(); i++) {
-                headerRow.getChildAt(i).setLayoutParams(new TableRow.LayoutParams(tableRow.getChildAt(i).getMeasuredWidth(), tableRow.getChildAt(i).getMeasuredHeight()));
+                int wHeaderRow = headerRow.getChildAt(i).getMeasuredWidth();
+                int wTableRow = tableRow.getChildAt(i).getMeasuredWidth();
+                int w = (wHeaderRow > wTableRow) ? wHeaderRow : wTableRow;
+                if (wHeaderRow < wTableRow) {
+                    headerRow.getChildAt(i).setLayoutParams(new TableRow.LayoutParams(w,
+                            headerRow.getChildAt(i).getMeasuredHeight()));
+                } else {
+                    tableRow.getChildAt(i).setLayoutParams(new TableRow.LayoutParams(w,
+                            tableRow.getChildAt(i).getMeasuredHeight()));
+                }
+
             }
         }
     }
@@ -264,11 +270,11 @@ public class StDetEditListActivity extends Activity {
         for (list.moveToFirst(); !list.isAfterLast(); list.moveToNext()) {
             {
                 rowData = new TableRow(this);
-                TableLayout.LayoutParams lp = new TableLayout.LayoutParams(
+                TableRow.LayoutParams lp = new TableRow.LayoutParams(
                         TableRow.LayoutParams.MATCH_PARENT,
                         TableRow.LayoutParams.WRAP_CONTENT);
 
-                lp.setMargins(1,1,1,5);
+                lp.setMargins(1,1,1,10);
                 rowData.setLayoutParams(lp);
                 rowData.setBackground(color2);
 
@@ -289,7 +295,7 @@ public class StDetEditListActivity extends Activity {
                             rowUnselect.setBackground(color2);
                         currentRowSelected = finalI;
                         selectedLngID = lngId;
-                        Toast.makeText(ct, "Selected " + selectedLngID, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(ct, "Selected " + selectedLngID, Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -317,6 +323,8 @@ public class StDetEditListActivity extends Activity {
                 rowData.addView(textViewDT);
 
                 //Reading
+                //the max digits after 55.9897384643555
+                DecimalFormat df = new DecimalFormat("#.################");
                 TextView textViewReading = new TextView(this);
                 textViewReading.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
                 textViewReading.setPadding(5, 5, 5, 0);
@@ -343,8 +351,9 @@ public class StDetEditListActivity extends Activity {
                     textViewDT.setText(list.getString(2));
                 }
                 if (list.getString(3) != null) {
-                    //readign
-                    textViewReading.setText(list.getString(3));
+                    //reading
+                    double dreading = list.getDouble(3);
+                    textViewReading.setText(df.format(dreading));
                 }
                 if (list.getString(4) != null) {
                     //lng id
