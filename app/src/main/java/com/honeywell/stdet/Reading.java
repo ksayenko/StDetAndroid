@@ -1,6 +1,7 @@
 package com.honeywell.stdet;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 
 public class Reading implements Serializable {
@@ -173,6 +174,7 @@ public class Reading implements Serializable {
         String whereToFocus1="";
         VALIDATION isValid = VALIDATION.VALID;
         double reading;
+
         try {
             reading = Double.parseDouble(dblIR_Value);
         } catch (Exception ex) {
@@ -205,7 +207,14 @@ public class Reading implements Serializable {
             isValid = VALIDATION.WARNING;
             whereToFocus1 = "READING";
 
-        } else if (reading == 0.0 && !strEqO_StatusID.equalsIgnoreCase("NotOper")) {
+        }
+        else if (reading == 0.0 && (strD_Loc_ID.startsWith("WL") || strD_Loc_ID.startsWith("FT"))) {
+            String im1 = "A Reading value of 0, for location "+ strD_Loc_ID + " is Detected.";
+            message += im1;
+            isValid = VALIDATION.WARNING;
+            whereToFocus1 = "READING";
+
+        }else if (reading == 0.0 && !strEqO_StatusID.equalsIgnoreCase("NotOper")) {
             message += "A Reading value of 0 is detected!";
             whereToFocus1 = "READING";
             //to do not valid reeading confirm
@@ -305,7 +314,8 @@ public class Reading implements Serializable {
     }
 
     public void setDblIR_Value(String dblIR_Value) {
-
+        if (Objects.equals(dblIR_Value, ""))
+            dblIR_Value = "0.0";
         this.dblIR_Value = dblIR_Value;
     }
 

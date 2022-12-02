@@ -734,7 +734,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 s_facility_id = getStringQuotedValue(records, i_facility_id);
                 s_datIR_Date = getStringQuotedValue(records,i_datIR_Date);
                 s_datIR_Time = getStringQuotedValue(records,i_datIR_Time);
-                s_dblIR_Value = getStringQuotedValue(records,i_dblIR_Value) ;
+                s_dblIR_Value = getStringQuotedValueFromDouble(records,i_dblIR_Value, null) ;
                 s_strD_Loc_ID =getStringQuotedValue(records,i_strD_Loc_ID);
                 s_strEqO_StatusID = getStringQuotedValue(records,i_strEqO_StatusID);
                 s_strComment = getStringQuotedValue(records,i_strComment) ;
@@ -791,6 +791,19 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
     }
 
+    private String getStringQuotedValueFromDouble(Cursor records, Integer i, DecimalFormat df) {
+        String e = "\"";
+        String s = "";
+        if (df == null)
+            df = new DecimalFormat("#.################");
+        if (records.getString(i) != null && df == null)
+            s = (String) records.getString(i);
+        if (records.getString(i) != null && df != null) {
+            double dValue = records.getDouble(i);
+            s = df.format(dValue);
+        }
+        return e + s.trim() + e;
+    }
     private String getStringQuotedValue(Cursor records, Integer i) {
         String e = "\"";
         String s = "";

@@ -2,6 +2,7 @@ package com.honeywell.stdet;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.text.DecimalFormat;
 
 public class StdetDataTable  implements Serializable {
 
@@ -231,6 +232,11 @@ public class StdetDataTable  implements Serializable {
             sValue = "1";
         else if (type.equalsIgnoreCase("Boolean") && (sValue.equalsIgnoreCase("false")))
             sValue = "0";
+        //else if (type.equalsIgnoreCase("Double") ) {
+           // DecimalFormat df = new DecimalFormat("#.################");
+            //r.setDblIR_Value(df.format(dreading));
+            //sValue = "0";
+        //}
         return sValue;
     }
 
