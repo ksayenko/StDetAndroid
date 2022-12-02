@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
 
@@ -441,7 +442,10 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 // update UI to reflect the data
                 Log.i("------------onBarcodeEvent", "onBarcodeEvent!!!!");
                 List<String> list = new ArrayList<>();
-                current_loc = event.getBarcodeData();
+                String tempcurrent_loc = event.getBarcodeData();
+                if (tempcurrent_loc!=null || tempcurrent_loc!="")
+                    current_loc = tempcurrent_loc;
+                //current_loc = event.getBarcodeData();
                 Log.i("------------onBarcodeEvent", getCurrent_loc());
 
                 final ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(
@@ -519,15 +523,23 @@ Wedge as keys to empty
                 //final ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(
                 //         StDetInputActivity.this, android.R.layout.simple_list_item_1, list);
                 Log.i("no data", "no Data");
-                int id = getIndexFromArraylist(alLocs, "NA", 1);
+                if (Objects.equals(current_loc, "NA")) {
+                    int id = getIndexFromArraylist(alLocs, "NA", 1);
 
-                Log.i("------------onBarcodeEvent id =", Integer.toString(id));
+                    Log.i("------------onBarcodeEvent id =", Integer.toString(id));
 
-                bBarcodeLocation = false;
-                spin_Loc_id.setSelection(id);
-                //barcodeList.setAdapter(dataAdapter);
-                Toast.makeText(StDetInputActivity.this, "No data yet", Toast.LENGTH_SHORT).show();
-                bSavedToDBData = false;
+                    bBarcodeLocation = false;
+                    spin_Loc_id.setSelection(id);
+                    //barcodeList.setAdapter(dataAdapter);
+                    Toast.makeText(StDetInputActivity.this, "No data yet", Toast.LENGTH_SHORT).show();
+                    bSavedToDBData = false;
+                }
+                else{
+                    Toast.makeText(StDetInputActivity.this, current_loc, Toast.LENGTH_SHORT).show();
+
+                }
+
+
             }
         });
     }
