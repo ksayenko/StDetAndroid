@@ -251,13 +251,13 @@ public class ParseXMLAndUploadToDBThread{
 
                 if (tables != null && tables.getDataTables().get(i).getName() != null) {
                     String tbName = tables.getDataTables().get(i).getName();
-                    publishProgressBar(11+i);
-                    publishProgressTextView("Inserting Data for table "+ String.valueOf(i+1)+ ": " + tbName);
+                    publishProgressBar(11 + i);
+                    publishProgressTextView("Inserting Data for table " + String.valueOf(i + 1) + ": " + tbName);
                     System.out.println("In getInsertFromTables " + String.valueOf(i) + " " + tbName);
-                    if (!tbName.equalsIgnoreCase("NA")) {
-                        //db.beginTransaction();
+                    if (!tbName.equalsIgnoreCase("NA")
+                            && tables.getDataTables().get(i).getTableType() == StdetDataTable.TABLE_TYPE.LOOKUP) {
                         dbHelper.getInsertFromTable(db, tables.getDataTables().get(i));
-                        //db.endTransaction();
+
                     }
                 }
             }

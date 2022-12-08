@@ -214,26 +214,58 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 System.out.println("getInsertTable " + delete);
                 db.execSQL(delete);
             }
-            //db.beginTransaction();
 
-            for (int i = 0; i < n; i++) {
-                try {
-                    insert = table.getInsertIntoDB(i);
-                    System.out.println("insert " + insert );
-                    db.execSQL(insert);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    System.out.println("insert " + insert + ex);
+             /*
+            How can I speed up my database inserts?
 
+            You can use the following methods to speed up inserts:
+            If you are inserting many rows from the same client at the same time,
+            use INSERT statements with multiple
+            VALUES lists to insert several rows at a time. T
+            his is considerably faster (many times faster in some cases)
+            than using separate single-row INSERT statements.
+             */
+
+            if (n > 100 && table.getTableType() == StdetDataTable.TABLE_TYPE.LOOKUP) {
+                int k = 0;
+                int jump = 100;
+                while (k < n) {
+                    try {
+                        int k_end = ((n-k)>=100?k+jump-1:n-1);
+                        System.out.println(k + " - " + k_end);
+                        insert = table.getInsertIntoDB(k, k_end);
+                        SQLiteStatement statement = db.compileStatement(insert);
+                        statement.execute();
+                        statement.close();
+                        System.out.println(k + " - " + k_end + " insert BIG " + insert);
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        System.out.println("insert BIG " + insert + ex);
+                    }
+                    k = k + jump;
                 }
 
+            }
+             else {
+                for (int i = 0; i < n; i++) {
+                    try {
+                        insert = table.getInsertIntoDB(i);
+                        System.out.println("insert " + insert);
+                        db.execSQL(insert);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        System.out.println("insert " + insert + ex);
+                    }
+
+                }
             }
             //db.endTransaction();
             //db.setTransactionSuccessful();
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.out.println("getInsertFromTable " + ex);
+            System.out.println("ERROR getInsertFromTable " + ex);
 
         }
     }
@@ -255,23 +287,53 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 db.execSQL(delete);
             }
 
-            //db.beginTransaction();
+ /*
+            How can I speed up my database inserts?
 
-            for (int i = 0; i < n; i++) {
-                try {
-                    insert = table.getInsertIntoDB(i);
-                    SQLiteStatement statement = db.compileStatement(insert);
-                    statement.execute();
-                    statement.close();
-                    //db.execSQL(insert);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    System.out.println("insert " + insert + ex);
+            You can use the following methods to speed up inserts:
+            If you are inserting many rows from the same client at the same time,
+            use INSERT statements with multiple
+            VALUES lists to insert several rows at a time. T
+            his is considerably faster (many times faster in some cases)
+            than using separate single-row INSERT statements.
+             */
+
+            if (n > 100 && table.getTableType() == StdetDataTable.TABLE_TYPE.LOOKUP) {
+                int k = 0;
+                int jump = 100;
+                while (k < n) {
+                    try {
+                        System.out.println(k);
+                        int k_end = ((n - k) >= 100 ? k + jump - 1 : n-1);
+                        insert = table.getInsertIntoDB(k, k_end);
+                        SQLiteStatement statement = db.compileStatement(insert);
+                        statement.execute();
+                        statement.close();
+                        System.out.println(k + " - " + k_end + " insert BIG " + insert);
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        System.out.println("insert BIG " + insert + ex);
+                    }
+                    k = k + jump;
+                }
+            }
+            else{
+                    for (int i = 0; i < n; i++) {
+                        try {
+                            insert = table.getInsertIntoDB(i);
+                            SQLiteStatement statement = db.compileStatement(insert);
+                            statement.execute();
+                            statement.close();
+                            //db.execSQL(insert);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            System.out.println("insert " + insert + ex);
+                        }
+
+                    }
                 }
 
-            }
-            //db.endTransaction();
-            //db.setTransactionSuccessful();
         } catch (Exception ex) {
             ex.printStackTrace();
             System.out.println("getInsertFromTable " + ex);

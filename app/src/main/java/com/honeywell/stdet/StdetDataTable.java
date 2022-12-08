@@ -194,6 +194,50 @@ public class StdetDataTable  implements Serializable {
 
     }
 
+    public String getInsertIntoDB(int elementStart, int elementEnd) {
+        /* like insert into tbl_data_col_ident (lngid, strD_col_id)
+                Values(101,'abc'),(102,'cde')
+         */
+        String sInsert1 = "INSERT INTO  " + name + "(";
+        String sInsert2 = "VALUES   (";
+        String type;
+        String sValue;
+        int nColumns = ColumnNames.toArray().length;
+        int i = 0;
+
+        for (i = 0; i < nColumns; i++) {
+            sInsert1 += getColumnNames().get(i);
+
+            if (i < nColumns - 1) {
+                sInsert1 += ", ";
+            }
+        }
+        sInsert1 += " )";
+
+        for (int element = elementStart; element <= elementEnd; element++) {
+            if (element < this.GetNumberOfRecords()) {
+                for (i = 0; i < nColumns; i++) {
+
+                    sValue = dataTable.get(element).get(i);
+                    type = getColumnTypes().get(i);
+                    sValue = getConvertedValue(type, sValue);
+                    sInsert2 += sValue;
+
+                    if (i < nColumns - 1) {
+                        sInsert2 += ", ";
+                    }
+                }
+
+                if (element < elementEnd) {
+                    sInsert2 += ") ,( ";
+                } else
+                    sInsert2 += " )";
+            }
+        }
+
+        return sInsert1 + sInsert2;
+
+    }
 
     public String getInsertIntoDB(int element) {
         String sInsert1 = "INSERT INTO  " + name + "(";
