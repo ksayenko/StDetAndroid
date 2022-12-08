@@ -15,20 +15,10 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.honeywell.aidc.BarcodeReader;
-import com.honeywell.aidc.UnsupportedPropertyException;
-
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
 
@@ -192,12 +182,12 @@ public class StDetEditDataActivity extends Activity {
             @Override
             public void onClick(View view) {
                 System.out.println(" btnUpdate.setOnClickListener " + bAcceptWarning);
-                Reading.VALIDATION iChecked = saveForms(bAcceptWarning);
+                Validation iChecked = saveForms(bAcceptWarning);
 
-                if (iChecked == Reading.VALIDATION.WARNING)
+                if (iChecked.isWarning())
                     bAcceptWarning = true;
-                else if (iChecked == Reading.VALIDATION.VALID ||
-                        (bAcceptWarning && iChecked == Reading.VALIDATION.WARNING) ) {
+                else if (iChecked.isValid()||
+                        (bAcceptWarning && iChecked.isWarning()) ) {
                     dbHelper.getUpdateReading(db, input_reading);
 
                     AlertDialog.Builder alert = new AlertDialog.Builder(ct);
@@ -340,7 +330,7 @@ public class StDetEditDataActivity extends Activity {
     }
 
 
-    public Reading.VALIDATION saveForms(boolean bAcceptWarning) {
+    public Validation saveForms(boolean bAcceptWarning) {
 
         TextView temp;
         temp = (TextView) spin_EQ_OP.getSelectedView();
@@ -365,27 +355,26 @@ public class StDetEditDataActivity extends Activity {
         curent_elevationcode = temp.getText().toString();
         input_reading.setElev_code(curent_elevationcode);
 
-        String[] error_message = new String[]{""};
-        Reading.VALIDATION bresult = isRecordValid(error_message);
-        if (bresult == Reading.VALIDATION.ERROR) {
-            AlertDialogShow(error_message[0],"ERROR");
+
+        Validation recordValid = isRecordValid();
+        if (recordValid.isError()) {
+            AlertDialogShow(recordValid.getValidationMessage(),"ERROR");
         }
-        else if (bresult == Reading.VALIDATION.WARNING && !bAcceptWarning ) {
-            AlertDialogShow("Please check\n" + error_message[0] +"\nPress 'Save' one more time to confirm the data as VALID or update the input data.","Warning");
+        else if (recordValid.isWarning() && !bAcceptWarning ) {
+            AlertDialogShow("Please check\n" + recordValid.getValidationMessage() +"\nPress 'Save' one more time to confirm the data as VALID or update the input data.","Warning");
         }
-        else if (bresult == Reading.VALIDATION.VALID|| (bresult == Reading.VALIDATION.WARNING && bAcceptWarning) ) {
-            System.out.println(error_message[0]);
-            bresult = Reading.VALIDATION.VALID;
+        else if (recordValid.isValid()|| (recordValid.isWarning() && bAcceptWarning) ) {
+            System.out.println(recordValid.getValidationMessageError()+recordValid.getValidationMessageError());
+            recordValid.setValidation(Validation.VALIDATION.VALID);
          }
-        System.out.println( " RESULT " + bresult);
-        return bresult;
+        System.out.println( " RESULT " + recordValid);
+        return recordValid;
     }
 
 
-    public Reading.VALIDATION isRecordValid(String[] error_message) {
-        String message = "";
-        String[] focus = new String[]{""};
-        Reading.VALIDATION isValid = Reading.VALIDATION.VALID;
+    public Validation isRecordValid() {
+
+        Validation isValid = new Validation();
         double reading;
         try {
             reading = Double.parseDouble(current_reading);
@@ -393,12 +382,12 @@ public class StDetEditDataActivity extends Activity {
             reading = 0.0;
         }
 
-        isValid= input_reading.isRecordValid(error_message,focus);
+        isValid= input_reading.isRecordValid();
 
-        if (isValid!= Reading.VALIDATION.VALID && focus[0] != null) {
-            if (focus[0].startsWith("R"))
+        if (!isValid.isValid()) {
+            if (isValid.getFocus() == Validation.FOCUS.READING)
                 txt_Reading.requestFocus();
-            else if (focus[0].startsWith("E"))
+            else if (isValid.getFocus() == Validation.FOCUS.ELEVATION)
                 spin_elev_code.requestFocus();
         }
 

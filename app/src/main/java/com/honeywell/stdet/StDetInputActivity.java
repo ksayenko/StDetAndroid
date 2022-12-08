@@ -225,8 +225,8 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
             @Override
             public void onClick(View view) {
                 System.out.println(bAcceptWarning);
-                Reading.VALIDATION iChecked = saveForms(bAcceptWarning);
-                if (iChecked == Reading.VALIDATION.WARNING)
+                Validation iChecked = saveForms(bAcceptWarning);
+                if (iChecked.isWarning())
                     bAcceptWarning = true;
                 System.out.println(bAcceptWarning);
                 System.out.println(iChecked);
@@ -642,7 +642,7 @@ Wedge as keys to empty
         txt_Reading.requestFocus();
     }
 
-    public Reading.VALIDATION saveForms(boolean bAcceptWarning) {
+    public Validation saveForms(boolean bAcceptWarning) {
 
         input_reading.setLngID( (int) (new Date().getTime()/1000));
 
@@ -682,29 +682,29 @@ Wedge as keys to empty
         curent_elevationcode = temp.getText().toString();
         input_reading.setElev_code(curent_elevationcode);
 
-        String[] error_mesage = new String[]{""};
-        Reading.VALIDATION bresult = isRecordValid(error_mesage);
-        if (bresult == Reading.VALIDATION.ERROR) {
-            AlertDialogShow(error_mesage[0],"ERROR");
+
+        Validation isTheRecordValid = isRecordValid();
+        if (isTheRecordValid.isError()) {
+            AlertDialogShow(isTheRecordValid.getValidationMessage(),"ERROR");
         }
-        else if (bresult == Reading.VALIDATION.WARNING && !bAcceptWarning ) {
-            AlertDialogShow("Please check\n" + error_mesage[0] +"\nPress 'Save' one more time to confirm the data as VALID or update the input data.","Warning");
+        else if (isTheRecordValid.isWarning()&& !bAcceptWarning ) {
+            AlertDialogShow("Please check\n" + isTheRecordValid.getValidationMessage() +"\nPress 'Save' one more time to confirm the data as VALID or update the input data.","Warning");
         }
-        else if (bresult == Reading.VALIDATION.VALID|| (bresult == Reading.VALIDATION.WARNING && bAcceptWarning) ) {
-            System.out.println(error_mesage[0]);
+        else if (isTheRecordValid.isValid()|| (isTheRecordValid.isWarning() && bAcceptWarning) ) {
+            System.out.println(isTheRecordValid.getValidationMessageWarning()+isTheRecordValid.getValidationMessageError());
             maxId = ir_table.AddToTable(input_reading);
             maxId++;
             clearForms();
             System.out.println("NEW max id " + maxId.toString());
         }
 
-        return bresult;
+        return isTheRecordValid;
     }
 
-    private Reading.VALIDATION isRecordValid(String[] error_message) {
+    private Validation isRecordValid() {
         String message = "";
         String[] focus = new String[]{""};
-        Reading.VALIDATION isValid = Reading.VALIDATION.VALID;
+        Validation isValid  =  new Validation();
         double reading;
         try {
             reading = Double.parseDouble(current_reading);
@@ -712,16 +712,16 @@ Wedge as keys to empty
             reading = 0.0;
         }
 
-        isValid= input_reading.isRecordValid(error_message,focus);
+        isValid= input_reading.isRecordValid();
 
-        if (isValid!= Reading.VALIDATION.VALID && focus[0] != null) {
-            if (focus[0].startsWith("R"))
+        if (isValid.getValidation()!= Validation.VALIDATION.VALID) {
+            if (isValid.getFocus() == Validation.FOCUS.READING)
                 txt_Reading.requestFocus();
-            else if (focus[0].startsWith("L"))
+            else if (isValid.getFocus() == Validation.FOCUS.LOCATION )
                spin_Loc_id .requestFocus();
-            else if (focus[0].startsWith("C"))
-                spin_elev_code.requestFocus();
-            else if (focus[0].startsWith("E"))
+            else if (isValid.getFocus() == Validation.FOCUS.COLLECTOR )
+                spin_COL_ID.requestFocus();
+            else if (isValid.getFocus() == Validation.FOCUS.ELEVATION )
                 spin_elev_code.requestFocus();
         }
 
