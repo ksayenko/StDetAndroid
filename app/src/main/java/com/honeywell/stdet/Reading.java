@@ -189,7 +189,7 @@ public class Reading implements Serializable {
             message += "Please input a Location Id. ";
             whereToFocus1 = "LOC_ID";
             isValid = VALIDATION.ERROR;
-        } else if (isNA(strFO_StatusID)) {
+        } /*else if (isNA(strFO_StatusID)) {
             //message += "Please select a Facility Oper Status. ";
             //spin_FAC_OP.requestFocus();
             //isValid =VALIDDATION.ERROR;
@@ -197,31 +197,33 @@ public class Reading implements Serializable {
             //message += "Please select an Equipment Oper Status. ";
             //spin_FAC_OP.requestFocus();
             //isValid = VALIDDATION.ERROR;
-        } else if (strD_Loc_ID.startsWith("WL") && isNA(elev_code)) {
+        } */else if (strD_Loc_ID.startsWith("WL") && isNA(elev_code)) {
             message += "Water level values require an elevation code. Please select a Elevation Code designator manually. ";
             whereToFocus1 = "ELEV_CODE";
             isValid = VALIDATION.ERROR;
-        } else if (reading == 0.0 && strEqO_StatusID.equalsIgnoreCase("NotOper")) {
+        }/* else if (reading == 0.0 && strEqO_StatusID.equalsIgnoreCase("NotOper")) {
             String im1 = "A Reading value of 0, together with a 'NotOper' Equip Oper Status indicates a non-valid reading.";
             message += im1;
             isValid = VALIDATION.WARNING;
             whereToFocus1 = "READING";
 
-        }
-        else if (reading == 0.0 && (strD_Loc_ID.startsWith("WL") || strD_Loc_ID.startsWith("FT"))) {
-            String im1 = "A Reading value of 0, for location "+ strD_Loc_ID + " is Detected.";
-            message += im1;
-            isValid = VALIDATION.WARNING;
-            whereToFocus1 = "READING";
-
-        }else if (reading == 0.0 && !strEqO_StatusID.equalsIgnoreCase("NotOper")) {
+        }   else if (reading == 0.0 && !strEqO_StatusID.equalsIgnoreCase("NotOper")) {
             message += "A Reading value of 0 is detected!";
             whereToFocus1 = "READING";
             //to do not valid reeading confirm
             String[] innermessage = new String[]{""};
             isValid = VALIDATION.ERROR;
             message += innermessage[0];
-        } else {
+
+        }*/
+        //Now allow all locations top have a 0 as a possible value with a warning 12082022 KS
+        else if (reading == 0.0){// && (strD_Loc_ID.startsWith("WL") || strD_Loc_ID.startsWith("FT"))) {
+            String im1 = "A Reading value of 0, for location "+ strD_Loc_ID + " is Detected.";
+            message += im1;
+            isValid = VALIDATION.WARNING;
+            whereToFocus1 = "READING";
+
+        }else {
             String[] innermessage = new String[]{""};
             isValid = isReadingWithinRange(reading, innermessage);
             message += innermessage[0];
