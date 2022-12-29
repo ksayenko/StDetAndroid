@@ -25,7 +25,6 @@ public class Reading implements Serializable {
     //public enum VALIDATION {VALID,ERROR,WARNING}
 
 
-
     private Integer lngID = -1;
     private Integer facility_id = 1;
     private String strD_Col_ID = "NA";
@@ -46,12 +45,14 @@ public class Reading implements Serializable {
 
     private double UNDEFINED = -99999.999;
 
-    public Reading(){}
+    public Reading() {
+    }
 
-    public static Reading GetDefaultReading(){
-        Reading r =  new Reading();
+    public static Reading GetDefaultReading() {
+        Reading r = new Reading();
         return r;
     }
+
     public Reading(Integer lngID,
                    String strD_Loc_ID,
                    String strD_Col_ID,
@@ -59,7 +60,7 @@ public class Reading implements Serializable {
                    String strFO_StatusID, String strEqO_StatusID,
                    String dblIR_Value, String strIR_Units,
                    String elev_code, String elev_code_desc,
-                   String strComment, String strDataModComment ) {
+                   String strComment, String strDataModComment) {
         this.lngID = lngID;
         this.facility_id = 1;
         this.strD_Col_ID = strD_Col_ID;
@@ -93,7 +94,7 @@ public class Reading implements Serializable {
                 strIR_Units.equals(reading.strIR_Units) &&
                 strComment.equals(reading.strComment) &&
                 strDataModComment.equals(reading.strDataModComment) &&
-                elev_code.equals(reading.elev_code) ;
+                elev_code.equals(reading.elev_code);
     }
 
     @Override
@@ -115,15 +116,15 @@ public class Reading implements Serializable {
                 '}';
     }
 
-    public Validation isReadingWithinRange(Double reading){//}, String[] error_message) {
+    public Validation isReadingWithinRange(Double reading) {//}, String[] error_message) {
 
-        Validation isValid  =  new Validation();
+        Validation isValid = new Validation();
         isValid.setValidation(Validation.VALIDATION.VALID);
 
 
         // returning the record is valid if the value in the database for loc_min or loc_max is wrong or empty string
 
-        if (locMin =="" || locMax ==""){
+        if (locMin == "" || locMax == "") {
             isValid.setValidationMessageWarning("No valid records for loc_min or loc_max in the database");
             isValid.setValidation(Validation.VALIDATION.VALID);
             return isValid;//VALIDATION.VALID;
@@ -158,34 +159,34 @@ public class Reading implements Serializable {
                 } //else
                 //isValid = VALIDDATION.VALID;
             }
-
-            if (min == UNDEFINED || max == UNDEFINED) {
-                // no defined range
-                isValid.addToValidationMessageError(" no loc_min and loc_max defined range");
-                isValid.setValidation(Validation.VALIDATION.ERROR);
-            }
-            else if (reading >= min && reading <= max) {
-                isValid.setValidationMessageValid("OK");// within bounds
-                isValid.setValidation(Validation.VALIDATION.VALID);
-            }
+            //not an FT location 12/2022 KS
             else {
-                isValid.setValidationMessageWarning("The Reading value falls outside the defined range: " + locMin + ".." + locMax);
-                isValid .setValidation(Validation. VALIDATION.WARNING);
-                System.out.println(isValid.getValidationMessage());
+                if (min == UNDEFINED || max == UNDEFINED) {
+                    // no defined range
+                    isValid.addToValidationMessageError(" no loc_min and loc_max defined range");
+                    isValid.setValidation(Validation.VALIDATION.ERROR);
+                } else if (reading >= min && reading <= max) {
+                    isValid.setValidationMessageValid("OK");// within bounds
+                    isValid.setValidation(Validation.VALIDATION.VALID);
+                } else {
+                    isValid.setValidationMessageWarning("The Reading value falls outside the defined range: " + locMin + ".." + locMax);
+                    isValid.setValidation(Validation.VALIDATION.WARNING);
+                    System.out.println(isValid.getValidationMessage());
+                }
             }
             //Cursor.Current = Cursors.Default;
         } catch (Exception ex) {
-
+            System.out.println("isReadingWithinRange exception " + ex.toString());
         }
         System.out.println("Within range message " + isValid.getValidationMessage());
 
         return isValid;
     }
 
-    public Validation isRecordValid(){//(String[] error_message, String[] whereToFocus) {
-       // String message = "";
-       // String whereToFocus1="";
-        Validation isValid  =  new Validation();
+    public Validation isRecordValid() {//(String[] error_message, String[] whereToFocus) {
+        // String message = "";
+        // String whereToFocus1="";
+        Validation isValid = new Validation();
         isValid.setValidation(Validation.VALIDATION.VALID);
 
         double reading;
@@ -197,11 +198,11 @@ public class Reading implements Serializable {
         }
 
         if (isNA(strD_Col_ID)) {
-            isValid.addToValidationMessageError( "Please select a Data Collector Id. ");
+            isValid.addToValidationMessageError("Please select a Data Collector Id. ");
             isValid.setFocus(Validation.FOCUS.COLLECTOR);
             isValid.setValidation(Validation.VALIDATION.ERROR);
         } else if (isNA(strD_Loc_ID)) {
-            isValid.addToValidationMessageError( "Please input a Location Id. ");
+            isValid.addToValidationMessageError("Please input a Location Id. ");
             isValid.setFocus(Validation.FOCUS.LOCATION);
             isValid.setValidation(Validation.VALIDATION.ERROR);
         } /*else if (isNA(strFO_StatusID)) {
@@ -212,8 +213,8 @@ public class Reading implements Serializable {
             //message += "Please select an Equipment Oper Status. ";
             //spin_FAC_OP.requestFocus();
             //isValid = VALIDDATION.ERROR;
-        } */else if (strD_Loc_ID.startsWith("WL") && isNA(elev_code)) {
-            isValid.addToValidationMessageError( "Water level values require an elevation code. Please select a Elevation Code designator manually. ");
+        } */ else if (strD_Loc_ID.startsWith("WL") && isNA(elev_code)) {
+            isValid.addToValidationMessageError("Water level values require an elevation code. Please select a Elevation Code designator manually. ");
             isValid.setFocus(Validation.FOCUS.ELEVATION);
             isValid.setValidation(Validation.VALIDATION.ERROR);
         }/* else if (reading == 0.0 && strEqO_StatusID.equalsIgnoreCase("NotOper")) {
@@ -232,38 +233,39 @@ public class Reading implements Serializable {
 
         }*/
         //Now allow all locations top have a 0 as a possible value with a warning 12082022 KS
-        else if (reading == 0.0){// && (strD_Loc_ID.startsWith("WL") || strD_Loc_ID.startsWith("FT"))) {
-            String im1 = "A Reading value of 0, for location "+ strD_Loc_ID + " is Detected.";
+        else if (reading == 0.0) {// && (strD_Loc_ID.startsWith("WL") || strD_Loc_ID.startsWith("FT"))) {
+            String im1 = "A Reading value of 0, for location " + strD_Loc_ID + " is Detected.";
             isValid.addToValidationMessageWarning(im1);
             isValid.setValidation(Validation.VALIDATION.WARNING);
             isValid.setFocus(Validation.FOCUS.READING);
 
-        }else {
-           Validation isValidRange = isReadingWithinRange(reading);
-          if (isValid.getValidation() == Validation.VALIDATION.VALID || isValid.getValidation().value()< isValidRange.getValidation().value()) {
-              isValid = isValidRange;
-          }
-          else if ((isValid.getValidation().value()== isValidRange.getValidation().value()) && isValid.getValidation().value() > 0){
-              isValid.setFocus(isValidRange.getFocus());
+        } else {
+            Validation isValidRange = isReadingWithinRange(reading);
+            if (isValid.getValidation() == Validation.VALIDATION.VALID || isValid.getValidation().value() < isValidRange.getValidation().value()) {
+                isValid = isValidRange;
+            } else if ((isValid.getValidation().value() == isValidRange.getValidation().value()) && isValid.getValidation().value() > 0) {
+                isValid.setFocus(isValidRange.getFocus());
 
-              if(isValidRange.getValidation() == Validation.VALIDATION.WARNING) {
-                  isValid.addToValidationMessageWarning(isValidRange.getValidationMessage());
+                if (isValidRange.getValidation() == Validation.VALIDATION.WARNING) {
+                    isValid.addToValidationMessageWarning(isValidRange.getValidationMessage());
 
-              }
-              if(isValidRange.getValidation() == Validation.VALIDATION.ERROR) {
-                  isValid.addToValidationMessageError(isValidRange.getValidationMessage());
-              }
-          }
+                }
+                if (isValidRange.getValidation() == Validation.VALIDATION.ERROR) {
+                    isValid.addToValidationMessageError(isValidRange.getValidationMessage());
+                }
+            }
 
         }
 
-               return isValid;
+        return isValid;
 
     }
+
     private boolean isNA(String sValue) {
         boolean isna = sValue == null || sValue.equals("") || sValue.equalsIgnoreCase("NA");
         return isna;
     }
+
     @Override
     public int hashCode() {
         return Objects.hash(lngID, facility_id, strD_Col_ID,
@@ -378,8 +380,5 @@ public class Reading implements Serializable {
     public void setElev_code(String elev_code) {
         this.elev_code = elev_code;
     }
-
-
-
 
 }

@@ -634,12 +634,8 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         int columnIndex = c.getColumnIndex(columnName);
         for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
             arrayList.add(c.getString(columnIndex));
-        }//from   ww w .j a v a2  s. c o  m
+        }
     }
-
-
-
-
 
 
     public String CreateFileToUpload(SQLiteDatabase db, File directoryApp, Integer[] nRecords) throws ParseException {
@@ -655,11 +651,13 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             c = Calendar.getInstance();
         }
 
-
+// in java in Calendar Months are indexed from 0 not 1 so 10 is November and 11 will be December.
         int y = c.get(Calendar.YEAR);
         String sy = Integer.toString(y).substring(2);
+        java.text.SimpleDateFormat sfMonth = new java.text.SimpleDateFormat("MM");
         int m = c.get(Calendar.MONTH);
-        String sm = Integer.toString(m);
+        String sm  = sfMonth.format(c.getTime());
+        //String sm = Integer.toString(m);
         int d = c.get(Calendar.DAY_OF_MONTH);
         String sd = Integer.toString(d);
         int h = c.get(Calendar.HOUR_OF_DAY);
@@ -670,7 +668,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         String ssec = Integer.toString(sec);
         if (d < 10)
             sd = "0" + sd;
-        if (m < 10)
+        if (Integer.parseInt(sm) < 10)
             sm = "0" + sm;
         if (h < 10)
             sh = "0" + sh;
