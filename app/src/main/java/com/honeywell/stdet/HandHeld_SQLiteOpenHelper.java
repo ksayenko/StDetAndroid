@@ -833,7 +833,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         String ssec = Integer.toString(sec);
         if (d < 10)
             sd = "0" + sd;
-        if (Integer.parseInt(sm) < 10)
+        if (Integer.parseInt(sm) < 10 && !sm.startsWith("0"))
             sm = "0" + sm;
         if (h < 10)
             sh = "0" + sh;
@@ -928,25 +928,6 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
 
             String header = Stdet_Inst_Readings.CSVHeader();
-            /*
-                    Stdet_Inst_Readings.facility_id + ", " +
-                    Stdet_Inst_Readings.strEqID + ", " +
-                    Stdet_Inst_Readings.strD_Col_ID + ", " +
-                    Stdet_Inst_Readings.datIR_Date + ", " +
-                    Stdet_Inst_Readings.datIR_Time + ", " +
-                    Stdet_Inst_Readings.dblIR_Value + ", " +
-                    Stdet_Inst_Readings.strIR_Units + ", " +
-                    Stdet_Inst_Readings.strD_Loc_ID + ", " +
-                    Stdet_Inst_Readings.strFO_StatusID + ", " +
-                    Stdet_Inst_Readings.strEqO_StatusID + ", " +
-                    Stdet_Inst_Readings.fSuspect + ", " +
-                    Stdet_Inst_Readings.strComment + ", " +
-                    Stdet_Inst_Readings.strDataModComment + ", " +
-                    //Stdet_Inst_Readings.uf_strWL_D_Loc_ID + ", " +
-                    //Stdet_Inst_Readings.wl_meas_point + ", " +
-                    Stdet_Inst_Readings.elev_code ;//+ ", " +
-                    //Stdet_Inst_Readings.elev_code_desc;
-                    */
 
 
             myOutWriter.write(header);
