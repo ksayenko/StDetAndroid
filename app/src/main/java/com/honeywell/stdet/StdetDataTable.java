@@ -136,6 +136,7 @@ public class StdetDataTable  implements Serializable {
         return "SELECT COUNT(*) AS ROW_COUNT FROM "+name;
     }
 
+
     public String createTableSQL() {
         int nColumns = ColumnNames.toArray().length;
         String sPK = " , PRIMARY KEY (";
@@ -306,6 +307,24 @@ public class StdetDataTable  implements Serializable {
         for (int i = 0; i < n; i++)
             dataRow.add("");
         return dataRow;
+    }
+
+    //since we added a column to the IR structutre alter table add column
+    public String alterIRTableSQLAddColumn(String columnName) {
+        int nColumns = getColumnNames().toArray().length;
+        String sALTER_TABLE = "ALTER TABLE " + name + " ADD COLUMN " + columnName;
+        //   " TEXT default null");
+        for (int i = 0; i < nColumns; i++) {
+            String sColName = getColumnNames().get(i);
+            String sColType = getSqlLiteDataType(getColumnTypes().get(i));
+            if (columnName.equalsIgnoreCase(sColName)) {
+                sALTER_TABLE+=" "+ sColType;
+            }
+
+
+        }
+
+        return sALTER_TABLE;
     }
 
 

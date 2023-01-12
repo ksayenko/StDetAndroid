@@ -50,6 +50,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
 
     public static final String uploaded="uploaded";
     public static final String uploadedDatetime="uploadedDatetime";
+    public static final String recordToUpload="recordToUpload";
 
 
 
@@ -79,6 +80,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
 
         this.AddColumnToStructure(uploaded,"Boolean",false);
         this.AddColumnToStructure(uploadedDatetime,"Datetime",false);
+        this.AddColumnToStructure(recordToUpload,"Boolean",false);
 
 
     }
@@ -106,6 +108,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         String el_code1 = "NA";
         String comment1 = "";
         String strDataModComment1 = "";
+        String recordToUpload1 = "1";
 
         ArrayList<String> reading = new ArrayList<>();
         int n = this.getColumnsNumber();
@@ -126,6 +129,8 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         reading.set(GetElementIndex(elev_code), el_code1);
         reading.set(GetElementIndex(strComment), comment1);
         reading.set(GetElementIndex(strDataModComment), strDataModComment1);
+        reading.set(GetElementIndex(recordToUpload), recordToUpload1);
+
 
         this.AddRowToData(reading);
      }
@@ -151,6 +156,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         reading.set(GetElementIndex(elev_code), theReading.getElev_code());
         reading.set(GetElementIndex(strComment), theReading.getStrComment());
         reading.set(GetElementIndex(strDataModComment), theReading.getStrDataModComment());
+        reading.set(GetElementIndex(recordToUpload), "1");
 
         this.AddRowToData(reading);
 
@@ -186,6 +192,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         reading.set(GetElementIndex(elev_code), el_code1);
         reading.set(GetElementIndex(strComment), comment1);
         reading.set(GetElementIndex(strDataModComment), strDataModComment1);
+        reading.set(GetElementIndex(recordToUpload), "1");
 
         this.AddRowToData(reading);
 
@@ -207,19 +214,36 @@ public class Stdet_Inst_Readings extends StdetDataTable {
                 + "dblIR_Value,strIR_Units,strFO_StatusID,strEqO_StatusID,fSuspect,"
                 + "strComment,strDataModComment,elev_code  "
                + " from "+HandHeld_SQLiteOpenHelper.INST_READINGS +
-                " where uploaded is null";
+                " where uploaded is null and recordToUpload=1";
         return select;
         }
 
     public static String UpdateUploadedData() {
         Date currentTime = Calendar.getInstance().getTime();
-        String timeStamp = new SimpleDateFormat("MM/dd/yyyy hh:mm a").format(Calendar.getInstance().getTime());
+        String timeStamp = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a").format(Calendar.getInstance().getTime());
+                //SimpleDateFormat("MM/dd/yyyy hh:mm a").format(Calendar.getInstance().getTime());
 
         String update = "UPDATE " + HandHeld_SQLiteOpenHelper.INST_READINGS
                 + " SET uploaded = 1 , uploadedDatetime = '" + timeStamp + "'" +
-                " where uploaded is null";
+                " where (uploaded is null  or uploaded = 0) and (recordToUpload = 1 or recordToUpload is null) ";
         return update;
     }
+
+    public static String CheckDups() {
+        String select = "select facility_id, strd_col_id, datIR_date, datIR_Time, strd_loc_id, strFO_StatusID, strEqO_StatusID, dblir_value, "
+                + " strIR_Units,strComment, strDataModComment,elev_code, count(*) count_dup "
+                + " from " + HandHeld_SQLiteOpenHelper.INST_READINGS
+                + " where (uploaded is null  or uploaded = 0) and  (recordToUpload = 1 or recordToUpload is null)=1"
+                + " group by facility_id, strd_col_id, datIR_date, datIR_Time, strd_loc_id, strFO_StatusID, strEqO_StatusID, dblir_value, "
+                + " strIR_Units ,strComment, strDataModComment,elev_code "
+                + " having count(*) > 1 ";
+
+
+        return select;
+    }
+
+
+
 
 
 

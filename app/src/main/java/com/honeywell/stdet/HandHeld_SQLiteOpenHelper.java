@@ -68,6 +68,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
         tables = tbls;
         getReadableDatabase(); // <-- add this, which triggers onCreate/onUpdate
+        AlterDB(this.getReadableDatabase());
     }
 
     @Override
@@ -96,6 +97,20 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void AlterDB(SQLiteDatabase db) {
+        try {
+            if (!checkColumnExists(db, HandHeld_SQLiteOpenHelper.INST_READINGS, Stdet_Inst_Readings.recordToUpload)) {
+                Stdet_Inst_Readings ir = new Stdet_Inst_Readings();
+                String sql = ir.alterIRTableSQLAddColumn(Stdet_Inst_Readings.recordToUpload);
+                db.execSQL(sql);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.out.println("AlterDB INST_READINGS " + ex);
+
+        }
+    }
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion != newVersion) {
@@ -114,6 +129,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             }
             onCreate(db);
         }
+        AlterDB(db);
     }
 
     @Override
@@ -498,7 +514,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 Stdet_Inst_Readings.dblIR_Value + ", " +
                 Stdet_Inst_Readings.lngID + " from " +
                 HandHeld_SQLiteOpenHelper.INST_READINGS +
-                " where uploaded is null or uploaded =0" + " " + orderby;
+                " where (uploaded is null or uploaded =0) and (" + Stdet_Inst_Readings.recordToUpload  +" = 1 or "+ Stdet_Inst_Readings.recordToUpload + " is null) " + orderby;
         return db.rawQuery(qry, null);
     }
 
@@ -531,7 +547,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 Stdet_Inst_Readings.elev_code + ", " +
                 Stdet_Inst_Readings.elev_code_desc + " from " +
                 HandHeld_SQLiteOpenHelper.INST_READINGS +
-                " where uploaded is null or uploaded =0" + " " + orderby;
+                " where (uploaded is null or uploaded =0) and (" + Stdet_Inst_Readings.recordToUpload  +" = 1 or "+ Stdet_Inst_Readings.recordToUpload + " is null) " + orderby ;
         return db.rawQuery(qry, null);
     }
 
@@ -637,8 +653,157 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         }
     }
 
+    public String CheckDupsInInstReading(SQLiteDatabase db) throws ParseException {
 
-    public String CreateFileToUpload(SQLiteDatabase db, File directoryApp, Integer[] nRecords) throws ParseException {
+        String sql = Stdet_Inst_Readings.CheckDups();
+        Cursor records = db.rawQuery(sql, null);
+        Integer nRecordsUpdated = 0;
+
+        int nRecords = records.getCount();
+        Integer nCol = records.getColumnCount();
+
+        String s_facility_id;
+        String s_datIR_Date;
+        String s_datIR_Time;
+        String s_strD_Col_ID;
+        String s_strD_Loc_ID;
+        String s_strFO_StatusID;
+        String s_strEqID;
+        String s_dblIR_Value;
+        String s_strIR_Units;
+        String s_strComment;
+        String s_strEqO_StatusID;
+        String s_fSuspect = "";
+        String s_strDataModComment;
+
+        String s_elev_code = "";
+        String scount_dup = "";
+
+        Integer i_facility_id = records.getColumnIndex(Stdet_Inst_Readings.facility_id);
+        if (i_facility_id < 0)
+            i_facility_id = 0;
+        Integer i_datIR_Date = records.getColumnIndex(Stdet_Inst_Readings.datIR_Date);
+        if (i_datIR_Date < 0)
+            i_datIR_Date = 0;
+        Integer i_datIR_Time = records.getColumnIndex(Stdet_Inst_Readings.datIR_Time);
+        if (i_datIR_Time < 0)
+            i_datIR_Time = 0;
+        Integer i_strD_Col_ID = records.getColumnIndex(Stdet_Inst_Readings.strD_Col_ID);
+        if (i_strD_Col_ID < 0)
+            i_strD_Col_ID = 0;
+        Integer i_strD_Loc_ID = records.getColumnIndex(Stdet_Inst_Readings.strD_Loc_ID);
+        if (i_strD_Loc_ID < 0)
+            i_strD_Loc_ID = 0;
+        Integer i_strFO_StatusID = records.getColumnIndex(Stdet_Inst_Readings.strFO_StatusID);
+        if (i_strFO_StatusID < 0)
+            i_strFO_StatusID = 0;
+
+        Integer i_dblIR_Value = records.getColumnIndex(Stdet_Inst_Readings.dblIR_Value);
+        if (i_dblIR_Value < 0)
+            i_dblIR_Value = 0;
+        Integer i_strIR_Units = records.getColumnIndex(Stdet_Inst_Readings.strIR_Units);
+        if (i_strIR_Units < 0)
+            i_strIR_Units = 0;
+        Integer i_strComment = records.getColumnIndex(Stdet_Inst_Readings.strComment);
+        if (i_strComment < 0)
+            i_strComment = 0;
+        Integer i_strEqO_StatusID = records.getColumnIndex(Stdet_Inst_Readings.strEqO_StatusID);
+        if (i_strEqO_StatusID < 0)
+            i_strEqO_StatusID = 0;
+
+        Integer i_strDataModComment = records.getColumnIndex(Stdet_Inst_Readings.strDataModComment);
+        if (i_strDataModComment < 0)
+            i_strDataModComment = 0;
+
+        Integer i_elev_code = records.getColumnIndex(Stdet_Inst_Readings.elev_code);
+        if (i_elev_code < 0)
+            i_elev_code = 0;
+
+        Integer i_count_dup = records.getColumnIndex("count_dup");
+        if (i_count_dup < 0)
+            i_count_dup = 0;
+
+
+        for (records.moveToFirst(); !records.isAfterLast(); records.moveToNext()) {
+            // The Cursor is now set to the right position
+
+
+            s_facility_id = getStringQuotedValue(records, i_facility_id);
+            s_datIR_Date = getStringQuotedValue(records, i_datIR_Date);
+            s_datIR_Time = getStringQuotedValue(records, i_datIR_Time);
+            s_dblIR_Value = getStringQuotedValueFromDouble(records, i_dblIR_Value, null);
+            s_strD_Loc_ID = getStringQuotedValue(records, i_strD_Loc_ID);
+            s_strEqO_StatusID = getStringQuotedValue(records, i_strEqO_StatusID);
+            s_strComment = getStringQuotedValueWithNULL(records, i_strComment);
+            s_strDataModComment = getStringQuotedValueWithNULL(records, i_strDataModComment);
+            s_elev_code = getStringQuotedValueWithNULL(records, i_elev_code);
+
+            s_strFO_StatusID = getStringQuotedValueWithNULL(records, i_strFO_StatusID);
+            s_strD_Col_ID = getStringQuotedValue(records, i_strD_Col_ID);
+            s_strIR_Units = getStringQuotedValueWithNULL(records, i_strIR_Units);
+
+            scount_dup = getStringQuotedValue(records, i_count_dup);
+            Integer iDup = records.getInt(i_count_dup);
+
+            String sqlUpdate = " UPDATE " + HandHeld_SQLiteOpenHelper.INST_READINGS
+                    + " SET " + Stdet_Inst_Readings.recordToUpload + " = 0"
+                    + " WHERE " + Stdet_Inst_Readings.lngID + " IN ("
+                    + " SELECT lngid from " + HandHeld_SQLiteOpenHelper.INST_READINGS + " where "
+                    + Stdet_Inst_Readings.strD_Col_ID + " = " + s_strD_Col_ID + " and "
+                    + Stdet_Inst_Readings.datIR_Date + " = " + s_datIR_Date + " and "
+                    + Stdet_Inst_Readings.facility_id + " = " + s_facility_id + " and "
+                    + Stdet_Inst_Readings.strD_Loc_ID + " = " + s_strD_Loc_ID + " and ";
+
+            if (s_strFO_StatusID.equalsIgnoreCase("NULL"))
+                sqlUpdate += " " + Stdet_Inst_Readings.strFO_StatusID + " IS NULL and";
+            else
+                sqlUpdate += " " + Stdet_Inst_Readings.strFO_StatusID + " = " + s_strFO_StatusID + " and ";
+
+            if (s_strEqO_StatusID.equalsIgnoreCase("NULL"))
+                sqlUpdate += " " + Stdet_Inst_Readings.strEqO_StatusID + " IS NULL and";
+            else
+                sqlUpdate += " " + Stdet_Inst_Readings.strEqO_StatusID + " = " + s_strEqO_StatusID + " and ";
+
+            sqlUpdate += " " + Stdet_Inst_Readings.dblIR_Value + " = " + s_dblIR_Value + " and ";
+
+            if (s_strIR_Units.equalsIgnoreCase("NULL"))
+                sqlUpdate += " " + Stdet_Inst_Readings.strIR_Units + " IS NULL and";
+            else
+                sqlUpdate += " " + Stdet_Inst_Readings.strIR_Units + " = " + s_strIR_Units + " and ";
+
+            if (s_strComment.equalsIgnoreCase("NULL"))
+                sqlUpdate += " " + Stdet_Inst_Readings.strComment + " IS NULL and";
+            else
+                sqlUpdate += " " + Stdet_Inst_Readings.strComment + " = " + s_strComment + " and ";
+
+            if (s_strDataModComment.equalsIgnoreCase("NULL"))
+                sqlUpdate += " " + Stdet_Inst_Readings.strDataModComment + " IS NULL and";
+            else
+                sqlUpdate += " " + Stdet_Inst_Readings.strDataModComment + " = " + s_strDataModComment + " and ";
+
+
+            if (s_elev_code.equalsIgnoreCase("NULL"))
+                sqlUpdate += " " + Stdet_Inst_Readings.elev_code + " IS NULL and";
+            else
+
+                sqlUpdate += " " + Stdet_Inst_Readings.elev_code + " = " + s_elev_code;
+
+            sqlUpdate += "  order by  " + Stdet_Inst_Readings.lngID + " desc LIMIT " + String.valueOf(iDup - 1) + " );";
+
+
+            try {
+                db.execSQL(sqlUpdate);
+
+            } catch (Exception exception) {
+                exception.printStackTrace();
+                System.out.println(exception);
+            }
+        }
+        return "";
+    }
+
+
+        public String CreateFileToUpload(SQLiteDatabase db, File directoryApp, Integer[] nRecords) throws ParseException {
         File newCSV = null;
 
         Calendar c = Calendar.getInstance();
@@ -686,6 +851,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             fos = new FileOutputStream(fullfilename);
             OutputStreamWriter myOutWriter = new OutputStreamWriter(fos);
 
+            CheckDupsInInstReading(db);
             Cursor records = this.getIRRecords(db);
             nRecords[0] = records.getCount();
             Integer nCol = records.getColumnCount();
@@ -871,6 +1037,16 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             s = (String) records.getString(i);
         return e + s.trim() + e;
     }
+
+    private String getStringQuotedValueWithNULL(Cursor records, Integer i) {
+        String e = "\"";
+        String s = "";
+        if (records.getString(i) != null)
+            s = (String) records.getString(i);
+        else
+            return "NULL";
+        return e + s.trim() + e;
+    }
     private String getStringQuotedValueFromBooleanYesNo(Cursor records, Integer i) {
         String e = "\"";
         String s ;
@@ -883,6 +1059,33 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         //e + ((Integer) records.getInt(i_fSuspect) == 1 ? "Yes" : "No") + e;
         return e + s + e;
     }
+
+    public String sqlCheckColumnExists(String tablename, String columnname)
+    {
+        String sql = "SELECT COUNT(*) AS CNTREC FROM pragma_table_info('"+tablename+"') WHERE name='"+columnname+"'";
+        return sql;
+    }
+
+    public boolean checkColumnExists(SQLiteDatabase db,String tablename, String columnname)
+    {
+        boolean rv = false;
+        String sql = sqlCheckColumnExists(tablename,columnname);
+        Cursor c = db.rawQuery(sql, null);
+        try {
+            c.moveToFirst();
+            if(!c.isNull(0)){
+                int i = c.getInt(0);
+                if (i >0)
+                    rv = true;
+            }
+        }
+        catch(Exception ex){
+            System.out.println(ex);
+        }
+        return rv;
+    }
+
+    public String addNewColumnIfNotExists(){return"";}
 }
 
   

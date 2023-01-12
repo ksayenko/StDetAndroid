@@ -647,7 +647,8 @@ Wedge as keys to empty
         input_reading.setLngID( (int) (new Date().getTime()/1000));
 
         Date currentTime = Calendar.getInstance().getTime();
-        String timeStamp = new SimpleDateFormat("MM/dd/yyyy hh:mm a").format(Calendar.getInstance().getTime());
+        String timeStamp =new SimpleDateFormat("MM/dd/yyyy hh:mm a").format(Calendar.getInstance().getTime());
+                //new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a").format(Calendar.getInstance().getTime());
         TextView temp;
         temp = (TextView) spin_Loc_id.getSelectedView();
         current_loc = temp.getText().toString();

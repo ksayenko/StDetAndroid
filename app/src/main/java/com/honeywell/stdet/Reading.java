@@ -82,7 +82,7 @@ public class Reading implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Reading reading = (Reading) o;
-        return lngID.equals(reading.lngID) &&
+        return
                 facility_id.equals(reading.facility_id) &&
                 strD_Col_ID.equals(reading.strD_Col_ID) &&
                 datIR_Date.equals(reading.datIR_Date) &&
@@ -368,6 +368,7 @@ public class Reading implements Serializable {
     public String getStrDataModComment() {
         return strDataModComment;
     }
+
 
     public void setStrDataModComment(String strDataModComment) {
         this.strDataModComment = strDataModComment;
