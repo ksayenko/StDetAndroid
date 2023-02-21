@@ -421,8 +421,8 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         values.put( Stdet_Inst_Readings.dblIR_Value, r.getDblIR_Value());
         values.put( Stdet_Inst_Readings.elev_code , r.getElev_code());
         values.put(Stdet_Inst_Readings.strComment, r.getStrComment());
-        values.put(Stdet_Inst_Readings.strEqO_StatusID,  r.getStrFO_StatusID());
-        values.put(Stdet_Inst_Readings.strFO_StatusID, r.getStrEqO_StatusID());
+        values.put(Stdet_Inst_Readings.strFO_StatusID,  r.getStrFO_StatusID());
+        values.put(Stdet_Inst_Readings.strEqO_StatusID, r.getStrEqO_StatusID());
         values.put(Stdet_Inst_Readings.strIR_Units , r.getStrIR_Units());
 
         int rowsUpdated = db.update(HandHeld_SQLiteOpenHelper.INST_READINGS, values, Stdet_Inst_Readings.lngID + "=" + r.getLngID(), null);
