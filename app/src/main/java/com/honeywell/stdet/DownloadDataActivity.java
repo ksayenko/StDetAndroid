@@ -47,6 +47,7 @@ final  AlertDialog ad=new AlertDialog.Builder(this).create();
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
                 dbHelper.getInsertFromTables(db);
                 ad.setMessage(resp);
+                db.close();
         }catch(Exception ex)
         {
                 ad.setTitle("Error!");

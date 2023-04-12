@@ -1,5 +1,6 @@
 package com.honeywell.stdet;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -17,7 +18,7 @@ import java.util.concurrent.Executors;
 
     public class DownloadAndParseToDBThread extends Activity  {
         Context context;
-        public Handler mHandler;
+        //public Handler mHandler;
         TextView txtInfo;
         public Activity activity;
 
@@ -75,8 +76,9 @@ import java.util.concurrent.Executors;
                                 onPostExecute(11);
                             }
 
+
                             private void onPostExecute(Integer result) {
-                                txtInfo.setText(" Done");
+                                txtInfo.setText("Done");
                                 Log.i("------------onPostExecute", String.valueOf(result));
                                 final AlertDialog ad = new AlertDialog.Builder(context).create();
                                 if (result < 0) {
@@ -89,7 +91,7 @@ import java.util.concurrent.Executors;
                                 ad.show();
                             }
                         });
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
 
                     }
                 }
@@ -97,11 +99,12 @@ import java.util.concurrent.Executors;
 
             // Display message only for better readability
             System.out.println("Done");
+            db.close();
         }
 
 
         private void onPostExecute(int[] result) {
-            txtInfo.setText(" Done");
+            txtInfo.setText("Done");
             Log.i("------------onPostExecute", String.valueOf(result[0]));
 
             final AlertDialog ad = new AlertDialog.Builder(context).create();
@@ -174,13 +177,13 @@ import java.util.concurrent.Executors;
 
                 } catch (Exception exception) {
                     exception.printStackTrace();
-                    System.out.println(exception.toString());
+                    System.out.println(exception);
                     return -1;
                 }
                 dbHelper = new HandHeld_SQLiteOpenHelper(context, tables);
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
                 dbHelper.getInsertFromTables(db);
-
+                db.close();
                 //Looper.loop();
 
                 //ad.setMessage(resp);
@@ -195,7 +198,7 @@ import java.util.concurrent.Executors;
         }
 
         private void publishProgress(Integer[] progress) {
-            txtInfo.setText(" Table #  " + progress[0].toString() + " Start Uploading");
+            txtInfo.setText(String.format(" Table #  %s Start Uploading", progress[0].toString()));
             Log.i("------------onProgressUpdate", progress[0].toString());
         }
 
@@ -226,6 +229,7 @@ import java.util.concurrent.Executors;
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
                 dbHelper.getInsertFromTables(db);
                 ad.setMessage(resp);
+                db.close();
 
                 // p =  new ParseXMLAndUploadToDBThread((Activity) context);
 

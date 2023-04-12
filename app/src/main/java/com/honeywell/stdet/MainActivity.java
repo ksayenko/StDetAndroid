@@ -123,6 +123,7 @@ public class MainActivity extends Activity {
         });
 
         ActivitySetting();
+        db.close();
     }
 
     @Override
@@ -495,7 +496,9 @@ public class MainActivity extends Activity {
                         }
 
                     }
+                    db.close();
                 }
+
             }
         });
 

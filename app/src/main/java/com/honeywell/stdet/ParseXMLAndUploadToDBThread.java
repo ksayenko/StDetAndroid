@@ -173,9 +173,17 @@ public class ParseXMLAndUploadToDBThread{
                 String response = ws1.CheckConnection();
                 boolean bConnection = true;
                 if (response.startsWith("ERROR")) {
-                    Toast.makeText(context, response, Toast.LENGTH_SHORT).show();
+                    //can't toast have an exception: java.lang.NullPointerException: Can't toast on a thread that has not called Looper.prepare()
+                    //Toast.makeText(context, response, Toast.LENGTH_SHORT).show();
                     txtInfo.setText(response);
                     bConnection = false;
+                    //pause
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        public void run() {
+                            // yourMethod();
+                        }
+                    }, 5000);// 5sec
                     //btnInputForms.setEnabled(true);
                     //btnUploadDataToServer.setEnabled(true);
                 }

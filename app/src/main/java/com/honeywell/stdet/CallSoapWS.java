@@ -271,7 +271,6 @@ public class CallSoapWS {
             response = "ERROR! Check Your Connection" + exception.toString();
 
         }
-
         return response.toString();
     }
 

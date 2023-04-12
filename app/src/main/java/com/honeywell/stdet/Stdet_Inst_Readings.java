@@ -48,6 +48,8 @@ public class Stdet_Inst_Readings extends StdetDataTable {
     public static final String uf_strWL_D_Loc_ID="uf_strWL_D_Loc_ID";
     public static final String wl_meas_point="wl_meas_point";
 
+    public static final String device_name="device_name";
+
     public static final String uploaded="uploaded";
     public static final String uploadedDatetime="uploadedDatetime";
     public static final String recordToUpload="recordToUpload";
@@ -82,6 +84,8 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         this.AddColumnToStructure(uploadedDatetime,"Datetime",false);
         this.AddColumnToStructure(recordToUpload,"Boolean",false);
 
+        this.AddColumnToStructure(device_name,"String",false);
+
 
     }
 
@@ -109,6 +113,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         String comment1 = "";
         String strDataModComment1 = "";
         String recordToUpload1 = "1";
+        String sDeviceName = HandHeld_SQLiteOpenHelper.getDeviceName();
 
         ArrayList<String> reading = new ArrayList<>();
         int n = this.getColumnsNumber();
@@ -130,6 +135,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         reading.set(GetElementIndex(strComment), comment1);
         reading.set(GetElementIndex(strDataModComment), strDataModComment1);
         reading.set(GetElementIndex(recordToUpload), recordToUpload1);
+        reading.set(GetElementIndex(device_name), sDeviceName);
 
 
         this.AddRowToData(reading);
@@ -139,6 +145,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         ArrayList<String> reading = new ArrayList<>();
         int n = this.getColumnsNumber();
         int nRecords = this.GetNumberOfRecords();
+        String sDeviceName = HandHeld_SQLiteOpenHelper.getDeviceName();
 
         for (int j = 0; j < n; j++)
             reading.add("");
@@ -157,6 +164,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         reading.set(GetElementIndex(strComment), theReading.getStrComment());
         reading.set(GetElementIndex(strDataModComment), theReading.getStrDataModComment());
         reading.set(GetElementIndex(recordToUpload), "1");
+        reading.set(GetElementIndex(device_name), sDeviceName);
 
         this.AddRowToData(reading);
 
@@ -175,6 +183,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
             previous_maxid = Integer.parseInt(this.getValueFromData(nRecords - 1, lngID));
         }
         Integer maxID =  (int) (new Date().getTime()/1000);
+        String sDeviceName = HandHeld_SQLiteOpenHelper.getDeviceName();
 
         for (int j = 0; j < n; j++)
             reading.add("");
@@ -193,6 +202,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         reading.set(GetElementIndex(strComment), comment1);
         reading.set(GetElementIndex(strDataModComment), strDataModComment1);
         reading.set(GetElementIndex(recordToUpload), "1");
+        reading.set(GetElementIndex(device_name), sDeviceName);
 
         this.AddRowToData(reading);
 
@@ -204,7 +214,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
                 + "," + datIR_Date + "," + datIR_Time + "," + strD_Loc_ID
                 + "," + dblIR_Value + "," + strIR_Units + "," + strFO_StatusID
                 + "," + strEqO_StatusID + "," + fSuspect
-                + "," + strComment + "," + strDataModComment + "," + elev_code;
+                + "," + strComment + "," + strDataModComment + "," + elev_code + ","+ device_name;
         return header;
     }
 
@@ -212,7 +222,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
     public static String SelectDataToUpload()        {
         String select =  "Select facility_id,strEqID,strD_Col_ID,datIR_Date,datIR_Time,strD_Loc_ID,"
                 + "dblIR_Value,strIR_Units,strFO_StatusID,strEqO_StatusID,fSuspect,"
-                + "strComment,strDataModComment,elev_code  "
+                + "strComment,strDataModComment,elev_code, device_name  "
                + " from "+HandHeld_SQLiteOpenHelper.INST_READINGS +
                 " where uploaded is null and recordToUpload=1";
         return select;

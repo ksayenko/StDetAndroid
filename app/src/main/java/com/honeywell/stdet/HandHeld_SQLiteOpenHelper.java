@@ -17,9 +17,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.TimeZone;
 
+import android.os.Build;
+import android.text.TextUtils;
 
 public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "HandHeld.sqlite3";
@@ -102,6 +106,11 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             if (!checkColumnExists(db, HandHeld_SQLiteOpenHelper.INST_READINGS, Stdet_Inst_Readings.recordToUpload)) {
                 Stdet_Inst_Readings ir = new Stdet_Inst_Readings();
                 String sql = ir.alterIRTableSQLAddColumn(Stdet_Inst_Readings.recordToUpload);
+                db.execSQL(sql);
+            }
+            if (!checkColumnExists(db, HandHeld_SQLiteOpenHelper.INST_READINGS, Stdet_Inst_Readings.device_name)) {
+                Stdet_Inst_Readings ir = new Stdet_Inst_Readings();
+                String sql = ir.alterIRTableSQLAddColumn(Stdet_Inst_Readings.device_name);
                 db.execSQL(sql);
             }
         } catch (Exception ex) {
@@ -545,7 +554,9 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 Stdet_Inst_Readings.uf_strWL_D_Loc_ID + ", " +
                 Stdet_Inst_Readings.wl_meas_point + ", " +
                 Stdet_Inst_Readings.elev_code + ", " +
-                Stdet_Inst_Readings.elev_code_desc + " from " +
+                Stdet_Inst_Readings.elev_code_desc + ", "+
+                Stdet_Inst_Readings.device_name +
+                " from " +
                 HandHeld_SQLiteOpenHelper.INST_READINGS +
                 " where (uploaded is null or uploaded =0) and (" + Stdet_Inst_Readings.recordToUpload  +" = 1 or "+ Stdet_Inst_Readings.recordToUpload + " is null) " + orderby ;
         return db.rawQuery(qry, null);
@@ -804,199 +815,203 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
 
         public String CreateFileToUpload(SQLiteDatabase db, File directoryApp, Integer[] nRecords) throws ParseException {
-        File newCSV = null;
+            File newCSV = null;
 
-        Calendar c = Calendar.getInstance();
-        try {
-            CallSoapWS ws = new CallSoapWS(directoryApp);
-            String datetimeserver = ws.WS_GetServerDate(false);
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-            c.setTime(sdf.parse(datetimeserver));
-        }catch(Exception ex){
-            c = Calendar.getInstance();
-        }
+            Calendar c = Calendar.getInstance();
+            try {
+                CallSoapWS ws = new CallSoapWS(directoryApp);
+                String datetimeserver = ws.WS_GetServerDate(false);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+                c.setTime(sdf.parse(datetimeserver));
+            } catch (Exception ex) {
+                c = Calendar.getInstance();
+            }
 
 // in java in Calendar Months are indexed from 0 not 1 so 10 is November and 11 will be December.
-        int y = c.get(Calendar.YEAR);
-        String sy = Integer.toString(y).substring(2);
-        java.text.SimpleDateFormat sfMonth = new java.text.SimpleDateFormat("MM");
-        int m = c.get(Calendar.MONTH);
-        String sm  = sfMonth.format(c.getTime());
-        //String sm = Integer.toString(m);
-        int d = c.get(Calendar.DAY_OF_MONTH);
-        String sd = Integer.toString(d);
-        int h = c.get(Calendar.HOUR_OF_DAY);
-        String sh = Integer.toString(h);
-        int mm = c.get(Calendar.MINUTE);
-        String smm = Integer.toString(mm);
-        int sec = c.get(Calendar.SECOND);
-        String ssec = Integer.toString(sec);
-        if (d < 10)
-            sd = "0" + sd;
-        if (Integer.parseInt(sm) < 10 && !sm.startsWith("0"))
-            sm = "0" + sm;
-        if (h < 10)
-            sh = "0" + sh;
-        if (mm < 10)
-            smm = "0" + smm;
-        if (sec < 10)
-            ssec = "0" + ssec;
-        String dattime_addon = sy + sm + sd + "_" + sh + smm + ssec;
-        String filename = HandHeld_SQLiteOpenHelper.CSVPREFIX_INR +
-                HandHeld_SQLiteOpenHelper.FILEPREFIX + "_" + dattime_addon + ".csv";
-        newCSV = new File(directoryApp + "/" + filename);
-        FileOutputStream fos;
-        String fullfilename = newCSV.getAbsolutePath();
-        try {
-            fos = new FileOutputStream(fullfilename);
-            OutputStreamWriter myOutWriter = new OutputStreamWriter(fos);
+            int y = c.get(Calendar.YEAR);
+            String sy = Integer.toString(y).substring(2);
+            java.text.SimpleDateFormat sfMonth = new java.text.SimpleDateFormat("MM");
+            int m = c.get(Calendar.MONTH);
+            String sm = sfMonth.format(c.getTime());
+            //String sm = Integer.toString(m);
+            int d = c.get(Calendar.DAY_OF_MONTH);
+            String sd = Integer.toString(d);
+            int h = c.get(Calendar.HOUR_OF_DAY);
+            String sh = Integer.toString(h);
+            int mm = c.get(Calendar.MINUTE);
+            String smm = Integer.toString(mm);
+            int sec = c.get(Calendar.SECOND);
+            String ssec = Integer.toString(sec);
+            if (d < 10)
+                sd = "0" + sd;
+            if (Integer.parseInt(sm) < 10 && !sm.startsWith("0"))
+                sm = "0" + sm;
+            if (h < 10)
+                sh = "0" + sh;
+            if (mm < 10)
+                smm = "0" + smm;
+            if (sec < 10)
+                ssec = "0" + ssec;
 
-            CheckDupsInInstReading(db);
-            Cursor records = this.getIRRecords(db);
-            nRecords[0] = records.getCount();
-            Integer nCol = records.getColumnCount();
+            String dattime_addon = sy + sm + sd + "_" + sh + smm + ssec;
+            String filename = HandHeld_SQLiteOpenHelper.CSVPREFIX_INR +
+                    HandHeld_SQLiteOpenHelper.FILEPREFIX + "_" + dattime_addon + ".csv";
+            newCSV = new File(directoryApp + "/" + filename);
+            FileOutputStream fos;
+            String fullfilename = newCSV.getAbsolutePath();
+            try {
+                fos = new FileOutputStream(fullfilename);
+                OutputStreamWriter myOutWriter = new OutputStreamWriter(fos);
 
-            String s_facility_id;
-            String s_datIR_Date ;
-            String s_datIR_Time ;
-            String s_strD_Col_ID ;
-            String s_strD_Loc_ID ;
-            String s_strFO_StatusID ;
-            String s_strEqID;
-            String s_dblIR_Value ;
-            String s_strIR_Units;
-            String s_strComment ;
-            String s_strEqO_StatusID ;
-            String s_fSuspect = "";
-            String s_strDataModComment ;
-            //String s_uf_strWL_D_Loc_ID ;
-            //String s_wl_meas_point = "";
-            String s_elev_code = "";
-            //String s_elev_code_desc = "";
+                CheckDupsInInstReading(db);
+                Cursor records = this.getIRRecords(db);
+                nRecords[0] = records.getCount();
+                Integer nCol = records.getColumnCount();
 
-            Integer i_facility_id = records.getColumnIndex(Stdet_Inst_Readings.facility_id);
-            if (i_facility_id < 0)
-                i_facility_id = 0;
-            Integer i_datIR_Date = records.getColumnIndex(Stdet_Inst_Readings.datIR_Date);
-            if (i_datIR_Date < 0)
-                i_datIR_Date = 0;
-            Integer i_datIR_Time = records.getColumnIndex(Stdet_Inst_Readings.datIR_Time);
-            if (i_datIR_Time < 0)
-                i_datIR_Time = 0;
-            Integer i_strD_Col_ID = records.getColumnIndex(Stdet_Inst_Readings.strD_Col_ID);
-            if (i_strD_Col_ID < 0)
-                i_strD_Col_ID = 0;
-            Integer i_strD_Loc_ID = records.getColumnIndex(Stdet_Inst_Readings.strD_Loc_ID);
-            if (i_strD_Loc_ID < 0)
-                i_strD_Loc_ID = 0;
-            Integer i_strFO_StatusID = records.getColumnIndex(Stdet_Inst_Readings.strFO_StatusID);
-            if (i_strFO_StatusID < 0)
-                i_strFO_StatusID = 0;
-            Integer i_strEqID = records.getColumnIndex(Stdet_Inst_Readings.strEqID);
-            if (i_strEqID < 0)
-                i_strEqID = 0;
-            Integer i_dblIR_Value = records.getColumnIndex(Stdet_Inst_Readings.dblIR_Value);
-            if (i_dblIR_Value < 0)
-                i_dblIR_Value = 0;
-            Integer i_strIR_Units = records.getColumnIndex(Stdet_Inst_Readings.strIR_Units);
-            if (i_strIR_Units < 0)
-                i_strIR_Units = 0;
-            Integer i_strComment = records.getColumnIndex(Stdet_Inst_Readings.strComment);
-            if (i_strComment < 0)
-                i_strComment = 0;
-            Integer i_strEqO_StatusID = records.getColumnIndex(Stdet_Inst_Readings.strEqO_StatusID);
-            if (i_strEqO_StatusID < 0)
-                i_strEqO_StatusID = 0;
-            Integer i_fSuspect = records.getColumnIndex(Stdet_Inst_Readings.fSuspect);
-            if (i_fSuspect < 0)
-                i_fSuspect = 0;
-            Integer i_strDataModComment = records.getColumnIndex(Stdet_Inst_Readings.strDataModComment);
-            if (i_strDataModComment < 0)
-                i_strDataModComment = 0;
-            int i_uf_strWL_D_Loc_ID = records.getColumnIndex(Stdet_Inst_Readings.uf_strWL_D_Loc_ID);
-            if (i_uf_strWL_D_Loc_ID < 0)
-                i_uf_strWL_D_Loc_ID = 0;
-            int i_wl_meas_point = records.getColumnIndex(Stdet_Inst_Readings.wl_meas_point);
-            if (i_wl_meas_point < 0)
-                i_wl_meas_point = 0;
-            Integer i_elev_code = records.getColumnIndex(Stdet_Inst_Readings.elev_code);
-            if (i_elev_code < 0)
-                i_elev_code = 0;
-            int i_elev_code_desc = records.getColumnIndex(Stdet_Inst_Readings.elev_code_desc);
-            if (i_elev_code_desc < 0)
-                i_elev_code_desc = 0;
+                String s_facility_id;
+                String s_datIR_Date;
+                String s_datIR_Time;
+                String s_strD_Col_ID;
+                String s_strD_Loc_ID;
+                String s_strFO_StatusID;
+                String s_strEqID;
+                String s_dblIR_Value;
+                String s_strIR_Units;
+                String s_strComment;
+                String s_strEqO_StatusID;
+                String s_fSuspect = "";
+                String s_strDataModComment;
+                //String s_uf_strWL_D_Loc_ID ;
+                //String s_wl_meas_point = "";
+                String s_elev_code = "";
+                String s_device_name = "";
 
+                Integer i_facility_id = records.getColumnIndex(Stdet_Inst_Readings.facility_id);
+                if (i_facility_id < 0)
+                    i_facility_id = 0;
+                Integer i_datIR_Date = records.getColumnIndex(Stdet_Inst_Readings.datIR_Date);
+                if (i_datIR_Date < 0)
+                    i_datIR_Date = 0;
+                Integer i_datIR_Time = records.getColumnIndex(Stdet_Inst_Readings.datIR_Time);
+                if (i_datIR_Time < 0)
+                    i_datIR_Time = 0;
+                Integer i_strD_Col_ID = records.getColumnIndex(Stdet_Inst_Readings.strD_Col_ID);
+                if (i_strD_Col_ID < 0)
+                    i_strD_Col_ID = 0;
+                Integer i_strD_Loc_ID = records.getColumnIndex(Stdet_Inst_Readings.strD_Loc_ID);
+                if (i_strD_Loc_ID < 0)
+                    i_strD_Loc_ID = 0;
+                Integer i_strFO_StatusID = records.getColumnIndex(Stdet_Inst_Readings.strFO_StatusID);
+                if (i_strFO_StatusID < 0)
+                    i_strFO_StatusID = 0;
+                Integer i_strEqID = records.getColumnIndex(Stdet_Inst_Readings.strEqID);
+                if (i_strEqID < 0)
+                    i_strEqID = 0;
+                Integer i_dblIR_Value = records.getColumnIndex(Stdet_Inst_Readings.dblIR_Value);
+                if (i_dblIR_Value < 0)
+                    i_dblIR_Value = 0;
+                Integer i_strIR_Units = records.getColumnIndex(Stdet_Inst_Readings.strIR_Units);
+                if (i_strIR_Units < 0)
+                    i_strIR_Units = 0;
+                Integer i_strComment = records.getColumnIndex(Stdet_Inst_Readings.strComment);
+                if (i_strComment < 0)
+                    i_strComment = 0;
+                Integer i_strEqO_StatusID = records.getColumnIndex(Stdet_Inst_Readings.strEqO_StatusID);
+                if (i_strEqO_StatusID < 0)
+                    i_strEqO_StatusID = 0;
+                Integer i_fSuspect = records.getColumnIndex(Stdet_Inst_Readings.fSuspect);
+                if (i_fSuspect < 0)
+                    i_fSuspect = 0;
+                Integer i_strDataModComment = records.getColumnIndex(Stdet_Inst_Readings.strDataModComment);
+                if (i_strDataModComment < 0)
+                    i_strDataModComment = 0;
+                int i_uf_strWL_D_Loc_ID = records.getColumnIndex(Stdet_Inst_Readings.uf_strWL_D_Loc_ID);
+                if (i_uf_strWL_D_Loc_ID < 0)
+                    i_uf_strWL_D_Loc_ID = 0;
+                int i_wl_meas_point = records.getColumnIndex(Stdet_Inst_Readings.wl_meas_point);
+                if (i_wl_meas_point < 0)
+                    i_wl_meas_point = 0;
+                Integer i_elev_code = records.getColumnIndex(Stdet_Inst_Readings.elev_code);
+                if (i_elev_code < 0)
+                    i_elev_code = 0;
+                int i_elev_code_desc = records.getColumnIndex(Stdet_Inst_Readings.elev_code_desc);
+                if (i_elev_code_desc < 0)
+                    i_elev_code_desc = 0;
+                int i_device_name = records.getColumnIndex(Stdet_Inst_Readings.device_name);
+                if ( i_device_name < 0 )
+                    i_device_name = 0;
 
-            String header = Stdet_Inst_Readings.CSVHeader();
-
-
-            myOutWriter.write(header);
-            myOutWriter.write(10);//decimal value 10 represents newline in ASCII
-
-            for (records.moveToFirst(); !records.isAfterLast(); records.moveToNext()) {
-                // The Cursor is now set to the right position
-                String row = "";
+                String header = Stdet_Inst_Readings.CSVHeader();
 
 
-                s_facility_id = getStringQuotedValue(records, i_facility_id);
-                s_datIR_Date = getStringQuotedValue(records,i_datIR_Date);
-                s_datIR_Time = getStringQuotedValue(records,i_datIR_Time);
-                s_dblIR_Value = getStringQuotedValueFromDouble(records,i_dblIR_Value, null) ;
-                s_strD_Loc_ID =getStringQuotedValue(records,i_strD_Loc_ID);
-                s_strEqO_StatusID = getStringQuotedValue(records,i_strEqO_StatusID);
-                s_strComment = getStringQuotedValue(records,i_strComment) ;
-                s_strDataModComment = getStringQuotedValue(records,i_strDataModComment);
-                //s_uf_strWL_D_Loc_ID = getStringQuotedValue(records,i_uf_strWL_D_Loc_ID);
-                //s_wl_meas_point = getStringQuotedValue(records,i_wl_meas_point) ;
-                s_elev_code = getStringQuotedValue(records,i_elev_code) ;
-                //s_elev_code_desc =getStringQuotedValue(records,i_elev_code_desc) ;
-                s_strFO_StatusID =getStringQuotedValue(records,i_strFO_StatusID);
-                s_strD_Col_ID = getStringQuotedValue(records,i_strD_Col_ID) ;
-                s_strEqID =getStringQuotedValue(records,i_strEqID);
-                s_strIR_Units = getStringQuotedValue(records,i_strIR_Units) ;
-                s_fSuspect =getStringQuotedValueFromBooleanYesNo(records,i_fSuspect);
-
-
-                row = s_facility_id + "," +
-                        s_strEqID + "," +
-                        s_strD_Col_ID + "," +
-                        s_datIR_Date + "," +
-                        s_datIR_Time + "," +
-                        s_strD_Loc_ID + "," +
-                        s_dblIR_Value + "," +
-                        s_strIR_Units + "," +
-                        s_strFO_StatusID + "," +
-                        s_strEqO_StatusID + "," +
-                        s_fSuspect + "," +
-                        s_strComment + "," +
-                        s_strDataModComment + "," +
-                        s_elev_code;
-
-                System.out.println(row);
-
-                myOutWriter.write(row);
+                myOutWriter.write(header);
                 myOutWriter.write(10);//decimal value 10 represents newline in ASCII
+
+                for (records.moveToFirst(); !records.isAfterLast(); records.moveToNext()) {
+                    // The Cursor is now set to the right position
+                    String row = "";
+
+
+                    s_facility_id = getStringQuotedValue(records, i_facility_id);
+                    s_datIR_Date = getStringQuotedValueAndRemoveSecondsFromDatetime(records, i_datIR_Date);
+                    s_datIR_Time = getStringQuotedValueAndRemoveSecondsFromDatetime(records, i_datIR_Time);
+                    s_dblIR_Value = getStringQuotedValueFromDouble(records, i_dblIR_Value, null);
+                    s_strD_Loc_ID = getStringQuotedValue(records, i_strD_Loc_ID);
+                    s_strEqO_StatusID = getStringQuotedValue(records, i_strEqO_StatusID);
+                    s_strComment = getStringQuotedValue(records, i_strComment);
+                    s_strDataModComment = getStringQuotedValue(records, i_strDataModComment);
+                    //s_uf_strWL_D_Loc_ID = getStringQuotedValue(records,i_uf_strWL_D_Loc_ID);
+                    //s_wl_meas_point = getStringQuotedValue(records,i_wl_meas_point) ;
+                    s_elev_code = getStringQuotedValue(records, i_elev_code);
+                    //s_elev_code_desc =getStringQuotedValue(records,i_elev_code_desc) ;
+                    s_strFO_StatusID = getStringQuotedValue(records, i_strFO_StatusID);
+                    s_strD_Col_ID = getStringQuotedValue(records, i_strD_Col_ID);
+                    s_strEqID = getStringQuotedValue(records, i_strEqID);
+                    s_strIR_Units = getStringQuotedValue(records, i_strIR_Units);
+                    s_fSuspect = getStringQuotedValueFromBooleanYesNo(records, i_fSuspect);
+                    s_device_name = getStringQuotedValue(records, i_device_name);
+
+                    row = s_facility_id + "," +
+                            s_strEqID + "," +
+                            s_strD_Col_ID + "," +
+                            s_datIR_Date + "," +
+                            s_datIR_Time + "," +
+                            s_strD_Loc_ID + "," +
+                            s_dblIR_Value + "," +
+                            s_strIR_Units + "," +
+                            s_strFO_StatusID + "," +
+                            s_strEqO_StatusID + "," +
+                            s_fSuspect + "," +
+                            s_strComment + "," +
+                            s_strDataModComment + "," +
+                            s_elev_code + "," +
+                            s_device_name;
+
+                    System.out.println(row);
+
+                    myOutWriter.write(row);
+                    myOutWriter.write(10);//decimal value 10 represents newline in ASCII
+                }
+                myOutWriter.close();
+                fos.flush();
+                fos.close();
+
+            } catch (IOException exception) {
+                exception.printStackTrace();
+                System.out.println(exception);
+
+                return null;
+            } catch (Exception exception) {
+                exception.printStackTrace();
+                System.out.println(exception);
+                return "";
             }
-            myOutWriter.close();
-            fos.flush();
-            fos.close();
 
-        } catch (IOException exception) {
-            exception.printStackTrace();
-            System.out.println(exception);
 
-            return null;
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            System.out.println(exception);
-            return "";
+            return fullfilename;
+
+
         }
-
-
-        return fullfilename;
-
-
-    }
 
     private String getStringQuotedValueFromDouble(Cursor records, Integer i, DecimalFormat df) {
         String e = "\"";
@@ -1010,6 +1025,26 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             s = df.format(dValue);
         }
         return e + s.trim() + e;
+    }
+
+    private String getStringQuotedValueAndRemoveSecondsFromDatetime(Cursor records, Integer i) {
+        String e = "\"";
+        String s = "";
+        Date dt = null;
+        String timeStamp = "";
+        SimpleDateFormat sdf = null;
+        try {
+            if (records.getString(i) != null) {
+                s = (String) records.getString(i);
+                sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a",Locale.US);
+                dt = sdf.parse(s);
+                timeStamp = new SimpleDateFormat("MM/dd/yyyy hh:mm a").format(dt);
+            }
+        }catch(Exception ex){
+            System.out.println(ex);
+        }
+
+        return e + timeStamp.trim() + e;
     }
     private String getStringQuotedValue(Cursor records, Integer i) {
         String e = "\"";
@@ -1067,6 +1102,70 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     }
 
     public String addNewColumnIfNotExists(){return"";}
+
+    /** Returns the consumer friendly device name */
+    public static String getDeviceName() {
+        String device = "device NA";
+        try {
+            device = Build.DEVICE;
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+
+        String hardware = "hardware NA";
+        try {
+            hardware = Build.HARDWARE;
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+        String id = "ID NA";
+        try {
+            id = Build.ID;
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+
+        String manufacturer = "MANUFACTURER NA";
+        try {
+            manufacturer = Build.MANUFACTURER;
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+
+        String model = "MODEL NA";
+        try {
+            model = Build.MODEL;
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+
+        if (model.startsWith(manufacturer)) {
+            return capitalize(model);
+        }
+        String rv = device + " - " + id + " " + hardware + "' "
+                + capitalize(manufacturer) + " " + model;
+        return rv.replace("'","_");
+    }
+
+    private static String capitalize(String str) {
+        if (TextUtils.isEmpty(str)) {
+            return str;
+        }
+        char[] arr = str.toCharArray();
+        boolean capitalizeNext = true;
+        String phrase = "";
+        for (char c : arr) {
+            if (capitalizeNext && Character.isLetter(c)) {
+                phrase += Character.toUpperCase(c);
+                capitalizeNext = false;
+                continue;
+            } else if (Character.isWhitespace(c)) {
+                capitalizeNext = true;
+            }
+            phrase += c;
+        }
+        return phrase;
+    }
 }
 
   
