@@ -30,6 +30,10 @@ public class Reading implements Serializable {
     private String strD_Col_ID = "NA";
     private String datIR_Date = "01/01/2000";
     private String datIR_Time = "01/01/2000";
+    private String datIR_Date_NoSeconds = "01/01/2000";
+
+    //YYYY-MM-DD HH:MM:SS
+    private String datetimedefault = "2000-01-01";
     private String strD_Loc_ID = "NA";
     private String strFO_StatusID = "NA";
     private String strEqO_StatusID = "NA";
@@ -87,6 +91,7 @@ public class Reading implements Serializable {
                 strD_Col_ID.equals(reading.strD_Col_ID) &&
                 datIR_Date.equals(reading.datIR_Date) &&
                 datIR_Time.equals(reading.datIR_Time) &&
+                datIR_Date_NoSeconds.equals(reading.datIR_Date_NoSeconds) &&
                 strD_Loc_ID.equals(reading.strD_Loc_ID) &&
                 strFO_StatusID.equals(reading.strFO_StatusID) &&
                 strEqO_StatusID.equals(reading.strEqO_StatusID) &&
@@ -105,6 +110,7 @@ public class Reading implements Serializable {
                 ", strD_Col_ID='" + strD_Col_ID + '\'' +
                 ", datIR_Date=" + datIR_Date +
                 ", datIR_Time=" + datIR_Time +
+                ", datIR_Date_NoSeconds=" + datIR_Date_NoSeconds +
                 ", strD_Loc_ID='" + strD_Loc_ID + '\'' +
                 ", strFO_StatusID='" + strFO_StatusID + '\'' +
                 ", strEqO_StatusID='" + strEqO_StatusID + '\'' +
@@ -269,7 +275,7 @@ public class Reading implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(lngID, facility_id, strD_Col_ID,
-                datIR_Date, datIR_Time, strD_Loc_ID,
+                datIR_Date, datIR_Time, datIR_Date_NoSeconds, strD_Loc_ID,
                 strFO_StatusID, strEqO_StatusID, dblIR_Value, strIR_Units,
                 strComment, strDataModComment,
                 elev_code);
@@ -305,21 +311,34 @@ public class Reading implements Serializable {
 
     public void setDatIR_Date(String datIR_Date) {
         this.datIR_Date = datIR_Date;
+        setDatIR_Time(datIR_Date);
+        setDatIR_Date_NoSeconds(datIR_Date);
     }
 
     public String getDatIR_Time() {
         return datIR_Time;
     }
+    public String gedatIR_Date_NoSeconds() {
+        return datIR_Date_NoSeconds;
+    }
 
-    public void setDatIR_Time(String datIR_Time) {
+    private void setDatIR_Time(String datIR_Time) {
         this.datIR_Time = datIR_Time;
     }
+    private void setDatIR_Date_NoSeconds(String datIR_Date) {
+
+        this.datIR_Date_NoSeconds = Stdet_Inst_Readings.RemoveSecondsFromDateTime(datIR_Date);
+        this.datetimedefault = Stdet_Inst_Readings.ConvertDatetimeFormat(datIR_Date, Stdet_Inst_Readings.Datetime_pattern_with_sec
+                ,Stdet_Inst_Readings.Datetime_pattern_with_sec);
+    }
+
 
     public String getStrD_Loc_ID() {
         return strD_Loc_ID;
     }
 
     public void setStrD_Loc_ID(String strD_Loc_ID) {
+
         this.strD_Loc_ID = strD_Loc_ID;
     }
 

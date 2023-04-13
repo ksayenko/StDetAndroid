@@ -648,15 +648,15 @@ Wedge as keys to empty
 
         Date currentTime = Calendar.getInstance().getTime();
         //adding seconds April 2023. KS
-        String timeStamp =new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a").format(Calendar.getInstance().getTime());
+        //default sqlllite format YYYY-MM-DD HH:MM:SS
+        String timestamp1 =new SimpleDateFormat(Stdet_Inst_Readings.Datetime_pattern_default).format(Calendar.getInstance().getTime());
+        String timeStamp = new SimpleDateFormat(Stdet_Inst_Readings.Datetime_pattern_with_sec).format(Calendar.getInstance().getTime());
 
-                //new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a").format(Calendar.getInstance().getTime());
         TextView temp;
         temp = (TextView) spin_Loc_id.getSelectedView();
         current_loc = temp.getText().toString();
         input_reading.setStrD_Loc_ID(current_loc);
         input_reading.setDatIR_Date(timeStamp);
-        input_reading.setDatIR_Time(timeStamp);
 
         temp = (TextView) spin_COL_ID.getSelectedView();
         current_collector = temp.getText().toString();

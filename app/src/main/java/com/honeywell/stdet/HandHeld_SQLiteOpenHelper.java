@@ -24,6 +24,7 @@ import java.util.TimeZone;
 
 import android.os.Build;
 import android.text.TextUtils;
+import android.util.Log;
 
 public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "HandHeld.sqlite3";
@@ -113,6 +114,16 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 String sql = ir.alterIRTableSQLAddColumn(Stdet_Inst_Readings.device_name);
                 db.execSQL(sql);
             }
+            if (!checkColumnExists(db, HandHeld_SQLiteOpenHelper.INST_READINGS, Stdet_Inst_Readings.datIR_Date_NoSeconds)) {
+                Stdet_Inst_Readings ir = new Stdet_Inst_Readings();
+                String sql = ir.alterIRTableSQLAddColumn(Stdet_Inst_Readings.datIR_Date_NoSeconds);
+                db.execSQL(sql);
+            }
+            if (!checkColumnExists(db, HandHeld_SQLiteOpenHelper.INST_READINGS, Stdet_Inst_Readings.default_datetimeformat)) {
+                Stdet_Inst_Readings ir = new Stdet_Inst_Readings();
+                String sql = ir.alterIRTableSQLAddColumn(Stdet_Inst_Readings.default_datetimeformat);
+                db.execSQL(sql);
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
             System.out.println("AlterDB INST_READINGS " + ex);
@@ -193,7 +204,6 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 r.setStrD_Col_ID(c.getString(2));
             if (!c.isNull(3)) {
                 r.setDatIR_Date(c.getString(3));
-                r.setDatIR_Time(c.getString(3));
             }
             if (!c.isNull(4))
                 r.setStrComment(c.getString(4));
@@ -514,7 +524,12 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     }
 
     public Cursor getIRRecordsShortList(SQLiteDatabase db ) {
-        return getIRRecordsShortList(db, "order by "+ Stdet_Inst_Readings.datIR_Date + " desc");
+        return getIRRecordsShortList(db, "order by "+
+                Stdet_Inst_Readings.default_datetimeformat + " desc , "
+                + Stdet_Inst_Readings.datIR_Date + " DESC");
+
+
+
     }
     public Cursor getIRRecordsShortList(SQLiteDatabase db, String orderby) {
         String qry = "select  rowid as _id, " +
@@ -524,6 +539,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 Stdet_Inst_Readings.lngID + " from " +
                 HandHeld_SQLiteOpenHelper.INST_READINGS +
                 " where (uploaded is null or uploaded =0) and (" + Stdet_Inst_Readings.recordToUpload  +" = 1 or "+ Stdet_Inst_Readings.recordToUpload + " is null) " + orderby;
+        System.out.println(qry);
         return db.rawQuery(qry, null);
     }
 
@@ -662,6 +678,18 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
             arrayList.add(c.getString(columnIndex));
         }
+    }
+
+    public void UpdateIRIfNeeded(SQLiteDatabase db) {
+
+        String device_name = HandHeld_SQLiteOpenHelper.getDeviceName();
+        //update device
+        String update1 = "update " + HandHeld_SQLiteOpenHelper.INST_READINGS
+                + " set " + Stdet_Inst_Readings.device_name + " = "
+                +  getStringQuotedValue(device_name)
+                + " where (uploaded is null  or uploaded = 0) and  (recordToUpload = 1 or recordToUpload is null)=1 "
+                + " and " + Stdet_Inst_Readings.device_name + " is null";
+        db.execSQL(update1);
     }
 
     public String CheckDupsInInstReading(SQLiteDatabase db) throws ParseException {
@@ -863,7 +891,11 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 fos = new FileOutputStream(fullfilename);
                 OutputStreamWriter myOutWriter = new OutputStreamWriter(fos);
 
+                //update IR table with device name and or no seconds if needed
                 CheckDupsInInstReading(db);
+                //update IR table with device name and or no seconds if needed
+                UpdateIRIfNeeded(db);
+
                 Cursor records = this.getIRRecords(db);
                 nRecords[0] = records.getCount();
                 Integer nCol = records.getColumnCount();
@@ -1051,6 +1083,10 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         String s = "";
         if (records.getString(i) != null)
             s = (String) records.getString(i);
+        return e + s.trim() + e;
+    }
+    private String getStringQuotedValue(String s) {
+        String e = "\"";
         return e + s.trim() + e;
     }
 

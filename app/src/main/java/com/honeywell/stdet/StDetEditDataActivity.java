@@ -26,9 +26,7 @@ import androidx.cursoradapter.widget.SimpleCursorAdapter;
 
 public class StDetEditDataActivity extends Activity {
 
-
     Reading input_reading;
-
     private TextView txt_COL_ID;
     private TextView txt_Loc_id;
     private Spinner spin_FAC_OP;
@@ -271,7 +269,7 @@ public class StDetEditDataActivity extends Activity {
             edit_depth.setText(elev_code_value[1]);
         }
 
-        setSpinnerValue(spin_elev_code,alElev, elev_code_value[0]);
+        setSpinnerValue(spin_elev_code,alElev, curent_elevationcode);
         setSpinnerValue(spin_UNITS,alUnits, current_unit);
         setSpinnerValue(spin_EQ_OP,alEq_Oper_Status, curent_eo);
         setSpinnerValue(spin_FAC_OP,alFac_Oper_Status, curent_fo);

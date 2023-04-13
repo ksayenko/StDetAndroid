@@ -1,9 +1,12 @@
 package com.honeywell.stdet;
 
+import android.database.Cursor;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 public class Stdet_Inst_Readings extends StdetDataTable {
 
@@ -28,6 +31,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         public static readonly string WL_D_Loc_ID = "uf_strWL_D_Loc_ID";
         public static readonly string WL_MEAS_POINT = "wl_meas_point";
      */
+
 
     public static final String lngID="lngID";
     public static final String facility_id="facility_id";
@@ -54,7 +58,14 @@ public class Stdet_Inst_Readings extends StdetDataTable {
     public static final String uploadedDatetime="uploadedDatetime";
     public static final String recordToUpload="recordToUpload";
 
+    public static final String datIR_Date_NoSeconds="datIR_Date_NoSeconds";
 
+    public static final String default_datetimeformat="default_datetimeformat";
+
+    //datetime formats
+    public static final String Datetime_pattern_default="YYYY-MM-dd HH:mm:SS";
+    public static final String Datetime_pattern_with_sec="MM/dd/yyyy hh:mm:ss a";
+    public static final String Datetime_pattern_no_sec="MM/dd/yyyy hh:mm a";
 
     public Stdet_Inst_Readings(){
         super(HandHeld_SQLiteOpenHelper.INST_READINGS);
@@ -85,6 +96,8 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         this.AddColumnToStructure(recordToUpload,"Boolean",false);
 
         this.AddColumnToStructure(device_name,"String",false);
+        this.AddColumnToStructure(datIR_Date_NoSeconds,"String",false);
+        this.AddColumnToStructure(default_datetimeformat,"String",false);
 
 
     }
@@ -105,6 +118,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         String loc1 = "NA";
         String reading_value1 = "0.0";
         String datetime1 = "01/01/2000";
+        String datetime_nosec = "01/01/2000";
         String col1 = "NA";
         String eq_status1 = "NA";
         String fo_status1 = "NA";
@@ -120,13 +134,19 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         for (int j = 0; j < n; j++)
             reading.add("");
 
-
         reading.set(GetElementIndex(lngID), String.valueOf(maxID));
         reading.set(GetElementIndex(facility_id), facility_id1);
         reading.set(GetElementIndex(strD_Loc_ID), loc1);
         reading.set(GetElementIndex(dblIR_Value), reading_value1);
         reading.set(GetElementIndex(datIR_Date), datetime1);
         reading.set(GetElementIndex(datIR_Time), datetime1);
+        reading.set(GetElementIndex(datIR_Date_NoSeconds),
+                Stdet_Inst_Readings.RemoveSecondsFromDateTime(datetime1));
+        reading.set(GetElementIndex(default_datetimeformat),
+                Stdet_Inst_Readings.ConvertDatetimeFormat(datetime1,
+                        Stdet_Inst_Readings.Datetime_pattern_with_sec,
+                        Stdet_Inst_Readings.Datetime_pattern_default ));
+
         reading.set(GetElementIndex(strD_Col_ID), col1);
         reading.set(GetElementIndex(strEqO_StatusID), eq_status1);
         reading.set(GetElementIndex(strFO_StatusID), fo_status1);
@@ -156,6 +176,13 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         reading.set(GetElementIndex(dblIR_Value), theReading.getDblIR_Value());
         reading.set(GetElementIndex(datIR_Date), theReading.getDatIR_Date());
         reading.set(GetElementIndex(datIR_Time), theReading.getDatIR_Time());
+        reading.set(GetElementIndex(datIR_Date_NoSeconds),
+                theReading.gedatIR_Date_NoSeconds());
+        reading.set(GetElementIndex(default_datetimeformat),
+                Stdet_Inst_Readings.ConvertDatetimeFormat(theReading.getDatIR_Date(),
+                        Stdet_Inst_Readings.Datetime_pattern_with_sec,
+                        Stdet_Inst_Readings.Datetime_pattern_default ));
+
         reading.set(GetElementIndex(strD_Col_ID), theReading.getStrD_Col_ID());
         reading.set(GetElementIndex(strEqO_StatusID), theReading.getStrEqO_StatusID());
         reading.set(GetElementIndex(strFO_StatusID), theReading.getStrFO_StatusID());
@@ -194,6 +221,12 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         reading.set(GetElementIndex(dblIR_Value), reading_value1);
         reading.set(GetElementIndex(datIR_Date), datetime1);
         reading.set(GetElementIndex(datIR_Time), datetime1);
+        reading.set(GetElementIndex(datIR_Date_NoSeconds),
+                Stdet_Inst_Readings.RemoveSecondsFromDateTime(datetime1));
+        reading.set(GetElementIndex(default_datetimeformat),
+                Stdet_Inst_Readings.ConvertDatetimeFormat(datetime1,
+                        Stdet_Inst_Readings.Datetime_pattern_with_sec,
+                        Stdet_Inst_Readings.Datetime_pattern_default ));
         reading.set(GetElementIndex(strD_Col_ID), col1);
         reading.set(GetElementIndex(strEqO_StatusID), eq_status1);
         reading.set(GetElementIndex(strFO_StatusID), fo_status1);
@@ -209,6 +242,30 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         return maxID++;
     }
 
+    public static String RemoveSecondsFromDateTime(String sDateTime) {
+       return ConvertDatetimeFormat(sDateTime,
+               Stdet_Inst_Readings.Datetime_pattern_with_sec,
+               Stdet_Inst_Readings.Datetime_pattern_no_sec);
+
+    }
+
+    public static String ConvertDatetimeFormat(String sDateTime, String formatFrom, String formatTo) {
+        SimpleDateFormat sdf = null;
+        Date dt = null;
+        String timeStamp = "";
+        try {
+            sdf = new SimpleDateFormat(formatFrom, Locale.US);
+
+            dt = sdf.parse(sDateTime);
+            timeStamp = new SimpleDateFormat(formatTo).format(dt);
+        } catch (Exception ex) {
+            System.out.println(ex);
+            return sDateTime;
+        }
+
+        return timeStamp;
+    }
+
     public static String CSVHeader() {
         String header = facility_id + "," + strEqID + "," + strD_Col_ID
                 + "," + datIR_Date + "," + datIR_Time + "," + strD_Loc_ID
@@ -220,7 +277,8 @@ public class Stdet_Inst_Readings extends StdetDataTable {
 
 
     public static String SelectDataToUpload()        {
-        String select =  "Select facility_id,strEqID,strD_Col_ID,datIR_Date,datIR_Time,strD_Loc_ID,"
+        String select =  "Select facility_id,strEqID,strD_Col_ID,datIR_Date_NoSeconds," +
+                " datIR_Date_NoSeconds,strD_Loc_ID,"
                 + "dblIR_Value,strIR_Units,strFO_StatusID,strEqO_StatusID,fSuspect,"
                 + "strComment,strDataModComment,elev_code, device_name  "
                + " from "+HandHeld_SQLiteOpenHelper.INST_READINGS +
@@ -230,8 +288,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
 
     public static String UpdateUploadedData() {
         Date currentTime = Calendar.getInstance().getTime();
-        String timeStamp = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a").format(Calendar.getInstance().getTime());
-                //SimpleDateFormat("MM/dd/yyyy hh:mm a").format(Calendar.getInstance().getTime());
+        String timeStamp = new SimpleDateFormat(Stdet_Inst_Readings.Datetime_pattern_default).format(Calendar.getInstance().getTime());
 
         String update = "UPDATE " + HandHeld_SQLiteOpenHelper.INST_READINGS
                 + " SET uploaded = 1 , uploadedDatetime = '" + timeStamp + "'" +
@@ -240,17 +297,27 @@ public class Stdet_Inst_Readings extends StdetDataTable {
     }
 
     public static String CheckDups() {
-        String select = "select facility_id, strd_col_id, datIR_date, datIR_Time, strd_loc_id, strFO_StatusID, strEqO_StatusID, dblir_value, "
+        /*String select = "select facility_id, strd_col_id, datIR_date, datIR_Time, strd_loc_id, strFO_StatusID, strEqO_StatusID, dblir_value, "
                 + " strIR_Units,strComment, strDataModComment,elev_code, count(*) count_dup "
                 + " from " + HandHeld_SQLiteOpenHelper.INST_READINGS
                 + " where (uploaded is null  or uploaded = 0) and  (recordToUpload = 1 or recordToUpload is null)=1"
                 + " group by facility_id, strd_col_id, datIR_date, datIR_Time, strd_loc_id, strFO_StatusID, strEqO_StatusID, dblir_value, "
                 + " strIR_Units ,strComment, strDataModComment,elev_code "
                 + " having count(*) > 1 ";
+*/
+        String select = "select facility_id, strd_col_id, datIR_Date_NoSeconds, strd_loc_id, strFO_StatusID, strEqO_StatusID, dblir_value, "
+                + " strIR_Units,strComment, strDataModComment,elev_code, count(*) count_dup "
+                + " from " + HandHeld_SQLiteOpenHelper.INST_READINGS
+                + " where (uploaded is null  or uploaded = 0) and  (recordToUpload = 1 or recordToUpload is null)=1"
+                + " group by facility_id, strd_col_id, datIR_Date_NoSeconds, strd_loc_id, strFO_StatusID, strEqO_StatusID, dblir_value, "
+                + " strIR_Units ,strComment, strDataModComment,elev_code "
+                + " having count(*) > 1 ";
 
 
         return select;
     }
+
+
 
 
 
