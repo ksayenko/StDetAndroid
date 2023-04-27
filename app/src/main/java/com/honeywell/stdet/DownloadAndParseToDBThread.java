@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -111,17 +112,26 @@ import java.util.concurrent.Executors;
 
             if (result[0] < 0) {
                 AlertDialogShow("The data has been uploaded with errors",
-                        "Error", "OK");
+                        "Error", "OK","warning");
             } else {
                 AlertDialogShow("The data has been uploaded with errors",
-                        "Success", "OK");
+                        "Success", "OK", "warning");
 
             }
         }
 
 
-        private void AlertDialogShow(String message, String title, String button) {
-            AlertDialog ad = new AlertDialog.Builder(context)
+        private void AlertDialogShow(String message, String title, String button, String theme) {
+            int themeResId =R.style.AlertDialogTheme;
+            if (theme.toLowerCase().equals("warning"))
+            {
+                themeResId = R.style.AlertDialogWarning;
+            }
+            if (theme.toLowerCase().equals("error"))
+            {
+                themeResId = R.style.AlertDialogError;
+            }
+            AlertDialog ad = new AlertDialog.Builder(context, themeResId)
                     .setTitle(title)
                     .setMessage(message)
                     .setPositiveButton(button, new DialogInterface.OnClickListener() {
@@ -129,7 +139,7 @@ import java.util.concurrent.Executors;
                         }
                     })
                     .show();
-
+            ad.getWindow().getDecorView().setBackgroundColor(Color.TRANSPARENT);
         }
 
 

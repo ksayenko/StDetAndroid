@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -51,6 +52,8 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
     private ListView barcodeList;
 
     Reading input_reading;
+
+    private Date currentDateTime;
 
     private Spinner spin_COL_ID;
     private Spinner spin_Loc_id;
@@ -110,18 +113,20 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
 
     Context ct = this;
     Boolean bSavedToDBData = false;
-    Boolean bAcceptWarning = false;
+    Boolean bAcceptWarningValid = false;
+    Boolean bAcceptWarningDuplicate = false;
 
 
     private Reading default_reading;
-    private Stdet_Inst_Readings ir_table =  new Stdet_Inst_Readings();
+    private Stdet_Inst_Readings ir_table = new Stdet_Inst_Readings();
 
     Boolean[] bDialogChoice = {false};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         bSavedToDBData = false;
-        bAcceptWarning = false;
+        bAcceptWarningValid = false;
+        bAcceptWarningDuplicate = false;
         input_reading = new Reading();
         default_reading = Reading.GetDefaultReading();
 
@@ -129,8 +134,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
         if (extras != null) {
             System.out.println("we have default reading");
             default_reading = (Reading) getIntent().getSerializableExtra("IR");
-        }
-        else {
+        } else {
             System.out.println("no default reading");
             default_reading = Reading.GetDefaultReading();
         }
@@ -140,9 +144,9 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
         strDataModComment = default_reading.getStrDataModComment();
         curent_eo = default_reading.getStrEqO_StatusID();
         curent_fo = default_reading.getStrFO_StatusID();
-        curent_elevationcode =default_reading.getElev_code();
+        curent_elevationcode = default_reading.getElev_code();
         current_comment = default_reading.getStrComment();
-        current_reading ="";
+        current_reading = "";
         current_unit = default_reading.getStrIR_Units();
 
 
@@ -160,7 +164,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
 
         int rowsInDB = dbHelper.getRowsInLookupTables(db);
         if (rowsInDB < 1) {
-            AlertDialogShow("The Lookup Tables aren't populated, go to Menu | Download and Populate Lookup DB","ERROR!");
+            AlertDialogShow("The Lookup Tables aren't populated, go to Menu | Download and Populate Lookup DB", "ERROR!", "warning");
         }
 
 
@@ -205,7 +209,8 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
             }
 
             public void afterTextChanged(Editable s) {
-               bAcceptWarning=false;
+                bAcceptWarningValid = false;
+                bAcceptWarningDuplicate = false;
             }
         });
         txt_comment = (EditText) findViewById(R.id.txt_Comment);
@@ -224,11 +229,14 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                System.out.println(bAcceptWarning);
-                Validation iChecked = saveForms(bAcceptWarning);
+                System.out.println(bAcceptWarningValid);
+                Validation iChecked = saveForms(bAcceptWarningValid, bAcceptWarningDuplicate);
                 if (iChecked.isWarning())
-                    bAcceptWarning = true;
-                System.out.println(bAcceptWarning);
+                    bAcceptWarningValid = true;
+                if (iChecked.isWarningDuplicate())
+                    bAcceptWarningDuplicate = true;
+                System.out.println(bAcceptWarningValid);
+                System.out.println(bAcceptWarningDuplicate);
                 System.out.println(iChecked);
             }
         });
@@ -241,23 +249,21 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 dbHelper.getInsertTable(db, ir_table);
                 int records = ir_table.GetNumberOfRecords();
                 String message = "The data (" + String.valueOf(records) + " records) is saved and ready to be uplaoded.";
-                //AlertDialogShow("The data (" + String.valueOf(records) + " records) is saved and ready to be uplaoded","Info","OK");
                 Toast.makeText(ct, message, Toast.LENGTH_SHORT).show();
                 ir_table = new Stdet_Inst_Readings();
                 clearForms();
-                bSavedToDBData =true;
+                bSavedToDBData = true;
                 onBackPressed();
             }
         });
 
-         spin_elev_code.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        spin_elev_code.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
                 Object item = parent.getItemAtPosition(pos);
                 String desc = ((String[]) alElev.get(pos))[2];
                 txt_elev_code2.setText(desc);
                 TextView temp = (TextView) spin_elev_code.getSelectedView();
                 curent_elevationcode = temp.getText().toString();
-                //bAcceptWarning = false;
                 String[] elev_code_value = dbHelper.getElevationCodeValue(db, current_loc, curent_elevationcode);
                 if (elev_code_value != null && elev_code_value[1] != null)
                     edit_depth.setText(elev_code_value[1]);
@@ -323,7 +329,8 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 int id3 = getIndexFromArraylist(alElev, elev_code_value[0], 1);
                 spin_elev_code.setSelection(id3);
 
-                bAcceptWarning = false;
+                bAcceptWarningValid = false;
+                bAcceptWarningDuplicate = false;
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
@@ -344,7 +351,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
         adCol.setDropDownViewResource(android.R.layout.simple_spinner_item);
         spin_COL_ID.setAdapter(adCol);
         current_collector = default_reading.getStrD_Col_ID();
-        System.out.println("from default current_collector "+current_collector);
+        System.out.println("from default current_collector " + current_collector);
         int idCol = getIndexFromArraylist(alCols, current_collector, 1);
         spin_COL_ID.setSelection(idCol);
 
@@ -443,7 +450,8 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 Log.i("------------onBarcodeEvent", "onBarcodeEvent!!!!");
                 List<String> list = new ArrayList<>();
                 String tempcurrent_loc = event.getBarcodeData();
-                if (tempcurrent_loc!=null || tempcurrent_loc!="")
+                currentDateTime = Calendar.getInstance().getTime(); //
+                if (tempcurrent_loc != null || tempcurrent_loc != "")
                     current_loc = tempcurrent_loc;
                 //current_loc = event.getBarcodeData();
                 Log.i("------------onBarcodeEvent", getCurrent_loc());
@@ -460,6 +468,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 spin_Loc_id.setSelection(id);
                 barcodeList.setAdapter(dataAdapter);
                 bSavedToDBData = false;
+                bAcceptWarningDuplicate = false;
             }
         });
     }
@@ -533,8 +542,7 @@ Wedge as keys to empty
                     //barcodeList.setAdapter(dataAdapter);
                     Toast.makeText(StDetInputActivity.this, "No data yet", Toast.LENGTH_SHORT).show();
                     bSavedToDBData = false;
-                }
-                else{
+                } else {
                     Toast.makeText(StDetInputActivity.this, current_loc, Toast.LENGTH_SHORT).show();
 
                 }
@@ -642,15 +650,15 @@ Wedge as keys to empty
         txt_Reading.requestFocus();
     }
 
-    public Validation saveForms(boolean bAcceptWarning) {
+    public Validation saveForms(boolean bAcceptWarning, boolean bAcceptWarningDuplicate) {
 
-        input_reading.setLngID( (int) (new Date().getTime()/1000));
+        input_reading.setLngID((int) (new Date().getTime() / 1000));
 
-        Date currentTime = Calendar.getInstance().getTime();
+        currentDateTime = Calendar.getInstance().getTime();
         //adding seconds April 2023. KS
         //default sqlllite format YYYY-MM-DD HH:MM:SS
-        String timestamp1 =new SimpleDateFormat(Stdet_Inst_Readings.Datetime_pattern_default).format(Calendar.getInstance().getTime());
-        String timeStamp = new SimpleDateFormat(Stdet_Inst_Readings.Datetime_pattern_with_sec).format(Calendar.getInstance().getTime());
+        String timestamp1 = new SimpleDateFormat(Stdet_Inst_Readings.Datetime_pattern_default).format(currentDateTime);
+        String timeStamp = new SimpleDateFormat(Stdet_Inst_Readings.Datetime_pattern_with_sec).format(currentDateTime);
 
         TextView temp;
         temp = (TextView) spin_Loc_id.getSelectedView();
@@ -687,14 +695,20 @@ Wedge as keys to empty
 
 
         Validation isTheRecordValid = isRecordValid();
+        Validation isTheRecordDup = isRecordDup();
+
+        boolean bAcceptDup = isTheRecordDup.isValid() || (isTheRecordDup.isWarningDuplicate() && bAcceptWarningDuplicate);
+        boolean bAcceptRecord = isTheRecordValid.isValid() || (isTheRecordValid.isWarning() && bAcceptWarning);
+
         if (isTheRecordValid.isError()) {
-            AlertDialogShow(isTheRecordValid.getValidationMessage(),"ERROR");
-        }
-        else if (isTheRecordValid.isWarning()&& !bAcceptWarning ) {
-            AlertDialogShow("Please check\n" + isTheRecordValid.getValidationMessage() +"\nPress 'Save' one more time to confirm the data as VALID or update the input data.","Warning");
-        }
-        else if (isTheRecordValid.isValid()|| (isTheRecordValid.isWarning() && bAcceptWarning) ) {
-            System.out.println(isTheRecordValid.getValidationMessageWarning()+isTheRecordValid.getValidationMessageError());
+            AlertDialogShowError(isTheRecordValid.getValidationMessage(), "ERROR");
+        } else if (isTheRecordValid.isWarning() && !bAcceptWarning) {
+            AlertDialogShow("Please check\n" + isTheRecordValid.getValidationMessage() + "\nPress 'Save' one more time to confirm the data as VALID or update the input data.", "Warning");
+        } else if (isTheRecordDup.isWarningDuplicate() && !bAcceptWarningDuplicate) {
+            AlertDialogHighWarning("Please check\n" + isTheRecordDup.getValidationMessage() + "\nPress 'Save' one more time to confirm the data as VALID or update the input data.", "Warning");
+            return isTheRecordDup;
+        } else if ((bAcceptRecord) && (bAcceptDup)) {
+            System.out.println(isTheRecordValid.getValidationMessageWarning() + isTheRecordValid.getValidationMessageError());
             maxId = ir_table.AddToTable(input_reading);
             maxId++;
             clearForms();
@@ -704,10 +718,29 @@ Wedge as keys to empty
         return isTheRecordValid;
     }
 
+    private Validation isRecordDup() {
+        Validation isValidPotentialDups = new Validation();
+
+        //check the database
+        String datestamp1 = new SimpleDateFormat(Stdet_Inst_Readings.Datetime_pattern_dateonly).format(currentDateTime);
+        String sql = Stdet_Inst_Readings.PotentialNewDups(current_loc, datestamp1);
+        String scount = dbHelper.GeneralQueryFirstValue(db, sql);
+        //check the inner table ir_table
+        boolean bPotDup2 = ir_table.IsPotentialDuplicateInInnerTable(current_loc, datestamp1);
+
+        if ((!Objects.equals(scount, "") && !Objects.equals(scount, "0")) || bPotDup2) {
+            isValidPotentialDups.setValidation(Validation.VALIDATION.WARNING_DUPLICATE);
+            isValidPotentialDups.setValidationMessageWarning("Potential Duplicate Found! \nLocation : " + current_loc);
+            isValidPotentialDups.setFocus(Validation.FOCUS.LOCATION);
+        }
+        return isValidPotentialDups;
+    }
+
     private Validation isRecordValid() {
         String message = "";
         String[] focus = new String[]{""};
-        Validation isValid  =  new Validation();
+        Validation isValid = new Validation();
+
         double reading;
         try {
             reading = Double.parseDouble(current_reading);
@@ -715,19 +748,18 @@ Wedge as keys to empty
             reading = 0.0;
         }
 
-        isValid= input_reading.isRecordValid();
+        isValid = input_reading.isRecordValid();
 
-        if (isValid.getValidation()!= Validation.VALIDATION.VALID) {
+        if (isValid.getValidation() != Validation.VALIDATION.VALID) {
             if (isValid.getFocus() == Validation.FOCUS.READING)
                 txt_Reading.requestFocus();
-            else if (isValid.getFocus() == Validation.FOCUS.LOCATION )
-               spin_Loc_id .requestFocus();
-            else if (isValid.getFocus() == Validation.FOCUS.COLLECTOR )
+            else if (isValid.getFocus() == Validation.FOCUS.LOCATION)
+                spin_Loc_id.requestFocus();
+            else if (isValid.getFocus() == Validation.FOCUS.COLLECTOR)
                 spin_COL_ID.requestFocus();
-            else if (isValid.getFocus() == Validation.FOCUS.ELEVATION )
+            else if (isValid.getFocus() == Validation.FOCUS.ELEVATION)
                 spin_elev_code.requestFocus();
         }
-
 
         return isValid;
     }
@@ -745,40 +777,51 @@ Wedge as keys to empty
         boolean isna = sValue == null || sValue.equals("") || sValue.equalsIgnoreCase("NA");
         return isna;
     }
-   private void AlertDialogShow(String message, String title){
+
+    private void AlertDialogShowError(String message, String title) {
+        AlertDialogShow(message, title, "OK", "error");
+    }
+
+    private void AlertDialogHighWarning(String message, String title) {
+        AlertDialogShow(message, title, "OK", "warning");
+    }
+
+    private void AlertDialogShow(String message, String title) {
         AlertDialogShow(message, title, "OK");
     }
+
     private void AlertDialogShow(String message, String title, String button) {
-        AlertDialog ad = new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton(button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                    }
-                })
-                .show();
+        AlertDialogShow(message, title, button, "default");
+    }
+
+    private void AlertDialogShow(String message, String title, String button, String theme) {
+        int themeResId = R.style.AlertDialogTheme;
         try {
-            wait(10);
-        } catch (Exception ignored) {
-        }
-    }
+            if (theme.toLowerCase().equals("warning")) {
+                themeResId = R.style.AlertDialogWarning;
+            }
+            if (theme.toLowerCase().equals("error")) {
+                themeResId = R.style.AlertDialogError;
+            }
 
-
-
-
-    @Override
-    public void onBackPressed() {
-        Intent barcodeIntent = new Intent(ct,MainActivity.class);
-        barcodeIntent.putExtra("IR", default_reading);
-        setResult(Activity.RESULT_OK,barcodeIntent);
-        if (!bSavedToDBData)
-            btnDone.performClick();
-        else {
+            AlertDialog ad = new AlertDialog.Builder(this, themeResId)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton(button, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                        }
+                    })
+                    .show();
+            ad.getWindow().getDecorView().setBackgroundColor(Color.TRANSPARENT);
+            try {
+                wait(10);
+            } catch (Exception ignored) {
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
             finish();
-            super.onBackPressed();
         }
+
     }
-
-
 
 }

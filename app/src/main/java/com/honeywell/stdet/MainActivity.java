@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Activity;
@@ -56,6 +57,9 @@ public class MainActivity extends Activity {
     private static final int REQUEST_CODE_GETMESSAGE =1014 ;
     private static BarcodeReader barcodeReader;
     private AidcManager manager;
+
+    private boolean bAcceptWarningDuplicate = false;
+
 
     @SuppressLint("StaticFieldLeak")
     private static MainActivity instance;
@@ -410,7 +414,7 @@ public class MainActivity extends Activity {
                 barcodeIntent.putExtra("IR", default_reading);
                 startActivityForResult(barcodeIntent,REQUEST_CODE_GETMESSAGE);
                 System.out.println("In MAIN btnInputForms.setOnClickListener " + default_reading.getStrD_Loc_ID());
-
+                bAcceptWarningDuplicate = false;
 
             }
         });
@@ -419,6 +423,7 @@ public class MainActivity extends Activity {
         btnReviewForms.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                bAcceptWarningDuplicate = false;
                 Log.i("------------onClick StDetEditListActivity", "12");
                 // get the intent action string from AndroidManifest.xml
                 Intent barcodeIntent = new Intent("android.intent.action.STDETEDITLISTACTIVITY");
@@ -434,71 +439,85 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
 
                 //CHECK CONNECTION
-                CallSoapWS ws1 = new CallSoapWS(null);
-                String response = ws1.CheckConnection();
-                boolean bConnection = true;
-                if (response.startsWith("ERROR")) {
-                    Toast.makeText(context, response, Toast.LENGTH_SHORT).show();
-                    txtInfo.setText(response);
-                    bConnection = false;
-                }
-                if (bConnection) {
+                Validation isDuplicate = new Validation();
+                HandHeld_SQLiteOpenHelper dbHelper =
+                        new HandHeld_SQLiteOpenHelper(context, new StdetDataTables());
+                SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-                    HandHeld_SQLiteOpenHelper dbHelper =
-                            new HandHeld_SQLiteOpenHelper(context, new StdetDataTables());
-                    SQLiteDatabase db = dbHelper.getReadableDatabase();
-                    Integer[] nrecords = new Integer[]{0};
-                    String message = "The data (" + nrecords[0] + " records) is ready to be uplaoded to the server.";
-                    //AlertDialogShow("The data (" + String.valueOf(records) + " records) is saved and ready to be uplaoded","Info","OK");
-                    //Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
-                    //AlertDialogShow(message, "Info", "OK");
-                    String s = null;
-                    try {
-                        s = dbHelper.CreateFileToUpload(db, directoryApp, nrecords);
-                        //Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                        nrecords[0] = 0;
+                String messageDup = dbHelper.PotentialDuplicatesMesssage(db);
+                System.out.println("Possible Duplicates Message " + messageDup + "bAcceptWarningDuplicate " + Boolean.toString(bAcceptWarningDuplicate));
+
+                if (messageDup != "" && !bAcceptWarningDuplicate) {
+                    isDuplicate.setValidation(Validation.VALIDATION.WARNING_DUPLICATE);
+                    messageDup = "Please check:\n" + messageDup + "\nPress 'Upload Data' one more time to confirm the data as VALID or go the Edit Readings Screen.";
+                    isDuplicate.setValidationMessageWarning(messageDup);
+                    AlertDialogShow(messageDup, "Warning", "OK", "warning");
+                    bAcceptWarningDuplicate = true;
+                    db.close();
+                } else {
+                    CallSoapWS ws1 = new CallSoapWS(null);
+                    String response = ws1.CheckConnection();
+                    boolean bConnection = true;
+                    if (response.startsWith("ERROR")) {
+                        Toast.makeText(context, response, Toast.LENGTH_SHORT).show();
+                        AlertDialogShow(response, "Error", "OK", "error");
+                        txtInfo.setText(response);
+                        bConnection = false;
                     }
-                    if (nrecords[0] > 0) {
+
+                    if (bConnection) {
+
+                        Integer[] nrecords = new Integer[]{0};
+
+                        String message = "The data (" + nrecords[0] + " records) is ready to be uplaoded to the server.";
+
+                        String s = null;
 
                         try {
-                            Path path = Paths.get(s);
-                            CallSoapWS ws = new CallSoapWS(directoryApp);
-                            byte[] dataUpload = Files.readAllBytes(path);
-                            String[] credentials = dbHelper.getLoginInfo(db);
+                            s = dbHelper.CreateFileToUpload(db, directoryApp, nrecords, context);
 
-                            String name = credentials[0];
-                            String encryptedPassword = credentials[1];
-                            // For decryption not ise null or empty string
-                            if (encryptedPassword ==null || encryptedPassword == "")
-                                encryptedPassword = "NA";
-                            String pwd = StDEtEncrypt.decrypt(encryptedPassword);
-                            String[] errormessage = new String[]{""};
-
-                            Boolean bCanUpload = ws.WS_GetLogin(name, pwd, errormessage);
-                            Boolean bUploaded;
-                            if (bCanUpload) {
-                                bUploaded = ws.WS_UploadFile2(dataUpload, s, name, pwd);
-                                if (bUploaded) {
-                                    db.execSQL(Stdet_Inst_Readings.UpdateUploadedData());
-                                    AlertDialogShow(nrecords[0] + " Records Has Been Uploaded to the Server",
-                                            "Info", "OK");
-                                } else {
-                                    AlertDialogShow("Data hasn't been uploaded. Try one more time.", "ERROR!", "OK");
-                                }
-
-                            } else {
-                                AlertDialogShow("Your Credentials aren't working. Go to Main Page | Menu | Check Login Credentials. : " + errormessage[0], "ERROR!", "OK");
-                            }
-                        } catch (Exception exception) {
-                            exception.printStackTrace();
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                            nrecords[0] = 0;
                         }
+                        if (nrecords[0] > 0) {
 
+                            try {
+                                Path path = Paths.get(s);
+                                CallSoapWS ws = new CallSoapWS(directoryApp);
+                                byte[] dataUpload = Files.readAllBytes(path);
+                                String[] credentials = dbHelper.getLoginInfo(db);
+
+                                String name = credentials[0];
+                                String encryptedPassword = credentials[1];
+                                // For decryption not ise null or empty string
+                                if (encryptedPassword == null || encryptedPassword == "")
+                                    encryptedPassword = "NA";
+                                String pwd = StDEtEncrypt.decrypt(encryptedPassword);
+                                String[] errormessage = new String[]{""};
+
+                                Boolean bCanUpload = ws.WS_GetLogin(name, pwd, errormessage);
+                                Boolean bUploaded;
+                                if (bCanUpload) {
+                                    bUploaded = ws.WS_UploadFile2(dataUpload, s, name, pwd);
+                                    if (bUploaded) {
+                                        db.execSQL(Stdet_Inst_Readings.UpdateUploadedData());
+                                        AlertDialogShow(nrecords[0] + " Records Has Been Uploaded to the Server",
+                                                "Info", "OK", "default");
+                                    } else {
+                                        AlertDialogShow("Data hasn't been uploaded. Try one more time.", "ERROR!", "OK", "warning");
+                                    }
+
+                                } else {
+                                    AlertDialogShow("Your Credentials aren't working. Go to Main Page | Menu | Check Login Credentials. : " + errormessage[0], "ERROR!", "OK", "warning");
+                                }
+                            } catch (Exception exception) {
+                                exception.printStackTrace();
+                            }
+                        }
+                        db.close();
                     }
-                    db.close();
                 }
-
             }
         });
 
@@ -509,15 +528,33 @@ public class MainActivity extends Activity {
 
     }
 
-    private void AlertDialogShow(String message, String title, String button) {
-        AlertDialog ad = new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton(button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                    }
-                })
-                .show();
+    private void AlertDialogShow(String message, String title, String button,  String theme) {
+        int themeResId = R.style.AlertDialogTheme;
+        try {
+            if (theme.toLowerCase().equals("warning")) {
+                themeResId = R.style.AlertDialogWarning;
+            }
+            if (theme.toLowerCase().equals("error")) {
+                themeResId = R.style.AlertDialogError;
+            }
+
+            AlertDialog ad = new AlertDialog.Builder(this,themeResId)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton(button, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                        }
+                    })
+                    .show();
+            ad.getWindow().getDecorView().setBackgroundColor(Color.TRANSPARENT);
+            try {
+                wait(10);
+            } catch (Exception ignored) {
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            finish();
+        }
 
     }
 

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -123,13 +124,13 @@ public class ParseXMLAndUploadToDBThread{
         Log.i("------------onPostExecute", String.valueOf(result));
 
         final AlertDialog ad = new AlertDialog.Builder(context).create();
-
+        ad.getWindow().getDecorView().setBackgroundColor(Color.TRANSPARENT);
         if (result < 0) {
             AlertDialogShow("The data has been uploaded with errors",
-                    "Error", "OK");
+                    "Error", "OK", "warning");
         } else {
             AlertDialogShow("The data has been uploaded with errors",
-                    "Success", "OK");
+                    "Success", "OK","warning");
 
         }
 
@@ -137,7 +138,16 @@ public class ParseXMLAndUploadToDBThread{
     }
 
 
-    private void AlertDialogShow(String message, String title, String button) {
+    private void AlertDialogShow(String message, String title, String button, String theme) {
+        int themeResId =R.style.AlertDialogTheme;
+        if (theme.toLowerCase().equals("warning"))
+        {
+            themeResId = R.style.AlertDialogWarning;
+        }
+        if (theme.toLowerCase().equals("error"))
+        {
+            themeResId = R.style.AlertDialogError;
+        }
         AlertDialog ad = new AlertDialog.Builder(context)
                 .setTitle(title)
                 .setMessage(message)
@@ -146,7 +156,7 @@ public class ParseXMLAndUploadToDBThread{
                     }
                 })
                 .show();
-
+        ad.getWindow().getDecorView().setBackgroundColor(Color.TRANSPARENT);
     }
 
 

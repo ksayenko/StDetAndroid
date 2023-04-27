@@ -66,6 +66,7 @@ public class Stdet_Inst_Readings extends StdetDataTable {
     public static final String Datetime_pattern_default="YYYY-MM-dd HH:mm:SS";
     public static final String Datetime_pattern_with_sec="MM/dd/yyyy hh:mm:ss a";
     public static final String Datetime_pattern_no_sec="MM/dd/yyyy hh:mm a";
+    public static final String Datetime_pattern_dateonly="MM/dd/yyyy";
 
     public Stdet_Inst_Readings(){
         super(HandHeld_SQLiteOpenHelper.INST_READINGS);
@@ -292,29 +293,69 @@ public class Stdet_Inst_Readings extends StdetDataTable {
 
         String update = "UPDATE " + HandHeld_SQLiteOpenHelper.INST_READINGS
                 + " SET uploaded = 1 , uploadedDatetime = '" + timeStamp + "'" +
-                " where (uploaded is null  or uploaded = 0) and (recordToUpload = 1 or recordToUpload is null) ";
+                 " where ( " + Stdet_Inst_Readings.uploaded + " is null  or " + Stdet_Inst_Readings.uploaded + " = 0) " +
+                "  and  (" + Stdet_Inst_Readings.recordToUpload + " = 1 or " + Stdet_Inst_Readings.recordToUpload + " is null) ";
         return update;
     }
 
-    public static String CheckDups() {
-        /*String select = "select facility_id, strd_col_id, datIR_date, datIR_Time, strd_loc_id, strFO_StatusID, strEqO_StatusID, dblir_value, "
-                + " strIR_Units,strComment, strDataModComment,elev_code, count(*) count_dup "
+
+    public static String PotentialNewDups(String Location, String TheDate) {
+        String select = "select count(*) count_dup "
                 + " from " + HandHeld_SQLiteOpenHelper.INST_READINGS
-                + " where (uploaded is null  or uploaded = 0) and  (recordToUpload = 1 or recordToUpload is null)=1"
-                + " group by facility_id, strd_col_id, datIR_date, datIR_Time, strd_loc_id, strFO_StatusID, strEqO_StatusID, dblir_value, "
-                + " strIR_Units ,strComment, strDataModComment,elev_code "
+                + " where ( " + Stdet_Inst_Readings.uploaded + " is null  or " + Stdet_Inst_Readings.uploaded + " = 0) " +
+                "  and  (" + Stdet_Inst_Readings.recordToUpload + " = 1 or " + Stdet_Inst_Readings.recordToUpload + " is null) " +
+                " and  " + Stdet_Inst_Readings.strD_Loc_ID + " = '"+Location+"' and " + Stdet_Inst_Readings.datIR_Date + " like '"+TheDate+"%'";
+
+        return select;
+    }
+
+    public static String FindPotentialDuplicates() {
+        String select = "select " + Stdet_Inst_Readings.strD_Loc_ID + ","
+                + Stdet_Inst_Readings.datIR_Date_NoSeconds + ","
+                //+ Stdet_Inst_Readings.strD_Col_ID
+                + " count(*) count_dup "
+                + " from " + HandHeld_SQLiteOpenHelper.INST_READINGS
+                + " where ( " + Stdet_Inst_Readings.uploaded + " is null  or " + Stdet_Inst_Readings.uploaded + " = 0) " +
+                "  and  (" + Stdet_Inst_Readings.recordToUpload + " = 1 or " + Stdet_Inst_Readings.recordToUpload + " is null) "
+                + " group by "
+                //+ Stdet_Inst_Readings.strD_Col_ID + ","
+                + Stdet_Inst_Readings.datIR_Date_NoSeconds + ","
+                + Stdet_Inst_Readings.strD_Loc_ID
                 + " having count(*) > 1 ";
-*/
+        return select;
+    }
+
+
+    public static String FindCompleteDuplicates() {
+
+        //dt_water_level table have smalldatetime for the measurement_date so we are passing a date
+        // without seconds
         String select = "select facility_id, strd_col_id, datIR_Date_NoSeconds, strd_loc_id, strFO_StatusID, strEqO_StatusID, dblir_value, "
                 + " strIR_Units,strComment, strDataModComment,elev_code, count(*) count_dup "
                 + " from " + HandHeld_SQLiteOpenHelper.INST_READINGS
-                + " where (uploaded is null  or uploaded = 0) and  (recordToUpload = 1 or recordToUpload is null)=1"
-                + " group by facility_id, strd_col_id, datIR_Date_NoSeconds, strd_loc_id, strFO_StatusID, strEqO_StatusID, dblir_value, "
-                + " strIR_Units ,strComment, strDataModComment,elev_code "
+                + " where ( " + Stdet_Inst_Readings.uploaded + " is null  or " + Stdet_Inst_Readings.uploaded + " = 0) "
+                + "  and  (" + Stdet_Inst_Readings.recordToUpload + " = 1 or " + Stdet_Inst_Readings.recordToUpload + " is null) "
+                + " group by " + Stdet_Inst_Readings.facility_id + ","
+                + Stdet_Inst_Readings.strD_Col_ID + ","
+                + Stdet_Inst_Readings.datIR_Date_NoSeconds + ","
+                + Stdet_Inst_Readings.strD_Loc_ID + "," + Stdet_Inst_Readings.strFO_StatusID + ","
+                + Stdet_Inst_Readings.strEqO_StatusID + "," + Stdet_Inst_Readings.dblIR_Value + ","
+                + Stdet_Inst_Readings.strIR_Units + "," + Stdet_Inst_Readings.strComment + ","
+                + Stdet_Inst_Readings.strDataModComment + "," + Stdet_Inst_Readings.elev_code
                 + " having count(*) > 1 ";
 
 
         return select;
+    }
+
+    public Boolean IsPotentialDuplicateInInnerTable(String Location, String TheDate){
+        for (int i = 0; i < GetNumberOfRecords(); i++ ) {
+            String loc = getValueFromData(i,Stdet_Inst_Readings.strD_Loc_ID);
+            String dt = getValueFromData(i,Stdet_Inst_Readings.datIR_Date).substring(0,10);
+            if (loc.equals(Location) && dt.equals(TheDate))
+                return true;
+        }
+        return false;
     }
 
 

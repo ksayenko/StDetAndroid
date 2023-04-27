@@ -32,7 +32,7 @@ public class Validation implements Serializable {
     }
 
     public String getValidationMessage() {
-       if (validation== VALIDATION.WARNING)
+       if (validation== VALIDATION.WARNING || validation == VALIDATION.WARNING_DUPLICATE)
           return getValidationMessageWarning();
        else if (validation== VALIDATION.ERROR)
            return getValidationMessageError();
@@ -67,7 +67,7 @@ public class Validation implements Serializable {
     }
 
     public enum VALIDATION {
-        VALID, WARNING, ERROR;
+        VALID, WARNING, WARNING_DUPLICATE, ERROR;
 
         @Override
         public String toString() {
@@ -78,7 +78,9 @@ public class Validation implements Serializable {
 
             if (this.toString().equals("VALID")) return 0;
             if (this.toString().equals("WARNING")) return 1;
-            else return 2;
+            if (this.toString().equals("WARNING_DUPLICATE")) return 2;
+
+            else return 4;
         }
     }
     public enum FOCUS {
@@ -111,6 +113,12 @@ public class Validation implements Serializable {
     public boolean isWarning()
     {
         if (validation == VALIDATION.WARNING)
+            return true;
+        else return false;
+    }
+    public boolean isWarningDuplicate()
+    {
+        if (validation == VALIDATION.WARNING_DUPLICATE)
             return true;
         else return false;
     }

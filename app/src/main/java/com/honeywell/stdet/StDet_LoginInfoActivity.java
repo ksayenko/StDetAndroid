@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
@@ -145,8 +146,9 @@ public class StDet_LoginInfoActivity extends Activity {
                         }
                     })
                     .show();
+            ad.getWindow().getDecorView().setBackgroundColor(Color.TRANSPARENT);
         } else {
-            AlertDialog ad = new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+            AlertDialog ad = new AlertDialog.Builder(this,R.style.AlertDialogWarning)
                     .setTitle("error")
                     .setMessage("The Login Info is incorrect. Can't save. Try again.")
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -161,25 +163,30 @@ public class StDet_LoginInfoActivity extends Activity {
                     })
 
                     .show();
+            ad.getWindow().getDecorView().setBackgroundColor(Color.TRANSPARENT);
         }
 
 
     }
 
-    private boolean bCheckLogin() {
+    private boolean bCheckLogin(){
+        return bCheckLogin(true);
+    }
+    private boolean bCheckLogin(boolean bDisplay) {
         Boolean bReturnValue;
         name = txt_UserName.getText().toString();
         pwd = txt_Password.getText().toString();
         String[] errormessage = new String[]{""};
         bReturnValue = soap.WS_GetLogin(name, pwd, errormessage);
-        if (bReturnValue) {
-            AlertDialogShow("Connection tested", "Success!", "OK");
-        } else {
-            String mess = "Please try one more time. : " + errormessage[0];
-            AlertDialogShow(mess, "ERROR!", "OK");
+        if (bDisplay) {
+            if (bReturnValue) {
+                AlertDialogShow("Connection tested", "Success!", "OK", "");
+            } else {
+                String mess = "Please try one more time. : " + errormessage[0];
+                AlertDialogShow(mess, "ERROR!", "OK", "error");
 
-        }
-
+            }
+           }
         return bReturnValue;
     }
 
@@ -193,15 +200,33 @@ public class StDet_LoginInfoActivity extends Activity {
 
     }
 
-    private void AlertDialogShow(String message, String title, String button) {
-        AlertDialog ad = new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton(button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                    }
-                })
-                .show();
+    private void AlertDialogShow(String message, String title, String button,  String theme) {
+        int themeResId = R.style.AlertDialogTheme;
+        try {
+            if (theme.toLowerCase().equals("warning")) {
+                themeResId = R.style.AlertDialogWarning;
+            }
+            if (theme.toLowerCase().equals("error")) {
+                themeResId = R.style.AlertDialogError;
+            }
+
+            AlertDialog ad = new AlertDialog.Builder(this, themeResId)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton(button, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                        }
+                    })
+                    .show();
+            ad.getWindow().getDecorView().setBackgroundColor(Color.TRANSPARENT);
+            try {
+                wait(10);
+            } catch (Exception ignored) {
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            finish();
+        }
 
     }
 

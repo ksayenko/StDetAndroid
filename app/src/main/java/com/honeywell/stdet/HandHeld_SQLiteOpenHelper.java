@@ -1,8 +1,12 @@
 package com.honeywell.stdet;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
+import android.bluetooth.BluetoothAdapter;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase;
@@ -12,6 +16,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -25,6 +30,9 @@ import java.util.TimeZone;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
 
 public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "HandHeld.sqlite3";
@@ -166,7 +174,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
             if (tables != null && tables.getDataTables().get(i).getName() != null) {
                 String tbName = tables.getDataTables().get(i).getName();
-                System.out.println("In getInsertFromTables " + String.valueOf(i) + " "+tbName);
+                System.out.println("In getInsertFromTables " + String.valueOf(i) + " " + tbName);
                 if (!tbName.equalsIgnoreCase("NA")) {
                     getInsertFromTable(db, tables.getDataTables().get(i));
                 }
@@ -187,7 +195,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 Stdet_Inst_Readings.elev_code + ", " +
                 Stdet_Inst_Readings.strEqO_StatusID + ", " +
                 Stdet_Inst_Readings.strFO_StatusID + ", " +
-                Stdet_Inst_Readings.strIR_Units + " FROM "+
+                Stdet_Inst_Readings.strIR_Units + " FROM " +
                 HandHeld_SQLiteOpenHelper.INST_READINGS + " Where " +
                 Stdet_Inst_Readings.lngID + " = " + lngId;
 
@@ -226,8 +234,8 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         }
         c.close();
         //add! min max
-        String[] min_max= getMinMax(db,r.getStrD_Loc_ID());
-        if (min_max!=null){
+        String[] min_max = getMinMax(db, r.getStrD_Loc_ID());
+        if (min_max != null) {
             r.setLocMin(min_max[0]);
             r.setLocMax(min_max[1]);
         }
@@ -266,7 +274,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 int jump = 100;
                 while (k < n) {
                     try {
-                        int k_end = ((n-k)>=100?k+jump-1:n-1);
+                        int k_end = ((n - k) >= 100 ? k + jump - 1 : n - 1);
                         System.out.println(k + " - " + k_end);
                         insert = table.getInsertIntoDB(k, k_end);
                         SQLiteStatement statement = db.compileStatement(insert);
@@ -281,8 +289,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                     k = k + jump;
                 }
 
-            }
-             else {
+            } else {
                 for (int i = 0; i < n; i++) {
                     try {
                         insert = table.getInsertIntoDB(i);
@@ -317,7 +324,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
             delete = "Delete from " + table.getName();
             if (!tablename.equalsIgnoreCase(HandHeld_SQLiteOpenHelper.INST_READINGS)
-                && !tablename.equalsIgnoreCase(HandHeld_SQLiteOpenHelper.LOGININFO)){
+                    && !tablename.equalsIgnoreCase(HandHeld_SQLiteOpenHelper.LOGININFO)) {
                 System.out.println("getInsertFromTable " + delete);
                 db.execSQL(delete);
             }
@@ -339,7 +346,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 while (k < n) {
                     try {
                         System.out.println(k);
-                        int k_end = ((n - k) >= 100 ? k + jump - 1 : n-1);
+                        int k_end = ((n - k) >= 100 ? k + jump - 1 : n - 1);
                         insert = table.getInsertIntoDB(k, k_end);
                         SQLiteStatement statement = db.compileStatement(insert);
                         statement.execute();
@@ -352,22 +359,21 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                     }
                     k = k + jump;
                 }
-            }
-            else{
-                    for (int i = 0; i < n; i++) {
-                        try {
-                            insert = table.getInsertIntoDB(i);
-                            SQLiteStatement statement = db.compileStatement(insert);
-                            statement.execute();
-                            statement.close();
-                            //db.execSQL(insert);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            System.out.println("insert " + insert + ex);
-                        }
-
+            } else {
+                for (int i = 0; i < n; i++) {
+                    try {
+                        insert = table.getInsertIntoDB(i);
+                        SQLiteStatement statement = db.compileStatement(insert);
+                        statement.execute();
+                        statement.close();
+                        //db.execSQL(insert);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        System.out.println("insert " + insert + ex);
                     }
+
                 }
+            }
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -384,35 +390,35 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 + " and "
                 + Stdet_DCP_Loc_Def.strD_TypeID + " in ('BIN', 'EWL', 'FPCT', 'FR', 'FT', 'IMHF',"
                 + " 'IMTM', 'MWL', 'NAOH', 'PD', 'PH', 'PR', 'TL',  'WFR', 'WFT', 'WL', 'WPR') "
-                +" UNION ALL SELECT -1,'NA','NA','0','W' "
+                + " UNION ALL SELECT -1,'NA','NA','0','W' "
                 + " order by ord, strD_Loc_ID ";
         Cursor c = db.rawQuery(qry, null);
         return c;
     }
 
-        public String[] getElevationCodeValue(SQLiteDatabase db, String loc, String elev_code){
-            String[] sElevCodeValue = new String[]{"NA", "Max Depth", "NA"};
-            String qry = "Select elev_code, elev_value, elev_code_desc from ut_elevations e inner join tbl_DCP_Loc_Def l on l.sys_loc_code = e.sys_loc_code where e.elev_code='" + elev_code + "'";
-            qry += " and strD_Loc_ID='" + loc + "'";
+    public String[] getElevationCodeValue(SQLiteDatabase db, String loc, String elev_code) {
+        String[] sElevCodeValue = new String[]{"NA", "Max Depth", "NA"};
+        String qry = "Select elev_code, elev_value, elev_code_desc from ut_elevations e inner join tbl_DCP_Loc_Def l on l.sys_loc_code = e.sys_loc_code where e.elev_code='" + elev_code + "'";
+        qry += " and strD_Loc_ID='" + loc + "'";
 
-            Cursor c = db.rawQuery(qry, null);
-            if (c.getCount() > 0) {
-                c.moveToFirst();
-                if (!c.isNull(0))
-                    sElevCodeValue[0] = c.getString(0);
-                if (!c.isNull(1))
-                    sElevCodeValue[1] = c.getString(1);
-                if (!c.isNull(2))
-                    sElevCodeValue[2] = c.getString(2);
-            }
-            c.close();
-
-            return sElevCodeValue;
+        Cursor c = db.rawQuery(qry, null);
+        if (c.getCount() > 0) {
+            c.moveToFirst();
+            if (!c.isNull(0))
+                sElevCodeValue[0] = c.getString(0);
+            if (!c.isNull(1))
+                sElevCodeValue[1] = c.getString(1);
+            if (!c.isNull(2))
+                sElevCodeValue[2] = c.getString(2);
         }
+        c.close();
+
+        return sElevCodeValue;
+    }
 
 
     public String[] getElevationCodeValue(SQLiteDatabase db, String loc) {
-        String[] sElevCodeValue = new String[]{"NA","Max Depth","NA"};
+        String[] sElevCodeValue = new String[]{"NA", "Max Depth", "NA"};
         String qry = "Select elev_code, elev_value, elev_code_desc " +
                 "from ut_elevations e inner join tbl_DCP_Loc_Def l " +
                 " on l.sys_loc_code = e.sys_loc_code where e.wl_meas_point = 1  ";
@@ -420,7 +426,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         qry += " and l.strD_Loc_ID like '%Wl%'";
         System.out.println(qry);
 
-        Cursor c =  db.rawQuery(qry, null);
+        Cursor c = db.rawQuery(qry, null);
         if (c.getCount() > 0) {
             c.moveToFirst();
             if (!c.isNull(0))
@@ -434,15 +440,15 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         return sElevCodeValue;
     }
 
-    public int getUpdateReading(SQLiteDatabase db, Reading r ) {
+    public int getUpdateReading(SQLiteDatabase db, Reading r) {
 
         ContentValues values = new ContentValues();
-        values.put( Stdet_Inst_Readings.dblIR_Value, r.getDblIR_Value());
-        values.put( Stdet_Inst_Readings.elev_code , r.getElev_code());
+        values.put(Stdet_Inst_Readings.dblIR_Value, r.getDblIR_Value());
+        values.put(Stdet_Inst_Readings.elev_code, r.getElev_code());
         values.put(Stdet_Inst_Readings.strComment, r.getStrComment());
-        values.put(Stdet_Inst_Readings.strFO_StatusID,  r.getStrFO_StatusID());
+        values.put(Stdet_Inst_Readings.strFO_StatusID, r.getStrFO_StatusID());
         values.put(Stdet_Inst_Readings.strEqO_StatusID, r.getStrEqO_StatusID());
-        values.put(Stdet_Inst_Readings.strIR_Units , r.getStrIR_Units());
+        values.put(Stdet_Inst_Readings.strIR_Units, r.getStrIR_Units());
 
         int rowsUpdated = db.update(HandHeld_SQLiteOpenHelper.INST_READINGS, values, Stdet_Inst_Readings.lngID + "=" + r.getLngID(), null);
 
@@ -471,8 +477,8 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     public Cursor getElevationCodes(SQLiteDatabase db) {
         String qry;
 
-            qry = "Select rowid as _id, elev_code,elev_code_desc, '1' as ord from ut_elevation_codes "+
-                    " UNION ALL SELECT -1,'NA','NA', '0' order by ord,  elev_code";
+        qry = "Select rowid as _id, elev_code,elev_code_desc, '1' as ord from ut_elevation_codes " +
+                " UNION ALL SELECT -1,'NA','NA', '0' order by ord,  elev_code";
 
         return db.rawQuery(qry, null);
     }
@@ -500,7 +506,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         String qry = "";
 
         qry = "Select rowid as _id, strFO_StatusID, '1' as ord from tbl_Fac_Oper_Def " +
-              //  " UNION ALL SELECT -1,'NA', '0' " +
+                //  " UNION ALL SELECT -1,'NA', '0' " +
                 " order by ord, strFO_StatusID";
 
         return db.rawQuery(qry, null);
@@ -516,21 +522,22 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         return db.rawQuery(qry, null);
 
     }
+
     public Cursor getLocMinMax(SQLiteDatabase db, String loc) {
         String qry = "select  rowid as _id, strD_ParUnits from tbl_DCP_Loc_Char where ";
         qry += " strD_Loc_ID='" + loc + "'";
-        qry+= " UNION ALL SELECT -1,'NA'";
+        qry += " UNION ALL SELECT -1,'NA'";
         return db.rawQuery(qry, null);
     }
 
-    public Cursor getIRRecordsShortList(SQLiteDatabase db ) {
-        return getIRRecordsShortList(db, "order by "+
+    public Cursor getIRRecordsShortList(SQLiteDatabase db) {
+        return getIRRecordsShortList(db, "order by " +
                 Stdet_Inst_Readings.default_datetimeformat + " desc , "
                 + Stdet_Inst_Readings.datIR_Date + " DESC");
 
 
-
     }
+
     public Cursor getIRRecordsShortList(SQLiteDatabase db, String orderby) {
         String qry = "select  rowid as _id, " +
                 Stdet_Inst_Readings.strD_Loc_ID + ", " +
@@ -538,21 +545,22 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 Stdet_Inst_Readings.dblIR_Value + ", " +
                 Stdet_Inst_Readings.lngID + " from " +
                 HandHeld_SQLiteOpenHelper.INST_READINGS +
-                " where (uploaded is null or uploaded =0) and (" + Stdet_Inst_Readings.recordToUpload  +" = 1 or "+ Stdet_Inst_Readings.recordToUpload + " is null) " + orderby;
+                " where (uploaded is null or uploaded =0) and (" + Stdet_Inst_Readings.recordToUpload + " = 1 or " + Stdet_Inst_Readings.recordToUpload + " is null) " + orderby;
         System.out.println(qry);
         return db.rawQuery(qry, null);
     }
 
-    public int deleteRecords(SQLiteDatabase db, String lngid){
-       // String qry = " delete from "+   HandHeld_SQLiteOpenHelper.INST_READINGS +
+    public int deleteRecords(SQLiteDatabase db, String lngid) {
+        // String qry = " delete from "+   HandHeld_SQLiteOpenHelper.INST_READINGS +
         //        " where lngid = " + lngid;
-       return   db.delete(HandHeld_SQLiteOpenHelper.INST_READINGS, Stdet_Inst_Readings.lngID+ "=?",new String[]{lngid});
+        return db.delete(HandHeld_SQLiteOpenHelper.INST_READINGS, Stdet_Inst_Readings.lngID + "=?", new String[]{lngid});
     }
 
 
-    public Cursor getIRRecords(SQLiteDatabase db ) {
-        return getIRRecords(db, "order by "+ Stdet_Inst_Readings.datIR_Date + " desc");
+    public Cursor getIRRecords(SQLiteDatabase db) {
+        return getIRRecords(db, "order by " + Stdet_Inst_Readings.datIR_Date + " desc");
     }
+
     public Cursor getIRRecords(SQLiteDatabase db, String orderby) {
         String qry = "select  rowid as _id, " + Stdet_Inst_Readings.facility_id + ", " +
                 Stdet_Inst_Readings.strD_Col_ID + ", " +
@@ -570,11 +578,11 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 Stdet_Inst_Readings.uf_strWL_D_Loc_ID + ", " +
                 Stdet_Inst_Readings.wl_meas_point + ", " +
                 Stdet_Inst_Readings.elev_code + ", " +
-                Stdet_Inst_Readings.elev_code_desc + ", "+
+                Stdet_Inst_Readings.elev_code_desc + ", " +
                 Stdet_Inst_Readings.device_name +
                 " from " +
                 HandHeld_SQLiteOpenHelper.INST_READINGS +
-                " where (uploaded is null or uploaded =0) and (" + Stdet_Inst_Readings.recordToUpload  +" = 1 or "+ Stdet_Inst_Readings.recordToUpload + " is null) " + orderby ;
+                " where (uploaded is null or uploaded =0) and (" + Stdet_Inst_Readings.recordToUpload + " = 1 or " + Stdet_Inst_Readings.recordToUpload + " is null) " + orderby;
         return db.rawQuery(qry, null);
     }
 
@@ -583,7 +591,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         int count = 0;
         for (int i = 0; i < tables.getDataTables().size(); i++) {
             //--tbl_Equip_Oper_Def
-            if(tables.getDataTables().get(i).getTableType()==StdetDataTable.TABLE_TYPE.LOOKUP) {
+            if (tables.getDataTables().get(i).getTableType() == StdetDataTable.TABLE_TYPE.LOOKUP) {
                 String create = tables.getDataTables().get(i).createTableSQL();
                 String countrowssql = tables.getDataTables().get(i).getRowCountSQL();
 
@@ -605,9 +613,9 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
         String qry = "select  rowid as _id, " + Stdet_LoginInfo.UserName + ", " +
                 Stdet_LoginInfo.Password + " from " +
-                HandHeld_SQLiteOpenHelper.LOGININFO ;
-        Cursor c= db.rawQuery(qry, null);
-        String[] credentials =  new String[]{"",""};
+                HandHeld_SQLiteOpenHelper.LOGININFO;
+        Cursor c = db.rawQuery(qry, null);
+        String[] credentials = new String[]{"", ""};
         if (c.getCount() > 0) {
             c.moveToFirst();
             credentials[0] = c.getString(1);
@@ -616,16 +624,14 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         return credentials;
     }
 
-    public void updateLoginInformationInDB(SQLiteDatabase db, String name, String enPwd)
-    {
-        Stdet_LoginInfo login =  new Stdet_LoginInfo();
+    public void updateLoginInformationInDB(SQLiteDatabase db, String name, String enPwd) {
+        Stdet_LoginInfo login = new Stdet_LoginInfo();
         login.AddToTable(name, enPwd);
         String create = login.createTableSQL();
         db.execSQL(create);
-        getInsertTable(db,login);
+        getInsertTable(db, login);
 
     }
-
 
 
     public Integer getMaxIRID(SQLiteDatabase db) {
@@ -638,8 +644,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 rv = c.getInt(0);
             }
             c.close();
-        }
-        catch(Exception ex){
+        } catch (Exception ex) {
             System.out.println(ex);
         }
         return rv;
@@ -686,20 +691,72 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         //update device
         String update1 = "update " + HandHeld_SQLiteOpenHelper.INST_READINGS
                 + " set " + Stdet_Inst_Readings.device_name + " = "
-                +  getStringQuotedValue(device_name)
+                + getStringQuotedValue(device_name)
                 + " where (uploaded is null  or uploaded = 0) and  (recordToUpload = 1 or recordToUpload is null)=1 "
                 + " and " + Stdet_Inst_Readings.device_name + " is null";
         db.execSQL(update1);
     }
 
-    public String CheckDupsInInstReading(SQLiteDatabase db) throws ParseException {
 
-        String sql = Stdet_Inst_Readings.CheckDups();
+    public String GeneralQueryFirstValue(SQLiteDatabase db, String sql) {
+        String rv = "";
+        Cursor records = db.rawQuery(sql, null);
+        int nRecords = records.getCount();
+        if (nRecords > 0) {
+            records.moveToFirst();
+            rv = records.getString(0);
+            return rv;
+        }
+        return "";
+    }
+
+    public String PotentialDuplicatesMesssage(SQLiteDatabase db) {
+        StringBuilder returnMessage = new StringBuilder();
+        String sql = Stdet_Inst_Readings.FindPotentialDuplicates();
+        try {
+            Cursor records = db.rawQuery(sql, null);
+            int nRecords = records.getCount();
+            Integer nCol = records.getColumnCount();
+
+            if (nRecords == 0)
+                return returnMessage.toString();
+
+            Integer i_strD_Loc_ID = records.getColumnIndex(Stdet_Inst_Readings.strD_Loc_ID);
+            if (i_strD_Loc_ID < 0)
+                i_strD_Loc_ID = 0;
+            Integer i_count_dup = records.getColumnIndex("count_dup");
+            if (i_count_dup < 0)
+                i_count_dup = 0;
+
+            returnMessage.append("Potential Duplicates Found For Locations :");
+            for (records.moveToFirst(); !records.isAfterLast(); records.moveToNext()) {
+                // The Cursor is now set to the right position
+                returnMessage.append(records.getString(i_strD_Loc_ID)).append("(").append(records.getString(i_count_dup)).append(" records), ");
+
+            }
+            returnMessage = new StringBuilder(replaceLast(returnMessage.toString(), ",", "."));
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+
+        }
+        return returnMessage.toString();
+    }
+
+    public String MarkNotToUploadCompleteDuplicates(SQLiteDatabase db) throws ParseException {
+        // update NumberOfDuplicates - 1 not to upload if complete duplicates found
+        String sql = Stdet_Inst_Readings.FindCompleteDuplicates();
+        StringBuilder returnMessage = new StringBuilder();
         Cursor records = db.rawQuery(sql, null);
         Integer nRecordsUpdated = 0;
 
         int nRecords = records.getCount();
         Integer nCol = records.getColumnCount();
+
+        if (nRecords == 0)
+            return returnMessage.toString();
+
+        returnMessage = new StringBuilder("Records for Location - Date were marked as not to upload : ");
 
         String s_facility_id;
         String s_datIR_Date;
@@ -707,26 +764,21 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         String s_strD_Col_ID;
         String s_strD_Loc_ID;
         String s_strFO_StatusID;
-        String s_strEqID;
         String s_dblIR_Value;
         String s_strIR_Units;
         String s_strComment;
         String s_strEqO_StatusID;
-        String s_fSuspect = "";
         String s_strDataModComment;
-
         String s_elev_code = "";
-        String scount_dup = "";
+
 
         Integer i_facility_id = records.getColumnIndex(Stdet_Inst_Readings.facility_id);
         if (i_facility_id < 0)
             i_facility_id = 0;
-        Integer i_datIR_Date = records.getColumnIndex(Stdet_Inst_Readings.datIR_Date);
+        Integer i_datIR_Date = records.getColumnIndex(Stdet_Inst_Readings.datIR_Date_NoSeconds);
         if (i_datIR_Date < 0)
             i_datIR_Date = 0;
-        Integer i_datIR_Time = records.getColumnIndex(Stdet_Inst_Readings.datIR_Time);
-        if (i_datIR_Time < 0)
-            i_datIR_Time = 0;
+
         Integer i_strD_Col_ID = records.getColumnIndex(Stdet_Inst_Readings.strD_Col_ID);
         if (i_strD_Col_ID < 0)
             i_strD_Col_ID = 0;
@@ -769,7 +821,6 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
 
             s_facility_id = getStringQuotedValue(records, i_facility_id);
             s_datIR_Date = getStringQuotedValue(records, i_datIR_Date);
-            s_datIR_Time = getStringQuotedValue(records, i_datIR_Time);
             s_dblIR_Value = getStringQuotedValueFromDouble(records, i_dblIR_Value, null);
             s_strD_Loc_ID = getStringQuotedValue(records, i_strD_Loc_ID);
             s_strEqO_StatusID = getStringQuotedValue(records, i_strEqO_StatusID);
@@ -781,7 +832,6 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             s_strD_Col_ID = getStringQuotedValue(records, i_strD_Col_ID);
             s_strIR_Units = getStringQuotedValueWithNULL(records, i_strIR_Units);
 
-            scount_dup = getStringQuotedValue(records, i_count_dup);
             Integer iDup = records.getInt(i_count_dup);
 
             String sqlUpdate = " UPDATE " + HandHeld_SQLiteOpenHelper.INST_READINGS
@@ -789,7 +839,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                     + " WHERE " + Stdet_Inst_Readings.lngID + " IN ("
                     + " SELECT lngid from " + HandHeld_SQLiteOpenHelper.INST_READINGS + " where "
                     + Stdet_Inst_Readings.strD_Col_ID + " = " + s_strD_Col_ID + " and "
-                    + Stdet_Inst_Readings.datIR_Date + " = " + s_datIR_Date + " and "
+                    + Stdet_Inst_Readings.datIR_Date_NoSeconds + " = " + s_datIR_Date + " and "
                     + Stdet_Inst_Readings.facility_id + " = " + s_facility_id + " and "
                     + Stdet_Inst_Readings.strD_Loc_ID + " = " + s_strD_Loc_ID + " and ";
 
@@ -828,7 +878,8 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 sqlUpdate += " " + Stdet_Inst_Readings.elev_code + " = " + s_elev_code;
 
             sqlUpdate += "  order by  " + Stdet_Inst_Readings.lngID + " desc LIMIT " + String.valueOf(iDup - 1) + " );";
-
+            nRecordsUpdated = nRecordsUpdated + (iDup - 1);
+            returnMessage.append(records.getString(i_strD_Loc_ID)).append(" - ").append(records.getString(i_datIR_Date)).append(", ");
 
             try {
                 db.execSQL(sqlUpdate);
@@ -838,212 +889,219 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                 System.out.println(exception);
             }
         }
-        return "";
+        returnMessage = new StringBuilder(replaceLast(returnMessage.toString(), ",", "."));
+        returnMessage.append(" Total ").append(nRecordsUpdated.toString()).append(" records marked.");
+        return returnMessage.toString();
+    }
+
+    public static String replaceLast(String text, String regex, String replacement) {
+        return text.replaceFirst("(?s)(.*)" + regex, "$1" + replacement);
     }
 
 
-        public String CreateFileToUpload(SQLiteDatabase db, File directoryApp, Integer[] nRecords) throws ParseException {
-            File newCSV = null;
+    public String CreateFileToUpload(SQLiteDatabase db, File directoryApp, Integer[] nRecords, Context context) throws ParseException {
+        File newCSV = null;
 
-            Calendar c = Calendar.getInstance();
-            try {
-                CallSoapWS ws = new CallSoapWS(directoryApp);
-                String datetimeserver = ws.WS_GetServerDate(false);
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-                c.setTime(sdf.parse(datetimeserver));
-            } catch (Exception ex) {
-                c = Calendar.getInstance();
-            }
+        Calendar c = Calendar.getInstance();
+        try {
+            CallSoapWS ws = new CallSoapWS(directoryApp);
+            String datetimeserver = ws.WS_GetServerDate(false);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+            c.setTime(sdf.parse(datetimeserver));
+        } catch (Exception ex) {
+            c = Calendar.getInstance();
+        }
 
 // in java in Calendar Months are indexed from 0 not 1 so 10 is November and 11 will be December.
-            int y = c.get(Calendar.YEAR);
-            String sy = Integer.toString(y).substring(2);
-            java.text.SimpleDateFormat sfMonth = new java.text.SimpleDateFormat("MM");
-            int m = c.get(Calendar.MONTH);
-            String sm = sfMonth.format(c.getTime());
-            //String sm = Integer.toString(m);
-            int d = c.get(Calendar.DAY_OF_MONTH);
-            String sd = Integer.toString(d);
-            int h = c.get(Calendar.HOUR_OF_DAY);
-            String sh = Integer.toString(h);
-            int mm = c.get(Calendar.MINUTE);
-            String smm = Integer.toString(mm);
-            int sec = c.get(Calendar.SECOND);
-            String ssec = Integer.toString(sec);
-            if (d < 10)
-                sd = "0" + sd;
-            if (Integer.parseInt(sm) < 10 && !sm.startsWith("0"))
-                sm = "0" + sm;
-            if (h < 10)
-                sh = "0" + sh;
-            if (mm < 10)
-                smm = "0" + smm;
-            if (sec < 10)
-                ssec = "0" + ssec;
+        int y = c.get(Calendar.YEAR);
+        String sy = Integer.toString(y).substring(2);
+        java.text.SimpleDateFormat sfMonth = new java.text.SimpleDateFormat("MM");
+        int m = c.get(Calendar.MONTH);
+        String sm = sfMonth.format(c.getTime());
+        //String sm = Integer.toString(m);
+        int d = c.get(Calendar.DAY_OF_MONTH);
+        String sd = Integer.toString(d);
+        int h = c.get(Calendar.HOUR_OF_DAY);
+        String sh = Integer.toString(h);
+        int mm = c.get(Calendar.MINUTE);
+        String smm = Integer.toString(mm);
+        int sec = c.get(Calendar.SECOND);
+        String ssec = Integer.toString(sec);
+        if (d < 10)
+            sd = "0" + sd;
+        if (Integer.parseInt(sm) < 10 && !sm.startsWith("0"))
+            sm = "0" + sm;
+        if (h < 10)
+            sh = "0" + sh;
+        if (mm < 10)
+            smm = "0" + smm;
+        if (sec < 10)
+            ssec = "0" + ssec;
 
-            String dattime_addon = sy + sm + sd + "_" + sh + smm + ssec;
-            String filename = HandHeld_SQLiteOpenHelper.CSVPREFIX_INR +
-                    HandHeld_SQLiteOpenHelper.FILEPREFIX + "_" + dattime_addon + ".csv";
-            newCSV = new File(directoryApp + "/" + filename);
-            FileOutputStream fos;
-            String fullfilename = newCSV.getAbsolutePath();
-            try {
-                fos = new FileOutputStream(fullfilename);
-                OutputStreamWriter myOutWriter = new OutputStreamWriter(fos);
+        String dattime_addon = sy + sm + sd + "_" + sh + smm + ssec;
+        String filename = HandHeld_SQLiteOpenHelper.CSVPREFIX_INR +
+                HandHeld_SQLiteOpenHelper.FILEPREFIX + "_" + dattime_addon + ".csv";
+        newCSV = new File(directoryApp + "/" + filename);
+        FileOutputStream fos;
+        String fullfilename = newCSV.getAbsolutePath();
+        try {
+            fos = new FileOutputStream(fullfilename);
+            OutputStreamWriter myOutWriter = new OutputStreamWriter(fos);
 
-                //update IR table with device name and or no seconds if needed
-                CheckDupsInInstReading(db);
-                //update IR table with device name and or no seconds if needed
-                UpdateIRIfNeeded(db);
+            //update IR table with device name and or no seconds if needed
+            String message1 = MarkNotToUploadCompleteDuplicates(db);
+            if (message1 != "")
+                Toast.makeText(context, message1, Toast.LENGTH_SHORT).show();
+            //update IR table with device name and or no seconds if needed
+            UpdateIRIfNeeded(db);
 
-                Cursor records = this.getIRRecords(db);
-                nRecords[0] = records.getCount();
-                Integer nCol = records.getColumnCount();
+            Cursor records = this.getIRRecords(db);
+            nRecords[0] = records.getCount();
+            Integer nCol = records.getColumnCount();
+            message1 = records.toString() + "  records getting ready to upload";
+            Toast.makeText(context, message1, Toast.LENGTH_SHORT).show();
 
-                String s_facility_id;
-                String s_datIR_Date;
-                String s_datIR_Time;
-                String s_strD_Col_ID;
-                String s_strD_Loc_ID;
-                String s_strFO_StatusID;
-                String s_strEqID;
-                String s_dblIR_Value;
-                String s_strIR_Units;
-                String s_strComment;
-                String s_strEqO_StatusID;
-                String s_fSuspect = "";
-                String s_strDataModComment;
-                //String s_uf_strWL_D_Loc_ID ;
-                //String s_wl_meas_point = "";
-                String s_elev_code = "";
-                String s_device_name = "";
+            String s_facility_id;
+            String s_datIR_Date;
+            String s_datIR_Time;
+            String s_strD_Col_ID;
+            String s_strD_Loc_ID;
+            String s_strFO_StatusID;
+            String s_strEqID;
+            String s_dblIR_Value;
+            String s_strIR_Units;
+            String s_strComment;
+            String s_strEqO_StatusID;
+            String s_fSuspect = "";
+            String s_strDataModComment;
+            //String s_uf_strWL_D_Loc_ID ;
+            //String s_wl_meas_point = "";
+            String s_elev_code = "";
+            String s_device_name = "";
 
-                Integer i_facility_id = records.getColumnIndex(Stdet_Inst_Readings.facility_id);
-                if (i_facility_id < 0)
-                    i_facility_id = 0;
-                Integer i_datIR_Date = records.getColumnIndex(Stdet_Inst_Readings.datIR_Date);
-                if (i_datIR_Date < 0)
-                    i_datIR_Date = 0;
-                Integer i_datIR_Time = records.getColumnIndex(Stdet_Inst_Readings.datIR_Time);
-                if (i_datIR_Time < 0)
-                    i_datIR_Time = 0;
-                Integer i_strD_Col_ID = records.getColumnIndex(Stdet_Inst_Readings.strD_Col_ID);
-                if (i_strD_Col_ID < 0)
-                    i_strD_Col_ID = 0;
-                Integer i_strD_Loc_ID = records.getColumnIndex(Stdet_Inst_Readings.strD_Loc_ID);
-                if (i_strD_Loc_ID < 0)
-                    i_strD_Loc_ID = 0;
-                Integer i_strFO_StatusID = records.getColumnIndex(Stdet_Inst_Readings.strFO_StatusID);
-                if (i_strFO_StatusID < 0)
-                    i_strFO_StatusID = 0;
-                Integer i_strEqID = records.getColumnIndex(Stdet_Inst_Readings.strEqID);
-                if (i_strEqID < 0)
-                    i_strEqID = 0;
-                Integer i_dblIR_Value = records.getColumnIndex(Stdet_Inst_Readings.dblIR_Value);
-                if (i_dblIR_Value < 0)
-                    i_dblIR_Value = 0;
-                Integer i_strIR_Units = records.getColumnIndex(Stdet_Inst_Readings.strIR_Units);
-                if (i_strIR_Units < 0)
-                    i_strIR_Units = 0;
-                Integer i_strComment = records.getColumnIndex(Stdet_Inst_Readings.strComment);
-                if (i_strComment < 0)
-                    i_strComment = 0;
-                Integer i_strEqO_StatusID = records.getColumnIndex(Stdet_Inst_Readings.strEqO_StatusID);
-                if (i_strEqO_StatusID < 0)
-                    i_strEqO_StatusID = 0;
-                Integer i_fSuspect = records.getColumnIndex(Stdet_Inst_Readings.fSuspect);
-                if (i_fSuspect < 0)
-                    i_fSuspect = 0;
-                Integer i_strDataModComment = records.getColumnIndex(Stdet_Inst_Readings.strDataModComment);
-                if (i_strDataModComment < 0)
-                    i_strDataModComment = 0;
-                int i_uf_strWL_D_Loc_ID = records.getColumnIndex(Stdet_Inst_Readings.uf_strWL_D_Loc_ID);
-                if (i_uf_strWL_D_Loc_ID < 0)
-                    i_uf_strWL_D_Loc_ID = 0;
-                int i_wl_meas_point = records.getColumnIndex(Stdet_Inst_Readings.wl_meas_point);
-                if (i_wl_meas_point < 0)
-                    i_wl_meas_point = 0;
-                Integer i_elev_code = records.getColumnIndex(Stdet_Inst_Readings.elev_code);
-                if (i_elev_code < 0)
-                    i_elev_code = 0;
-                int i_elev_code_desc = records.getColumnIndex(Stdet_Inst_Readings.elev_code_desc);
-                if (i_elev_code_desc < 0)
-                    i_elev_code_desc = 0;
-                int i_device_name = records.getColumnIndex(Stdet_Inst_Readings.device_name);
-                if ( i_device_name < 0 )
-                    i_device_name = 0;
+            Integer i_facility_id = records.getColumnIndex(Stdet_Inst_Readings.facility_id);
+            if (i_facility_id < 0)
+                i_facility_id = 0;
+            Integer i_datIR_Date = records.getColumnIndex(Stdet_Inst_Readings.datIR_Date);
+            if (i_datIR_Date < 0)
+                i_datIR_Date = 0;
+            Integer i_datIR_Time = records.getColumnIndex(Stdet_Inst_Readings.datIR_Time);
+            if (i_datIR_Time < 0)
+                i_datIR_Time = 0;
+            Integer i_strD_Col_ID = records.getColumnIndex(Stdet_Inst_Readings.strD_Col_ID);
+            if (i_strD_Col_ID < 0)
+                i_strD_Col_ID = 0;
+            Integer i_strD_Loc_ID = records.getColumnIndex(Stdet_Inst_Readings.strD_Loc_ID);
+            if (i_strD_Loc_ID < 0)
+                i_strD_Loc_ID = 0;
+            Integer i_strFO_StatusID = records.getColumnIndex(Stdet_Inst_Readings.strFO_StatusID);
+            if (i_strFO_StatusID < 0)
+                i_strFO_StatusID = 0;
+            Integer i_strEqID = records.getColumnIndex(Stdet_Inst_Readings.strEqID);
+            if (i_strEqID < 0)
+                i_strEqID = 0;
+            Integer i_dblIR_Value = records.getColumnIndex(Stdet_Inst_Readings.dblIR_Value);
+            if (i_dblIR_Value < 0)
+                i_dblIR_Value = 0;
+            Integer i_strIR_Units = records.getColumnIndex(Stdet_Inst_Readings.strIR_Units);
+            if (i_strIR_Units < 0)
+                i_strIR_Units = 0;
+            Integer i_strComment = records.getColumnIndex(Stdet_Inst_Readings.strComment);
+            if (i_strComment < 0)
+                i_strComment = 0;
+            Integer i_strEqO_StatusID = records.getColumnIndex(Stdet_Inst_Readings.strEqO_StatusID);
+            if (i_strEqO_StatusID < 0)
+                i_strEqO_StatusID = 0;
+            Integer i_fSuspect = records.getColumnIndex(Stdet_Inst_Readings.fSuspect);
+            if (i_fSuspect < 0)
+                i_fSuspect = 0;
+            Integer i_strDataModComment = records.getColumnIndex(Stdet_Inst_Readings.strDataModComment);
+            if (i_strDataModComment < 0)
+                i_strDataModComment = 0;
+            int i_uf_strWL_D_Loc_ID = records.getColumnIndex(Stdet_Inst_Readings.uf_strWL_D_Loc_ID);
+            if (i_uf_strWL_D_Loc_ID < 0)
+                i_uf_strWL_D_Loc_ID = 0;
+            int i_wl_meas_point = records.getColumnIndex(Stdet_Inst_Readings.wl_meas_point);
+            if (i_wl_meas_point < 0)
+                i_wl_meas_point = 0;
+            Integer i_elev_code = records.getColumnIndex(Stdet_Inst_Readings.elev_code);
+            if (i_elev_code < 0)
+                i_elev_code = 0;
+            int i_elev_code_desc = records.getColumnIndex(Stdet_Inst_Readings.elev_code_desc);
+            if (i_elev_code_desc < 0)
+                i_elev_code_desc = 0;
+            int i_device_name = records.getColumnIndex(Stdet_Inst_Readings.device_name);
+            if (i_device_name < 0)
+                i_device_name = 0;
 
-                String header = Stdet_Inst_Readings.CSVHeader();
+            String header = Stdet_Inst_Readings.CSVHeader();
 
 
-                myOutWriter.write(header);
+            myOutWriter.write(header);
+            myOutWriter.write(10);//decimal value 10 represents newline in ASCII
+
+            for (records.moveToFirst(); !records.isAfterLast(); records.moveToNext()) {
+                // The Cursor is now set to the right position
+                String row = "";
+
+
+                s_facility_id = getStringQuotedValue(records, i_facility_id);
+                s_datIR_Date = getStringQuotedValueAndRemoveSecondsFromDatetime(records, i_datIR_Date);
+                s_datIR_Time = getStringQuotedValueAndRemoveSecondsFromDatetime(records, i_datIR_Time);
+                s_dblIR_Value = getStringQuotedValueFromDouble(records, i_dblIR_Value, null);
+                s_strD_Loc_ID = getStringQuotedValue(records, i_strD_Loc_ID);
+                s_strEqO_StatusID = getStringQuotedValue(records, i_strEqO_StatusID);
+                s_strComment = getStringQuotedValue(records, i_strComment);
+                s_strDataModComment = getStringQuotedValue(records, i_strDataModComment);
+                //s_uf_strWL_D_Loc_ID = getStringQuotedValue(records,i_uf_strWL_D_Loc_ID);
+                //s_wl_meas_point = getStringQuotedValue(records,i_wl_meas_point) ;
+                s_elev_code = getStringQuotedValue(records, i_elev_code);
+                //s_elev_code_desc =getStringQuotedValue(records,i_elev_code_desc) ;
+                s_strFO_StatusID = getStringQuotedValue(records, i_strFO_StatusID);
+                s_strD_Col_ID = getStringQuotedValue(records, i_strD_Col_ID);
+                s_strEqID = getStringQuotedValue(records, i_strEqID);
+                s_strIR_Units = getStringQuotedValue(records, i_strIR_Units);
+                s_fSuspect = getStringQuotedValueFromBooleanYesNo(records, i_fSuspect);
+                s_device_name = getStringQuotedValue(records, i_device_name);
+
+                row = s_facility_id + "," +
+                        s_strEqID + "," +
+                        s_strD_Col_ID + "," +
+                        s_datIR_Date + "," +
+                        s_datIR_Time + "," +
+                        s_strD_Loc_ID + "," +
+                        s_dblIR_Value + "," +
+                        s_strIR_Units + "," +
+                        s_strFO_StatusID + "," +
+                        s_strEqO_StatusID + "," +
+                        s_fSuspect + "," +
+                        s_strComment + "," +
+                        s_strDataModComment + "," +
+                        s_elev_code + "," +
+                        s_device_name;
+
+                System.out.println(row);
+
+                myOutWriter.write(row);
                 myOutWriter.write(10);//decimal value 10 represents newline in ASCII
-
-                for (records.moveToFirst(); !records.isAfterLast(); records.moveToNext()) {
-                    // The Cursor is now set to the right position
-                    String row = "";
-
-
-                    s_facility_id = getStringQuotedValue(records, i_facility_id);
-                    s_datIR_Date = getStringQuotedValueAndRemoveSecondsFromDatetime(records, i_datIR_Date);
-                    s_datIR_Time = getStringQuotedValueAndRemoveSecondsFromDatetime(records, i_datIR_Time);
-                    s_dblIR_Value = getStringQuotedValueFromDouble(records, i_dblIR_Value, null);
-                    s_strD_Loc_ID = getStringQuotedValue(records, i_strD_Loc_ID);
-                    s_strEqO_StatusID = getStringQuotedValue(records, i_strEqO_StatusID);
-                    s_strComment = getStringQuotedValue(records, i_strComment);
-                    s_strDataModComment = getStringQuotedValue(records, i_strDataModComment);
-                    //s_uf_strWL_D_Loc_ID = getStringQuotedValue(records,i_uf_strWL_D_Loc_ID);
-                    //s_wl_meas_point = getStringQuotedValue(records,i_wl_meas_point) ;
-                    s_elev_code = getStringQuotedValue(records, i_elev_code);
-                    //s_elev_code_desc =getStringQuotedValue(records,i_elev_code_desc) ;
-                    s_strFO_StatusID = getStringQuotedValue(records, i_strFO_StatusID);
-                    s_strD_Col_ID = getStringQuotedValue(records, i_strD_Col_ID);
-                    s_strEqID = getStringQuotedValue(records, i_strEqID);
-                    s_strIR_Units = getStringQuotedValue(records, i_strIR_Units);
-                    s_fSuspect = getStringQuotedValueFromBooleanYesNo(records, i_fSuspect);
-                    s_device_name = getStringQuotedValue(records, i_device_name);
-
-                    row = s_facility_id + "," +
-                            s_strEqID + "," +
-                            s_strD_Col_ID + "," +
-                            s_datIR_Date + "," +
-                            s_datIR_Time + "," +
-                            s_strD_Loc_ID + "," +
-                            s_dblIR_Value + "," +
-                            s_strIR_Units + "," +
-                            s_strFO_StatusID + "," +
-                            s_strEqO_StatusID + "," +
-                            s_fSuspect + "," +
-                            s_strComment + "," +
-                            s_strDataModComment + "," +
-                            s_elev_code + "," +
-                            s_device_name;
-
-                    System.out.println(row);
-
-                    myOutWriter.write(row);
-                    myOutWriter.write(10);//decimal value 10 represents newline in ASCII
-                }
-                myOutWriter.close();
-                fos.flush();
-                fos.close();
-
-            } catch (IOException exception) {
-                exception.printStackTrace();
-                System.out.println(exception);
-
-                return null;
-            } catch (Exception exception) {
-                exception.printStackTrace();
-                System.out.println(exception);
-                return "";
             }
+            myOutWriter.close();
+            fos.flush();
+            fos.close();
 
+        } catch (IOException exception) {
+            exception.printStackTrace();
+            System.out.println(exception);
 
-            return fullfilename;
-
-
+            return null;
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            System.out.println(exception);
+            return "";
         }
+        return fullfilename;
+
+    }
 
     private String getStringQuotedValueFromDouble(Cursor records, Integer i, DecimalFormat df) {
         String e = "\"";
@@ -1068,16 +1126,17 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         try {
             if (records.getString(i) != null) {
                 s = (String) records.getString(i);
-                sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a",Locale.US);
+                sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a", Locale.US);
                 dt = sdf.parse(s);
                 timeStamp = new SimpleDateFormat("MM/dd/yyyy hh:mm a").format(dt);
             }
-        }catch(Exception ex){
+        } catch (Exception ex) {
             System.out.println(ex);
         }
 
         return e + timeStamp.trim() + e;
     }
+
     private String getStringQuotedValue(Cursor records, Integer i) {
         String e = "\"";
         String s = "";
@@ -1085,6 +1144,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             s = (String) records.getString(i);
         return e + s.trim() + e;
     }
+
     private String getStringQuotedValue(String s) {
         String e = "\"";
         return e + s.trim() + e;
@@ -1099,56 +1159,91 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
             return "NULL";
         return e + s.trim() + e;
     }
+
     private String getStringQuotedValueFromBooleanYesNo(Cursor records, Integer i) {
         String e = "\"";
-        String s ;
-        Integer i1 =records.getInt(i);
+        String s;
+        Integer i1 = records.getInt(i);
         if (records.getInt(i) == 1)
             s = "Yes";
         else
-            s =  "No";
+            s = "No";
 
         //e + ((Integer) records.getInt(i_fSuspect) == 1 ? "Yes" : "No") + e;
         return e + s + e;
     }
 
-    public String sqlCheckColumnExists(String tablename, String columnname)
-    {
-        String sql = "SELECT COUNT(*) AS CNTREC FROM pragma_table_info('"+tablename+"') WHERE name='"+columnname+"'";
+    public String sqlCheckColumnExists(String tablename, String columnname) {
+        String sql = "SELECT COUNT(*) AS CNTREC FROM pragma_table_info('" + tablename + "') WHERE name='" + columnname + "'";
         return sql;
     }
 
-    public boolean checkColumnExists(SQLiteDatabase db,String tablename, String columnname)
-    {
+    public boolean checkColumnExists(SQLiteDatabase db, String tablename, String columnname) {
         boolean rv = false;
-        String sql = sqlCheckColumnExists(tablename,columnname);
+        String sql = sqlCheckColumnExists(tablename, columnname);
         Cursor c = db.rawQuery(sql, null);
         try {
             c.moveToFirst();
-            if(!c.isNull(0)){
+            if (!c.isNull(0)) {
                 int i = c.getInt(0);
-                if (i >0)
+                if (i > 0)
                     rv = true;
             }
-        }
-        catch(Exception ex){
+        } catch (Exception ex) {
             System.out.println(ex);
         }
         return rv;
     }
 
-    public String addNewColumnIfNotExists(){return"";}
+    public String addNewColumnIfNotExists() {
+        return "";
+    }
 
     /** Returns the consumer friendly device name */
-    public static String getDeviceName() {
-        String device = "device NA";
+
+    static String getDeviceName1() {
         try {
+            Class systemPropertiesClass = Class.forName("android.os.SystemProperties");
+            Method getMethod = systemPropertiesClass.getMethod("get", String.class);
+            Object object = new Object();
+            Object obj = getMethod.invoke(object, "ro.product.device");
+            return (obj == null ? "" : (String) obj);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "NA";
+        }
+    }
+
+
+    @SuppressLint("MissingPermission")
+    public static String getDeviceName2() {
+        try {
+            BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if(mBluetoothAdapter==null) {
+                System.out.println("----Device does not support bluetooth---");
+                return "NA";
+            }
+            return mBluetoothAdapter.getName();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "NA";
+        }
+    }
+    public static String getDeviceName() {
+        String device = "NA";
+        device = getDeviceName2();
+
+        if (Objects.equals(device, "NA"))
+            device  =getDeviceName1();
+
+        try {
+            if (Objects.equals(device, "NA"))
             device = Build.DEVICE;
         } catch (Exception ex) {
             System.out.println(ex);
         }
 
-        String hardware = "hardware NA";
+          String hardware = "hardware NA";
         try {
             hardware = Build.HARDWARE;
         } catch (Exception ex) {

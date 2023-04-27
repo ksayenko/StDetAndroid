@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -293,13 +294,20 @@ public class StDetEditDataActivity extends Activity {
     }
 
 
-
-
     private void AlertDialogShow(String message, String title){
-        AlertDialogShow(message, title, "OK");
+        AlertDialogShow(message, title, "OK", "default");
     }
-    private void AlertDialogShow(String message, String title, String button) {
-        AlertDialog ad = new AlertDialog.Builder(this)
+    private void AlertDialogShow(String message, String title, String button, String theme) {
+        int themeResId =R.style.AlertDialogTheme;
+        if (theme.toLowerCase().equals("warning"))
+        {
+            themeResId = R.style.AlertDialogWarning;
+        }
+        if (theme.toLowerCase().equals("error"))
+        {
+            themeResId = R.style.AlertDialogError;
+        }
+        AlertDialog ad = new AlertDialog.Builder(this, themeResId)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton(button, new DialogInterface.OnClickListener() {
@@ -307,6 +315,7 @@ public class StDetEditDataActivity extends Activity {
                     }
                 })
                 .show();
+        ad.getWindow().getDecorView().setBackgroundColor(Color.TRANSPARENT);
         try {
             wait(10);
         } catch (Exception ignored) {
