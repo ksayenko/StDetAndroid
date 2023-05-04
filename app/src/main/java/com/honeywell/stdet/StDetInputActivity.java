@@ -122,11 +122,14 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
 
     Boolean[] bDialogChoice = {false};
 
+    private Boolean isRecordSaved = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         bSavedToDBData = false;
         bAcceptWarningValid = false;
         bAcceptWarningDuplicate = false;
+        //isRecordSaved = true;
         input_reading = new Reading();
         default_reading = Reading.GetDefaultReading();
 
@@ -211,9 +214,26 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
             public void afterTextChanged(Editable s) {
                 bAcceptWarningValid = false;
                 bAcceptWarningDuplicate = false;
+                isRecordSaved = false;
+                Log.i("isRecordSaved", "txt_Reading.addTextChangedListener " + isRecordSaved.toString());
             }
         });
         txt_comment = (EditText) findViewById(R.id.txt_Comment);
+        txt_comment.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            public void afterTextChanged(Editable s) {
+                Log.i("isRecordSaved", "txtComment.addTextChangedListener " + isRecordSaved.toString());
+                isRecordSaved = false;
+            }
+        });
         edit_depth = (EditText) findViewById(R.id.text_depth);
         edit_depth.setEnabled(false);
         btnClear = (Button) findViewById(R.id.btn_clear);
@@ -231,6 +251,10 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
             public void onClick(View view) {
                 System.out.println(bAcceptWarningValid);
                 Validation iChecked = saveForms(bAcceptWarningValid, bAcceptWarningDuplicate);
+                if (iChecked.isValid() ||
+                (iChecked.isWarning() && bAcceptWarningValid) || (iChecked.isWarningDuplicate() && bAcceptWarningDuplicate))
+                    isRecordSaved = true;
+
                 if (iChecked.isWarning())
                     bAcceptWarningValid = true;
                 if (iChecked.isWarningDuplicate())
@@ -238,6 +262,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 System.out.println(bAcceptWarningValid);
                 System.out.println(bAcceptWarningDuplicate);
                 System.out.println(iChecked);
+
             }
         });
 
@@ -251,11 +276,17 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 String message = "The data (" + String.valueOf(records) + " records) is saved and ready to be uplaoded.";
                 Toast.makeText(ct, message, Toast.LENGTH_SHORT).show();
                 ir_table = new Stdet_Inst_Readings();
-                clearForms();
-                bSavedToDBData = true;
+                Log.i("isRecordSaved", "btnDone.setOnClickListener ,isRecordSaved " + isRecordSaved.toString());
+                if (isRecordSaved) {
+                    clearForms();
+                    bSavedToDBData = true;
+                }
+                Log.i("isRecordSaved", "btnDone.setOnClickListener ,isRecordSaved " + isRecordSaved.toString());
                 onBackPressed();
+
             }
         });
+
 
         spin_elev_code.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
@@ -267,6 +298,11 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 String[] elev_code_value = dbHelper.getElevationCodeValue(db, current_loc, curent_elevationcode);
                 if (elev_code_value != null && elev_code_value[1] != null)
                     edit_depth.setText(elev_code_value[1]);
+
+                if (!Objects.equals(curent_elevationcode, "NA"))
+                    isRecordSaved = false;
+                Log.i("isRecordSaved", "in spin_elev_code.setOnItemSelectedListener" + isRecordSaved.toString());
+
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
@@ -331,6 +367,9 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
 
                 bAcceptWarningValid = false;
                 bAcceptWarningDuplicate = false;
+                Log.i("isRecordSaved", "spin_loc_id.listener " + isRecordSaved.toString());
+                if (!Objects.equals(current_loc, "NA"))
+                    isRecordSaved = false;
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
@@ -354,9 +393,22 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
         System.out.println("from default current_collector " + current_collector);
         int idCol = getIndexFromArraylist(alCols, current_collector, 1);
         spin_COL_ID.setSelection(idCol);
+        spin_COL_ID.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                TextView temp;
+                temp = (TextView) spin_COL_ID.getSelectedView();
+                current_collector = temp.getText().toString();
 
+                if (!Objects.equals(current_collector, "NA"))
+                    isRecordSaved = false;
 
-        Log.i("------------onCreate", "4");
+                Log.i("isRecordSaved", "spin_col_id.listener " + isRecordSaved.toString());
+            }
+
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+        Log.i("onCreate", "4");
 
         SimpleCursorAdapter adLocs =
                 new SimpleCursorAdapter(this, android.R.layout.simple_spinner_item, Locs, fromLoc, toL, 0);
@@ -384,9 +436,6 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
         adelev.setDropDownViewResource(android.R.layout.simple_spinner_item);
         spin_elev_code.setAdapter(adelev);
 
-        //db.close();
-        //btnInputForms=(Button)findViewById(R.id.btnInputForms);
-        //btnInputForms.setVisibility(View.GONE);
 
         // set lock the orientation
         // otherwise, the onDestory will trigger when orientation changes
@@ -399,7 +448,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
 
             // register bar code event listener
             barcodeReader.addBarcodeListener(this);
-            Log.i("------------onCreate", "barcodeReader !=null");
+            Log.i("onCreate", "barcodeReader !=null");
 
             // set the trigger mode to client control
             try {
@@ -438,7 +487,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
 
         // get initial list
         barcodeList = (ListView) findViewById(R.id.listViewBarcodeData);
-        Log.i("------------barcodeList", barcodeList.toString());
+        Log.i("barcodeList", barcodeList.toString());
     }
 
     @Override
@@ -447,21 +496,23 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
             @Override
             public void run() {
                 // update UI to reflect the data
-                Log.i("------------onBarcodeEvent", "onBarcodeEvent!!!!");
+                Log.i("onBarcodeEvent", "onBarcodeEvent!!!!");
                 List<String> list = new ArrayList<>();
                 String tempcurrent_loc = event.getBarcodeData();
                 currentDateTime = Calendar.getInstance().getTime(); //
                 if (tempcurrent_loc != null || tempcurrent_loc != "")
                     current_loc = tempcurrent_loc;
                 //current_loc = event.getBarcodeData();
-                Log.i("------------onBarcodeEvent", getCurrent_loc());
+                Log.i("onBarcodeEvent", getCurrent_loc());
+                Log.i("isRecordSaved", "on barcode event " + isRecordSaved.toString());
+                isRecordSaved = false;
 
                 final ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(
                         StDetInputActivity.this, android.R.layout.simple_list_item_1, list);
 
                 int id = getIndexFromArraylist(alLocs, getCurrent_loc(), 1);
 
-                Log.i("------------onBarcodeEvent id =", Integer.toString(id));
+                Log.i("onBarcodeEvent", "id: " + Integer.toString(id));
                 if (id > 0) {
                     bBarcodeLocation = true;
                 }
@@ -469,6 +520,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 barcodeList.setAdapter(dataAdapter);
                 bSavedToDBData = false;
                 bAcceptWarningDuplicate = false;
+                bAcceptWarningValid = false;
             }
         });
     }
@@ -502,7 +554,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
         try {
             // only handle trigger presses
             // turn on/off aimer, illumination and decoding
-            Log.i("------------onTriggerEvent", "no Data");
+            Log.i("onTriggerEvent", "no Data");
             /*
             To get the "CR" in the barcode to be processed two settings needs to be changed:
 "Settings - Honeywell Settings - Scanning - Internal Scanner - Default profile - Data Processing Settings. Set:
@@ -535,7 +587,7 @@ Wedge as keys to empty
                 if (Objects.equals(current_loc, "NA")) {
                     int id = getIndexFromArraylist(alLocs, "NA", 1);
 
-                    Log.i("------------onBarcodeEvent id =", Integer.toString(id));
+                    Log.i("onFailureEvent", "Id = "+Integer.toString(id));
 
                     bBarcodeLocation = false;
                     spin_Loc_id.setSelection(id);
@@ -634,7 +686,7 @@ Wedge as keys to empty
 
         int id = 0;
         id = getIndexFromArraylist(alLocs, "NA", 1);
-        Log.i("------------clearForms =", Integer.toString(id));
+        Log.i("clearForms " , "id " + Integer.toString(id));
         spin_Loc_id.setSelection(id);
         //id = getIndexFromArraylist(alCols, "NA", 1);
         //spin_COL_ID.setSelection(id);
@@ -646,6 +698,8 @@ Wedge as keys to empty
         spin_UNITS.setSelection(id);
 
         bBarcodeLocation = false;
+        isRecordSaved = true;
+        Log.i("isRecordSaved", " clear forms " + isRecordSaved.toString());
 
         txt_Reading.requestFocus();
     }
@@ -688,6 +742,7 @@ Wedge as keys to empty
 
         current_comment = txt_comment.getText().toString();
         input_reading.setStrComment(current_comment);
+        input_reading.setStrDataModComment(strDataModComment);
 
         temp = (TextView) spin_elev_code.getSelectedView();
         curent_elevationcode = temp.getText().toString();
@@ -822,6 +877,21 @@ Wedge as keys to empty
             finish();
         }
 
+    }
+
+
+    @Override
+    public void onBackPressed() {
+
+        Log.i("isRecordSaved "," onBackPressed isRecordSaved BEFORE " + isRecordSaved.toString());
+        if (isRecordSaved)
+            // code here to show dialog
+            super.onBackPressed();  // optional depending on your needs
+        else {
+            isRecordSaved = true;
+            AlertDialogHighWarning("The record has not been saved. Hit Done or Back button again to exit without saving.", "Warning!");
+        }
+        Log.i("isRecordSaved ","onBackPressed isRecordSaved AFTER " + isRecordSaved.toString());
     }
 
 }

@@ -441,11 +441,17 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
     }
 
     public int getUpdateReading(SQLiteDatabase db, Reading r) {
-
+        String temp;
         ContentValues values = new ContentValues();
         values.put(Stdet_Inst_Readings.dblIR_Value, r.getDblIR_Value());
         values.put(Stdet_Inst_Readings.elev_code, r.getElev_code());
-        values.put(Stdet_Inst_Readings.strComment, r.getStrComment());
+
+        temp = r.getStrComment();
+        if (Objects.equals(temp, ""))
+            values.putNull(Stdet_Inst_Readings.strComment);
+        else
+            values.put(Stdet_Inst_Readings.strComment, temp);
+
         values.put(Stdet_Inst_Readings.strFO_StatusID, r.getStrFO_StatusID());
         values.put(Stdet_Inst_Readings.strEqO_StatusID, r.getStrEqO_StatusID());
         values.put(Stdet_Inst_Readings.strIR_Units, r.getStrIR_Units());
@@ -1234,16 +1240,16 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         device = getDeviceName2();
 
         if (Objects.equals(device, "NA"))
-            device  =getDeviceName1();
+            device = getDeviceName1();
 
         try {
             if (Objects.equals(device, "NA"))
-            device = Build.DEVICE;
+                device = Build.DEVICE;
         } catch (Exception ex) {
             System.out.println(ex);
         }
 
-          String hardware = "hardware NA";
+        String hardware = "hardware NA";
         try {
             hardware = Build.HARDWARE;
         } catch (Exception ex) {
@@ -1275,7 +1281,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         }
         String rv = device + " - " + id + " " + hardware + "' "
                 + capitalize(manufacturer) + " " + model;
-        return rv.replace("'","_");
+        return rv.replace("'", "_");
     }
 
     private static String capitalize(String str) {
