@@ -112,7 +112,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
     Button btnDone;
 
     Context ct = this;
-    Boolean bSavedToDBData = false;
+    Boolean isRecordsSavedToDB = true;
     Boolean bAcceptWarningValid = false;
     Boolean bAcceptWarningDuplicate = false;
 
@@ -122,14 +122,14 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
 
     Boolean[] bDialogChoice = {false};
 
-    private Boolean isRecordSaved = true;
+    private Boolean isLastRecordSavedToTable = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        bSavedToDBData = false;
+
         bAcceptWarningValid = false;
         bAcceptWarningDuplicate = false;
-        //isRecordSaved = true;
+
         input_reading = new Reading();
         default_reading = Reading.GetDefaultReading();
 
@@ -214,8 +214,8 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
             public void afterTextChanged(Editable s) {
                 bAcceptWarningValid = false;
                 bAcceptWarningDuplicate = false;
-                isRecordSaved = false;
-                Log.i("isRecordSaved", "txt_Reading.addTextChangedListener " + isRecordSaved.toString());
+                isLastRecordSavedToTable = false;
+                Log.i("isLastRecordSavedToTable", "txt_Reading.addTextChangedListener " + isLastRecordSavedToTable.toString());
             }
         });
         txt_comment = (EditText) findViewById(R.id.txt_Comment);
@@ -230,8 +230,8 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
             }
 
             public void afterTextChanged(Editable s) {
-                Log.i("isRecordSaved", "txtComment.addTextChangedListener " + isRecordSaved.toString());
-                isRecordSaved = false;
+                Log.i("isLastRecordSavedToTable", "txtComment.addTextChangedListener " + isLastRecordSavedToTable.toString());
+                isLastRecordSavedToTable = false;
             }
         });
         edit_depth = (EditText) findViewById(R.id.text_depth);
@@ -253,7 +253,7 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 Validation iChecked = saveForms(bAcceptWarningValid, bAcceptWarningDuplicate);
                 if (iChecked.isValid() ||
                 (iChecked.isWarning() && bAcceptWarningValid) || (iChecked.isWarningDuplicate() && bAcceptWarningDuplicate))
-                    isRecordSaved = true;
+                    isLastRecordSavedToTable = true;
 
                 if (iChecked.isWarning())
                     bAcceptWarningValid = true;
@@ -263,6 +263,8 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 System.out.println(bAcceptWarningDuplicate);
                 System.out.println(iChecked);
 
+                isRecordsSavedToDB = false;
+
             }
         });
 
@@ -271,17 +273,25 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
             @Override
             public void onClick(View view) {
 
-                dbHelper.getInsertTable(db, ir_table);
-                int records = ir_table.GetNumberOfRecords();
-                String message = "The data (" + String.valueOf(records) + " records) is saved and ready to be uplaoded.";
-                Toast.makeText(ct, message, Toast.LENGTH_SHORT).show();
-                ir_table = new Stdet_Inst_Readings();
-                Log.i("isRecordSaved", "btnDone.setOnClickListener ,isRecordSaved " + isRecordSaved.toString());
-                if (isRecordSaved) {
-                    clearForms();
-                    bSavedToDBData = true;
+                if (isLastRecordSavedToTable) {
+                    isRecordsSavedToDB = dbHelper.getInsertTable(db, ir_table);
+                    int records = ir_table.GetNumberOfRecords();
+
+                    if (isRecordsSavedToDB) {
+                        String message = "The data (" + String.valueOf(records) + " records) is saved and ready to be uplaoded.";
+                        Toast.makeText(ct, message, Toast.LENGTH_SHORT).show();
+                        ir_table = new Stdet_Inst_Readings();
+                    }
                 }
-                Log.i("isRecordSaved", "btnDone.setOnClickListener ,isRecordSaved " + isRecordSaved.toString());
+                else
+                    isRecordsSavedToDB = false;
+
+                Log.i("isLastRecordSavedToTable", "btnDone.setOnClickListener ,isLastRecordSavedToTable " + isLastRecordSavedToTable.toString());
+                if (isLastRecordSavedToTable && isRecordsSavedToDB ) {
+                      clearForms();
+                }
+                Log.i("isLastRecordSavedToTable", "btnDone.setOnClickListener ,isLastRecordSavedToTable " + isLastRecordSavedToTable.toString());
+
                 onBackPressed();
 
             }
@@ -300,8 +310,10 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                     edit_depth.setText(elev_code_value[1]);
 
                 if (!Objects.equals(curent_elevationcode, "NA"))
-                    isRecordSaved = false;
-                Log.i("isRecordSaved", "in spin_elev_code.setOnItemSelectedListener" + isRecordSaved.toString());
+                    isLastRecordSavedToTable = false;
+
+                Log.i("isLastRecordSavedToTable", "in spin_elev_code.setOnItemSelectedListener isLastRecordSavedToTable " + isLastRecordSavedToTable.toString());
+                Log.i("isLastRecordSavedToTable", "in spin_elev_code.setOnItemSelectedListener isRecordsSavedToDB " + isRecordsSavedToDB.toString());
 
             }
 
@@ -367,12 +379,18 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
 
                 bAcceptWarningValid = false;
                 bAcceptWarningDuplicate = false;
-                Log.i("isRecordSaved", "spin_loc_id.listener " + isRecordSaved.toString());
+
                 if (!Objects.equals(current_loc, "NA"))
-                    isRecordSaved = false;
+                    isLastRecordSavedToTable = false;
+
+                Log.i("isLastRecordSavedToTable", "spin_loc_id.listener isLastRecordSavedToTable:" + isLastRecordSavedToTable.toString());
+                Log.i("isLastRecordSavedToTable", "spin_loc_id.listener isRecordsSavedToDB:" + isRecordsSavedToDB.toString());
+                Log.i("current_loc", "spin_loc_id.listener current_loc" + current_loc);
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
+
+                Log.i("isLastRecordSavedToTable", "spin_loc_id.listener onNothingSelected isLastRecordSavedToTable:" + isLastRecordSavedToTable.toString());
             }
         });
 
@@ -400,9 +418,9 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 current_collector = temp.getText().toString();
 
                 if (!Objects.equals(current_collector, "NA"))
-                    isRecordSaved = false;
+                    isLastRecordSavedToTable = false;
 
-                Log.i("isRecordSaved", "spin_col_id.listener " + isRecordSaved.toString());
+                Log.i("isLastRecordSavedToTable", "spin_col_id.listener " + isLastRecordSavedToTable.toString());
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
@@ -504,8 +522,8 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                     current_loc = tempcurrent_loc;
                 //current_loc = event.getBarcodeData();
                 Log.i("onBarcodeEvent", getCurrent_loc());
-                Log.i("isRecordSaved", "on barcode event " + isRecordSaved.toString());
-                isRecordSaved = false;
+
+                isLastRecordSavedToTable = false;
 
                 final ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(
                         StDetInputActivity.this, android.R.layout.simple_list_item_1, list);
@@ -518,9 +536,12 @@ public class StDetInputActivity extends Activity implements BarcodeReader.Barcod
                 }
                 spin_Loc_id.setSelection(id);
                 barcodeList.setAdapter(dataAdapter);
-                bSavedToDBData = false;
+                isRecordsSavedToDB = false;
                 bAcceptWarningDuplicate = false;
                 bAcceptWarningValid = false;
+
+                Log.i("isLastRecordSavedToTable", "on barcode event isLastRecordSavedToTable " + isLastRecordSavedToTable.toString());
+                Log.i("isLastRecordSavedToTable", "on barcode event isRecordsSavedToDB " + isRecordsSavedToDB.toString());
             }
         });
     }
@@ -593,7 +614,7 @@ Wedge as keys to empty
                     spin_Loc_id.setSelection(id);
                     //barcodeList.setAdapter(dataAdapter);
                     Toast.makeText(StDetInputActivity.this, "No data yet", Toast.LENGTH_SHORT).show();
-                    bSavedToDBData = false;
+
                 } else {
                     Toast.makeText(StDetInputActivity.this, current_loc, Toast.LENGTH_SHORT).show();
 
@@ -698,8 +719,8 @@ Wedge as keys to empty
         spin_UNITS.setSelection(id);
 
         bBarcodeLocation = false;
-        isRecordSaved = true;
-        Log.i("isRecordSaved", " clear forms " + isRecordSaved.toString());
+        isLastRecordSavedToTable = true;
+        Log.i("isLastRecordSavedToTable", " clear forms " + isLastRecordSavedToTable.toString());
 
         txt_Reading.requestFocus();
     }
@@ -765,6 +786,7 @@ Wedge as keys to empty
         } else if ((bAcceptRecord) && (bAcceptDup)) {
             System.out.println(isTheRecordValid.getValidationMessageWarning() + isTheRecordValid.getValidationMessageError());
             maxId = ir_table.AddToTable(input_reading);
+            isRecordsSavedToDB = false;
             maxId++;
             clearForms();
             System.out.println("NEW max id " + maxId.toString());
@@ -883,15 +905,27 @@ Wedge as keys to empty
     @Override
     public void onBackPressed() {
 
-        Log.i("isRecordSaved "," onBackPressed isRecordSaved BEFORE " + isRecordSaved.toString());
-        if (isRecordSaved)
+        Log.i("isLastRecordSavedToTable ", " onBackPressed isLastRecordSavedToTable BEFORE " + isLastRecordSavedToTable.toString());
+        Log.i("isLastRecordSavedToTable ", " onBackPressed isRecordsSavedToDB  " + isRecordsSavedToDB.toString());
+
+        if (isLastRecordSavedToTable && isRecordsSavedToDB) {
             // code here to show dialog
             super.onBackPressed();  // optional depending on your needs
-        else {
-            isRecordSaved = true;
-            AlertDialogHighWarning("The record has not been saved. Hit Done or Back button again to exit without saving.", "Warning!");
         }
-        Log.i("isRecordSaved ","onBackPressed isRecordSaved AFTER " + isRecordSaved.toString());
+
+        if (isLastRecordSavedToTable && !isRecordsSavedToDB) {
+            isRecordsSavedToDB = true;
+            AlertDialogHighWarning("Do you want to Exit Input Form Without Saving?"+ "\n" +"Hit Done to Save or Back button again to exit without saving.", "Warning!");
+        }
+
+        if (!isLastRecordSavedToTable) {
+            isLastRecordSavedToTable = true;
+            AlertDialogHighWarning("The record has not been saved."+ "\n" +"Hit Done or Back button again to exit without saving.", "Warning!");
+        }
+
+
+        Log.i("isLastRecordSavedToTable ", "onBackPressed isLastRecordSavedToTable AFTER " + isLastRecordSavedToTable.toString());
+        Log.i("isLastRecordSavedToTable ", " onBackPressed isRecordsSavedToDB AFTER " + isRecordsSavedToDB.toString());
     }
 
 }

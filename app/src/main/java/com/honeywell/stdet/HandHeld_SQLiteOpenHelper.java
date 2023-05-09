@@ -242,10 +242,11 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         return r;
     }
 
-    public void getInsertTable(SQLiteDatabase db, StdetDataTable table) {
+    public Boolean getInsertTable(SQLiteDatabase db, StdetDataTable table) {
 
         int n = table.GetNumberOfRecords();
         String insert = "", delete;
+        Boolean isInserted = true;
         try {
             String create = table.createTableSQL();
             String tablename = table.getName();
@@ -285,6 +286,7 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                     } catch (Exception ex) {
                         ex.printStackTrace();
                         System.out.println("insert BIG " + insert + ex);
+                        isInserted = false;
                     }
                     k = k + jump;
                 }
@@ -295,21 +297,24 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
                         insert = table.getInsertIntoDB(i);
                         System.out.println("insert " + insert);
                         db.execSQL(insert);
+
                     } catch (Exception ex) {
                         ex.printStackTrace();
                         System.out.println("insert " + insert + ex);
+                        isInserted =  false;
                     }
 
                 }
             }
-            //db.endTransaction();
-            //db.setTransactionSuccessful();
 
         } catch (Exception ex) {
             ex.printStackTrace();
             System.out.println("ERROR getInsertFromTable " + ex);
+            return false;
 
         }
+
+        return isInserted;
     }
 
     public void getInsertFromTable(SQLiteDatabase db, StdetDataTable table) {
