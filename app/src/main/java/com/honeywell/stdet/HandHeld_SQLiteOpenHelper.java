@@ -1286,6 +1286,9 @@ public class HandHeld_SQLiteOpenHelper extends SQLiteOpenHelper {
         }
         String rv = device + " - " + id + " " + hardware + "' "
                 + capitalize(manufacturer) + " " + model;
+
+        String versionName = BuildConfig.VERSION_NAME;
+        rv = rv + " Version " + versionName;
         return rv.replace("'", "_");
     }
 

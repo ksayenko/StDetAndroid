@@ -42,7 +42,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -159,6 +162,89 @@ public class MainActivity extends Activity {
             new ParseXMLAndUploadToDBThread(this, true);
             return true;
         }
+
+        if (id == R.id.menu_workUploadDB) {
+            //put in the thread since the file is big and without was the
+            // Input dispatching timed out ANR exception
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Date currentDateTime = Calendar.getInstance().getTime();
+                    File pathToDB = new File(directoryApp.getParentFile() + "//databases");
+                    ArrayList<File> sqlFiles = getListFiles(pathToDB, "sqlite3");
+
+                    CallSoapWS ws1 = new CallSoapWS(null);
+                    String response = ws1.CheckConnection();
+                    boolean bConnection = true;
+                    if (response.startsWith("ERROR")) {
+                        Toast.makeText(context, response, Toast.LENGTH_SHORT).show();
+                        AlertDialogShow(response, "Error", "OK", "error");
+                        txtInfo.setText(response);
+                        bConnection = false;
+                    }
+
+                    //adding seconds April 2023. KS
+                    //default sqlllite format YYYY-MM-DD HH:MM:SS
+                    String timeStamp = new SimpleDateFormat(Stdet_Inst_Readings.Datetime_pattern_with_sec).format(currentDateTime);
+                    timeStamp = timeStamp.replace(" ", "");
+                    timeStamp = timeStamp.replace("/", "");
+                    timeStamp = timeStamp.replace(":", "");
+                    timeStamp = "_" + timeStamp;
+                    HandHeld_SQLiteOpenHelper dbHelper =
+                            new HandHeld_SQLiteOpenHelper(context, new StdetDataTables());
+                    SQLiteDatabase db = dbHelper.getReadableDatabase();
+                    if (bConnection) {
+                        try {
+
+                            CallSoapWS ws = new CallSoapWS(directoryApp);
+                            Path pathtodb1 = Paths.get(sqlFiles.get(0).getPath());
+
+                            byte[] dataUpload = Files.readAllBytes(pathtodb1);
+                            String[] credentials = dbHelper.getLoginInfo(db);
+
+                            String name = credentials[0];
+                            String encryptedPassword = credentials[1];
+                            // For decryption not ise null or empty string
+                            if (encryptedPassword == null || encryptedPassword == "")
+                                encryptedPassword = "NA";
+                            String pwd = StDEtEncrypt.decrypt(encryptedPassword);
+                            String[] errormessage = new String[]{""};
+
+                            Boolean bCanUpload = ws.WS_GetLogin(name, pwd, errormessage);
+                            Boolean bUploaded;
+                            if (bCanUpload) {
+                                String filename = sqlFiles.get(0).getName();
+                                String extension = "sqlite3";
+                                String filenamenoext = filename;
+                                // Extract the extension from the file name
+                                int index = filename.lastIndexOf('.');
+
+                                if (index > 0) {
+                                    extension = filename.substring(index + 1);
+                                    filenamenoext = filename.substring(0, index);
+                                }
+                                filename = filenamenoext + timeStamp + '.' + extension;
+
+                                bUploaded = ws.WS_UploadFile2(dataUpload, filename, name, pwd);
+
+
+                                if (bUploaded) {
+                                    AlertDialogShow(" Db Has Been Uploaded to the Server",
+                                            "Info", "OK", "default");
+                                } else {
+                                    AlertDialogShow("db hasn't been uploaded. Try one more time.", "ERROR!", "OK", "warning");
+                                }
+
+                            } else {
+                                AlertDialogShow("Your Credentials aren't working. Go to Main Page | Menu | Check Login Credentials. : " + errormessage[0], "ERROR!", "OK", "warning");
+                            }
+                        } catch (Exception exception) {
+                            exception.printStackTrace();
+                        }
+                    }
+                }
+            });
+        }
         if (id == R.id.menu_workWithSDCard) {
 
             boolean isSdcard = false;
@@ -186,6 +272,19 @@ public class MainActivity extends Activity {
                  folderStorage = folders_sdcard1[0];
              }
 
+            if (folderStorage != null && sqlFiles != null) {
+                try {
+
+                    for (int i = 0; i < sqlFiles.size(); i++) {
+                        iCopied += copyFile(sqlFiles.get(i).getParentFile().getPath(), sqlFiles.get(i).getName(), folderStorage.getPath());
+
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println(ex.toString());
+                }
+            }
+
             if (folderStorage != null && csvFiles != null) {
                 try {
 
@@ -193,10 +292,7 @@ public class MainActivity extends Activity {
                         iMoved += moveFile(csvFiles.get(i).getParentFile().getPath(), csvFiles.get(i).getName(), folderStorage.getPath());
 
                     }
-                    for (int i = 0; i < sqlFiles.size(); i++) {
-                        iCopied += copyFile(sqlFiles.get(i).getParentFile().getPath(), sqlFiles.get(i).getName(), folderStorage.getPath());
 
-                    }
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     System.out.println(ex.toString());
@@ -276,10 +372,24 @@ public class MainActivity extends Activity {
                 dir.mkdirs();
             }
 
+            File file = new File(outputPath);
+            String timeStamp="";
+            if(file.exists()){
+                //add datetime
+                Date currentDateTime = Calendar.getInstance().getTime();
+                //adding seconds April 2023. KS
+                //default sqlllite format YYYY-MM-DD HH:MM:SS
+                timeStamp = new SimpleDateFormat(Stdet_Inst_Readings.Datetime_pattern_with_sec).format(currentDateTime);
+                timeStamp = timeStamp.replace(" ","");
+                timeStamp = timeStamp.replace("/","");
+                timeStamp = timeStamp.replace(":","");
+                timeStamp = "._"+timeStamp;
+            }
+
 
             in = new FileInputStream(inputPath +"/"+inputFile);
-            out = new FileOutputStream(outputPath +"/"+ inputFile);
 
+            out = new FileOutputStream(outputPath + "/" + inputFile+timeStamp);
 
             byte[] buffer = new byte[1024];
             int read;
@@ -296,7 +406,7 @@ public class MainActivity extends Activity {
             rv = 1;
 
         }  catch (FileNotFoundException fnfe1) {
-
+            Log.e("Exception", fnfe1.getMessage());
             rv = 0;
         }
         catch (Exception e) {

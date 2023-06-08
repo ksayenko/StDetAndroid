@@ -158,7 +158,6 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         reading.set(GetElementIndex(recordToUpload), recordToUpload1);
         reading.set(GetElementIndex(device_name), sDeviceName);
 
-
         this.AddRowToData(reading);
      }
 
@@ -357,12 +356,4 @@ public class Stdet_Inst_Readings extends StdetDataTable {
         }
         return false;
     }
-
-
-
-
-
-
-
-
 }
